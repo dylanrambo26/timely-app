@@ -35,8 +35,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.Home
+import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
@@ -96,6 +100,43 @@ fun ScaffoldUI(
 
             )
         },
+        bottomBar = {
+            BottomAppBar(
+                actions = {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center
+                    ){
+                        IconButton(
+                            onClick = ({ /*TODO*/ })) {
+                            Icon(
+                                imageVector = Icons.Outlined.DateRange,
+                                contentDescription = "Settings Button",
+                                modifier = Modifier.size(50.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(64.dp))
+                        IconButton(
+                            onClick = ({ /*TODO*/ })) {
+                            Icon(
+                                imageVector = Icons.Outlined.Home,
+                                contentDescription = "Settings Button",
+                                modifier = Modifier.size(50.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(64.dp))
+                        IconButton(
+                            onClick = ({ /*TODO*/ })) {
+                            Image(
+                                painter = painterResource(id = R.drawable.graph_image),
+                                contentDescription = "Settings Button",
+                                modifier = Modifier.size(50.dp)
+                            )
+                        }
+                    }
+                }
+            )
+        }
     ) {
         innerPadding ->
         Column (
