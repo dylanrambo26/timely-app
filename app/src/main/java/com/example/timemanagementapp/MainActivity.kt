@@ -35,6 +35,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.Text
@@ -78,7 +79,10 @@ fun ScaffoldUI(
                     titleContentColor = MaterialTheme.colorScheme.primary,
                 ),
                 title = {
-                    Text("Welcome, User")
+                    Text(
+                        text = "Welcome, User",
+                        fontWeight = FontWeight.Bold
+                    )
                 },
                 actions = {
                     IconButton(
@@ -107,14 +111,16 @@ fun ScaffoldUI(
                 horizontalArrangement = Arrangement.Center
             ){
                 Text(
+                    text= "Today's Goals:",
+                    textAlign = TextAlign.Left,
                     modifier = Modifier
                         .padding(8.dp),
-                    text= "Today's Goals:"
                 )
+                Spacer(modifier = Modifier.width(64.dp))
                 Text(
                     modifier = Modifier
                         .padding(8.dp),
-                    text= "Goal1\nGoal2\nGoal3\n"
+                    text= "\nGoal1\nGoal2\nGoal3\netc.\n"
                 )
             }
         }
