@@ -44,6 +44,7 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -81,7 +82,7 @@ fun ScaffoldUI(
 ) {
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
+            MediumTopAppBar(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.primary,
@@ -89,7 +90,9 @@ fun ScaffoldUI(
                 title = {
                     Text(
                         text = "Welcome, User",
-                        fontWeight = FontWeight.Bold
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 },
                 actions = {
@@ -168,6 +171,7 @@ fun ScaffoldUI(
                     text= "\nGoal1\nGoal2\nGoal3\netc.\n"
                 )
             }
+            Spacer(modifier = Modifier.height(100.dp))
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -198,6 +202,7 @@ fun ScaffoldUI(
                         textAlign = TextAlign.Center
                     )
                 }
+
             }
         }
     }
