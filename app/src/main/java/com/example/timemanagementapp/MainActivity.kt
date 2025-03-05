@@ -42,6 +42,8 @@ import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -67,13 +69,15 @@ class MainActivity : ComponentActivity() {
 fun TimelyAppTextAndImages(
     modifier: Modifier = Modifier
 ) {
-    ScaffoldUI(modifier)
+    ScaffoldUI(
+        modifier = modifier
+    )
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScaffoldUI(
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Scaffold(
         topBar = {
@@ -163,6 +167,37 @@ fun ScaffoldUI(
                         .padding(8.dp),
                     text= "\nGoal1\nGoal2\nGoal3\netc.\n"
                 )
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+                HorizontalDivider(
+                    modifier = Modifier.fillMaxWidth(),
+                    thickness = 4.dp
+                )
+                Row(
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .fillMaxWidth(),
+                ){
+                    IconButton (
+                        onClick = {/*TODO*/},
+                        modifier = Modifier.size(100.dp)
+                    ) {
+                        Image(
+                            painter = painterResource(R.drawable.add_log_button),
+                            contentDescription = stringResource(R.string.add_log_button_desc),
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = "Manually Enter Log",
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
     }

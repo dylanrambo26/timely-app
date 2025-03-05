@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">TimeManagementApp</string>
+    <string name="add_log_button_desc"> Add Log Button</string>
 </resources>
