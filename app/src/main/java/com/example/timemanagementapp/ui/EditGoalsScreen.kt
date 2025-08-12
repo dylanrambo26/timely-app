@@ -39,6 +39,7 @@ import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 fun EditGoalsScreen(
     currentGoals: List<Goal>,
     onAddGoalButtonClicked: () -> Unit = {},
+    onDeleteGoal: (Goal) -> Unit
 ){
 
     Column(
@@ -81,7 +82,7 @@ fun EditGoalsScreen(
                             Text(text = "${goal.timeLimit.hours}h ${goal.timeLimit.minutes}m")
                         }
                         Row {
-                            IconButton(onClick = {/*TODO*/ })
+                            IconButton(onClick = {onDeleteGoal(goal)})
                             {
                                 Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
                             }
@@ -140,7 +141,9 @@ fun EditGoalsScreen(
 fun EditGoalsScreenPreview(){
     TimeManagementAppTheme {
         EditGoalsScreen(
-            currentGoals = TestData.goals
+            currentGoals = TestData.goals,
+            onDeleteGoal = {},
+            onAddGoalButtonClicked = {}
         )
     }
 }
@@ -151,7 +154,9 @@ fun EditGoalsEmptyListScreenPreview(){
     val emptyGoals = emptyList<Goal>()
     TimeManagementAppTheme {
         EditGoalsScreen(
-            currentGoals = emptyGoals
+            currentGoals = emptyGoals,
+            onDeleteGoal = {},
+            onAddGoalButtonClicked = {}
         )
     }
 }

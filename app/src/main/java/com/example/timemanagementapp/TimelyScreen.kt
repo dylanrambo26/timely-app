@@ -207,7 +207,8 @@ fun TimelyApp(
             composable(route = TimelyScreen.EditGoals.name){
                 EditGoalsScreen(
                     currentGoals = uiState.goals,
-                    onAddGoalButtonClicked = {navController.navigate(TimelyScreen.AddGoal.name)}
+                    onAddGoalButtonClicked = {navController.navigate(TimelyScreen.AddGoal.name)},
+                    onDeleteGoal = {goal -> viewModel.deleteGoal(goal)}
                 )
             }
         }

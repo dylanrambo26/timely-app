@@ -65,4 +65,12 @@ class GoalsViewModel : ViewModel() {
         updateNewUserMinutes("")
         updateNewUserGoalTitle("")
     }
+
+    fun deleteGoal(goal: Goal){
+        _uiState.update { currentState ->
+            currentState.copy(
+                goals = currentState.goals - goal
+            )
+        }
+    }
 }
