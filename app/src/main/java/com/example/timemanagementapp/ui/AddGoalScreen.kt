@@ -1,6 +1,5 @@
 package com.example.timemanagementapp.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -22,10 +20,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
-import com.example.timemanagementapp.data.TestData
-import com.example.timemanagementapp.data.TimeDuration
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 
 /**
@@ -41,7 +36,7 @@ import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
  * Screen for adding a goal to the list
  */
 @Composable
-fun AddLogScreen(
+fun AddGoalScreen(
     onUserHourChanged: (String) -> Unit,
     onUserMinutesChanged: (String) -> Unit,
     onUserGoalTitleChanged: (String) -> Unit,
@@ -149,7 +144,7 @@ fun AddLogScreen(
 @Composable
 fun AddLogScreenPreview(){
     TimeManagementAppTheme {
-        AddLogScreen(
+        AddGoalScreen(
             onUserHourChanged = {},
             onUserMinutesChanged = {},
             onUserGoalTitleChanged = {},

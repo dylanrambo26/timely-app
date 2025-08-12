@@ -1,9 +1,6 @@
 package com.example.timemanagementapp.ui
 
 
-import android.content.res.Configuration
-import androidx.annotation.StringRes
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,32 +12,33 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.timemanagementapp.R
-import com.example.timemanagementapp.data.Goal
 import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 
 /**
  * @param goalsText - The list of current goals from the uiState in a joined String
- * @param onAddButtonClicked - function that will navigate to Add Log screen when clicked
+ * @param onEditButtonClicked - function that will navigate to Add Log screen when clicked
  * @param modifier
  */
 @Composable
 fun HomeScreen(
     goalsText: String,
-    onAddButtonClicked: () -> Unit = {},
+    onEditButtonClicked: () -> Unit = {},
     modifier: Modifier = Modifier
 ){
     Column (
@@ -85,17 +83,19 @@ fun HomeScreen(
             ){
                 //Add Log Button
                 IconButton (
-                    onClick = onAddButtonClicked,
+                    onClick = onEditButtonClicked,
                         modifier = Modifier.size(100.dp)
                         ) {
-                            Image(
-                                painter = painterResource(R.drawable.add_log_button),
-                                contentDescription = stringResource(R.string.add_log_button_desc),
+                            Icon(
+                                imageVector = Icons.Default.Edit,
+                                contentDescription = "Edit today's goals",
+                                modifier = Modifier
+                                    .size(100.dp)
                             )
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Text(
-                            text = "Manually Enter Log",
+                            text = stringResource(R.string.edit_todays_goals),
                             textAlign = TextAlign.Center
                         )
             }

@@ -34,7 +34,6 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MediumTopAppBar
-import androidx.compose.material3.SmallTopAppBar
 import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
@@ -43,9 +42,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.data.TimeDuration
-import com.example.timemanagementapp.ui.AddLogScreen
+import com.example.timemanagementapp.ui.AddGoalScreen
 import com.example.timemanagementapp.ui.EditGoalsScreen
 import com.example.timemanagementapp.ui.HomeScreen
 
@@ -59,7 +57,7 @@ enum class TimelyScreen(@StringRes val title: Int){
     Calendar(title = R.string.calendar),
     Analytics(title = R.string.analytics),
     Settings(title = R.string.settings),
-    AddLog(title = R.string.add_log),
+    AddGoal(title = R.string.add_log),
     EditGoals(title = R.string.edit_goals)
 }
 
@@ -82,7 +80,7 @@ fun TimelyApp(
         //Top bar and bottom bar persist through each navigation
         topBar = {
             when(currentScreen) {
-                TimelyScreen.AddLog ->{
+                TimelyScreen.AddGoal ->{
                     TimelySmallTopAppBar(stringResource(R.string.top_app_bar_add_goal))
                 }
                 TimelyScreen.Calendar -> {
@@ -181,15 +179,15 @@ fun TimelyApp(
             composable(route = TimelyScreen.Home.name){
                 HomeScreen(
                     goalsText = uiState.goals.joinToString("\n"){"${it.goalTitle} - ${it.timeLimit.toReadable()}"},
-                    onAddButtonClicked = {navController.navigate(TimelyScreen.AddLog.name)},
+                    onEditButtonClicked = {navController.navigate(TimelyScreen.EditGoals.name)},
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(dimensionResource(R.dimen.padding_medium))
                 )
             }
             //Add Log composable
-            composable(route = TimelyScreen.AddLog.name){
-                AddLogScreen(
+            composable(route = TimelyScreen.AddGoal.name){
+                AddGoalScreen(
                     onUserHourChanged = {viewModel.updateNewUserHours(it)},
                     onUserMinutesChanged = {viewModel.updateNewUserMinutes(it)},
                     onUserGoalTitleChanged = {viewModel.updateNewUserGoalTitle(it)},
@@ -208,7 +206,8 @@ fun TimelyApp(
             }
             composable(route = TimelyScreen.EditGoals.name){
                 EditGoalsScreen(
-                    currentGoals = uiState.goals
+                    currentGoals = uiState.goals,
+                    onAddGoalButtonClicked = {navController.navigate(TimelyScreen.AddGoal.name)}
                 )
             }
         }

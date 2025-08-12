@@ -16,12 +16,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,49 +37,72 @@ import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 
 @Composable
 fun EditGoalsScreen(
-    currentGoals: List<Goal>
+    currentGoals: List<Goal>,
+    onAddGoalButtonClicked: () -> Unit = {},
 ){
 
     Column(
         modifier = Modifier
-            .fillMaxSize()
+            .fillMaxSize(),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
                 .padding(dimensionResource(R.dimen.padding_medium)),
-            verticalArrangement = Arrangement.spacedBy(12.dp)
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            items(currentGoals) { goal ->
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Row(
-                        horizontalArrangement = Arrangement.Start,
+            if (currentGoals.isEmpty()){
+                item{
+                    Text(
+                        text = "No current goals.",
                         modifier = Modifier
-                            .weight(1f)
+                            .padding(dimensionResource(R.dimen.padding_medium))
+                    )
+                }
+            }
+            else{
+                items(currentGoals) { goal ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(text = goal.goalTitle)
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(text = "${goal.timeLimit.hours}h ${goal.timeLimit.minutes}m")
-                    }
-                    Row {
-                        IconButton(onClick = {/*TODO*/ })
-                        {
-                            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+                        Row(
+                            horizontalArrangement = Arrangement.Start,
+                            modifier = Modifier
+                                .weight(1f)
+                        ) {
+                            Text(text = goal.goalTitle)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(text = "${goal.timeLimit.hours}h ${goal.timeLimit.minutes}m")
                         }
-                        IconButton(onClick = {/*TODO*/ })
-                        {
-                            Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
+                        Row {
+                            IconButton(onClick = {/*TODO*/ })
+                            {
+                                Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+                            }
+                            IconButton(onClick = {/*TODO*/ })
+                            {
+                                Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
+                            }
                         }
                     }
                 }
             }
+
         }
+        HorizontalDivider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = dimensionResource(R.dimen.padding_medium_large)),
+            thickness = 1.dp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+
+        )
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -84,7 +110,7 @@ fun EditGoalsScreen(
             horizontalArrangement = Arrangement.Center
         ){
             IconButton(
-                onClick = {/*TODO*/ },
+                onClick = onAddGoalButtonClicked,
                 modifier = Modifier
                     .align(Alignment.CenterVertically)
                     .size(100.dp),
@@ -115,6 +141,17 @@ fun EditGoalsScreenPreview(){
     TimeManagementAppTheme {
         EditGoalsScreen(
             currentGoals = TestData.goals
+        )
+    }
+}
+
+@Preview
+@Composable
+fun EditGoalsEmptyListScreenPreview(){
+    val emptyGoals = emptyList<Goal>()
+    TimeManagementAppTheme {
+        EditGoalsScreen(
+            currentGoals = emptyGoals
         )
     }
 }
