@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.filled.Settings
@@ -33,8 +34,11 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.SmallTopAppBar
+import androidx.compose.material3.TopAppBar
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -42,6 +46,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.data.TimeDuration
 import com.example.timemanagementapp.ui.AddLogScreen
+import com.example.timemanagementapp.ui.EditGoalsScreen
 import com.example.timemanagementapp.ui.HomeScreen
 
 /**
@@ -54,7 +59,8 @@ enum class TimelyScreen(@StringRes val title: Int){
     Calendar(title = R.string.calendar),
     Analytics(title = R.string.analytics),
     Settings(title = R.string.settings),
-    AddLog(title = R.string.add_log)
+    AddLog(title = R.string.add_log),
+    EditGoals(title = R.string.edit_goals)
 }
 
 /**
@@ -75,31 +81,48 @@ fun TimelyApp(
     Scaffold(
         //Top bar and bottom bar persist through each navigation
         topBar = {
-            MediumTopAppBar(
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
-                ),
-                title = {
-                    Text(
-                        text = "Welcome, User",
-                        fontWeight = FontWeight.Bold,
-                        textAlign = TextAlign.Center,
-                        modifier = Modifier.fillMaxWidth()
-                    )
-                },
-                actions = {
-                    //Settings Button
-                    IconButton(
-                        onClick = ({ /*TODO*/ })) {
-                        Icon(
-                            imageVector = Icons.Filled.Settings,
-                            contentDescription = "Settings Button"
-                        )
-                    }
+            when(currentScreen) {
+                TimelyScreen.AddLog ->{
+                    TimelySmallTopAppBar(stringResource(R.string.top_app_bar_add_goal))
                 }
+                TimelyScreen.Calendar -> {
+                    TimelySmallTopAppBar(stringResource(R.string.calendar))
+                }
+                TimelyScreen.Analytics -> {
+                    TimelySmallTopAppBar(stringResource(R.string.analytics))
+                }
+                TimelyScreen.EditGoals -> {
+                    TimelySmallTopAppBar(stringResource(R.string.edit_goals))
+                }
+                //Home Screen and Default
+                else -> {
+                    MediumTopAppBar(
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            titleContentColor = MaterialTheme.colorScheme.primary,
+                        ),
+                        title = {
+                            Text(
+                                text = "Welcome, User",
+                                fontWeight = FontWeight.Bold,
+                                textAlign = TextAlign.Center,
+                                modifier = Modifier.fillMaxWidth()
+                            )
+                        },
+                        actions = {
+                            //Settings Button
+                            IconButton(
+                                onClick = ({ /*TODO*/ })) {
+                                Icon(
+                                    imageVector = Icons.Filled.Settings,
+                                    contentDescription = "Settings Button"
+                                )
+                            }
+                        }
 
-            )
+                    )
+                }
+            }
         },
         bottomBar = {
             BottomAppBar(
@@ -183,6 +206,11 @@ fun TimelyApp(
                         .padding(dimensionResource(R.dimen.padding_medium))
                 )
             }
+            composable(route = TimelyScreen.EditGoals.name){
+                EditGoalsScreen(
+                    currentGoals = uiState.goals
+                )
+            }
         }
 
     }
@@ -194,4 +222,27 @@ private fun TimeDuration.toReadable(): String{
         if (hours > 0) append("${hours}h")
         if (minutes > 0) append("${minutes}m")
     }.trim()
+}
+
+//Custom Top App Bar that mimics a SmallTopAppBar, displays the param title
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TimelySmallTopAppBar(
+    title: String
+){
+    TopAppBar(
+        modifier = Modifier.height(dimensionResource(R.dimen.top_app_bar_small_height)),
+        title = {
+            Text(
+                text = title,
+                fontWeight = FontWeight.Medium,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.fillMaxWidth()
+            )
+        },
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            titleContentColor = MaterialTheme.colorScheme.primary,
+        )
+    )
 }
