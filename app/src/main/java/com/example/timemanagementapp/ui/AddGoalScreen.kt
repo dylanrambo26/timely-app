@@ -1,26 +1,40 @@
 package com.example.timemanagementapp.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.timemanagementapp.R
+import com.example.timemanagementapp.data.Goal
+import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 
 /**
@@ -41,13 +55,18 @@ fun AddGoalScreen(
     onUserMinutesChanged: (String) -> Unit,
     onUserGoalTitleChanged: (String) -> Unit,
     onClearButtonPressed: () -> Unit,
-    onAddGoalButtonPressed: (String, String, String) -> Unit,
+    onAddGoalButtonPressed: (String, String, String) -> Boolean,
+    onReturnToHomeButtonPressed: () -> Unit,
     userHours: String,
     userMinutes: String,
     userGoalTitle: String,
 
+    currentGoals: List<Goal>,
+    remaining: Int,
+
     modifier: Modifier = Modifier
 ){
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -55,6 +74,13 @@ fun AddGoalScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        GoalList(
+            goals = currentGoals,
+            modifier = Modifier
+                .weight(1f)
+                .padding(dimensionResource(R.dimen.padding_medium))
+        )
+        TimeRemaining(remaining = remaining)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -124,7 +150,14 @@ fun AddGoalScreen(
 
             //Add Goal Button
             OutlinedButton(
-                onClick = { onAddGoalButtonPressed(userGoalTitle, userHours, userMinutes) },
+                onClick = {
+                    val success = onAddGoalButtonPressed(userGoalTitle, userHours, userMinutes)
+                    errorMessage = if(!success){
+                        "Day already filled with goals. Delete or edit goals to free up time."
+                    }else{
+                        null
+                    }
+                },
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -132,9 +165,33 @@ fun AddGoalScreen(
                 Text(
                     text = stringResource(R.string.add_goal),
                     fontSize = 16.sp,
-                    color = Color.Black
+                    color = Color.White
                 )
             }
+        }
+
+        if (errorMessage != null){
+            errorMessage?.let { message ->
+                Text(
+                    text = message,
+                    color = MaterialTheme.colorScheme.onError,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+        }
+        Spacer(modifier = Modifier.padding(24.dp))
+        Button(
+            onClick = onReturnToHomeButtonPressed,
+        ){
+            Image(
+                painter = painterResource(R.drawable.return_icon),
+                contentDescription = "Return to Home"
+            )
+            Spacer(modifier = Modifier.padding(8.dp))
+            Text(
+                text = "Return To Home"
+            )
         }
     }
 }
@@ -142,20 +199,23 @@ fun AddGoalScreen(
 //Preview the AddLogScreen
 @Preview
 @Composable
-fun AddLogScreenPreview(){
+fun AddGoalScreenPreview(){
     TimeManagementAppTheme {
         AddGoalScreen(
             onUserHourChanged = {},
             onUserMinutesChanged = {},
             onUserGoalTitleChanged = {},
             onClearButtonPressed = {},
-            onAddGoalButtonPressed = {_,_,_ ->}, //Dummy lambda for preview
+            onAddGoalButtonPressed = {_,_,_ ->false}, //Dummy lambda for preview
             userHours = "",
             userMinutes = "",
             userGoalTitle = "",
             modifier = Modifier
                 .fillMaxSize()
-                .padding(dimensionResource(R.dimen.padding_medium))
+                .padding(dimensionResource(R.dimen.padding_medium)),
+            onReturnToHomeButtonPressed = {},
+            currentGoals = TestData.goals,
+            remaining = 870
         )
     }
 }

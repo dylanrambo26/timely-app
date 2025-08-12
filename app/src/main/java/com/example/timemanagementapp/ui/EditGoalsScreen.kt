@@ -30,6 +30,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.timemanagementapp.R
+import com.example.timemanagementapp.TimelyScreen
 import com.example.timemanagementapp.data.Goal
 import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
@@ -39,7 +40,8 @@ import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 fun EditGoalsScreen(
     currentGoals: List<Goal>,
     onAddGoalButtonClicked: () -> Unit = {},
-    onDeleteGoal: (Goal) -> Unit
+    onDeleteGoal: (Goal) -> Unit,
+    remaining: Int
 ){
 
     Column(
@@ -47,55 +49,14 @@ fun EditGoalsScreen(
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        LazyColumn(
+        GoalList(
+            goals = currentGoals,
+            onDeleteGoal = onDeleteGoal,
+            onEditGoal = {/*TODO*/},
             modifier = Modifier
                 .weight(1f)
-                .padding(dimensionResource(R.dimen.padding_medium)),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            if (currentGoals.isEmpty()){
-                item{
-                    Text(
-                        text = "No current goals.",
-                        modifier = Modifier
-                            .padding(dimensionResource(R.dimen.padding_medium))
-                    )
-                }
-            }
-            else{
-                items(currentGoals) { goal ->
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Row(
-                            horizontalArrangement = Arrangement.Start,
-                            modifier = Modifier
-                                .weight(1f)
-                        ) {
-                            Text(text = goal.goalTitle)
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Text(text = "${goal.timeLimit.hours}h ${goal.timeLimit.minutes}m")
-                        }
-                        Row {
-                            IconButton(onClick = {onDeleteGoal(goal)})
-                            {
-                                Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
-                            }
-                            IconButton(onClick = {/*TODO*/ })
-                            {
-                                Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
-                            }
-                        }
-                    }
-                }
-            }
-
-        }
+                .padding(dimensionResource(R.dimen.padding_medium))
+        )
         HorizontalDivider(
             modifier = Modifier
                 .fillMaxWidth()
@@ -104,6 +65,7 @@ fun EditGoalsScreen(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
 
         )
+        TimeRemaining(remaining = remaining)
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -133,7 +95,6 @@ fun EditGoalsScreen(
         Spacer(modifier = Modifier.height(100.dp))
     }
 
-
 }
 
 @Preview
@@ -143,7 +104,8 @@ fun EditGoalsScreenPreview(){
         EditGoalsScreen(
             currentGoals = TestData.goals,
             onDeleteGoal = {},
-            onAddGoalButtonClicked = {}
+            onAddGoalButtonClicked = {},
+            remaining = 870
         )
     }
 }
@@ -156,7 +118,8 @@ fun EditGoalsEmptyListScreenPreview(){
         EditGoalsScreen(
             currentGoals = emptyGoals,
             onDeleteGoal = {},
-            onAddGoalButtonClicked = {}
+            onAddGoalButtonClicked = {},
+            remaining = 1440
         )
     }
 }

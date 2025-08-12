@@ -201,14 +201,18 @@ fun TimelyApp(
 
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(dimensionResource(R.dimen.padding_medium))
+                        .padding(dimensionResource(R.dimen.padding_medium)),
+                    onReturnToHomeButtonPressed = {navController.navigate(TimelyScreen.Home.name)},
+                    currentGoals = uiState.goals,
+                    remaining = uiState.remainingMinutesInDay
                 )
             }
             composable(route = TimelyScreen.EditGoals.name){
                 EditGoalsScreen(
                     currentGoals = uiState.goals,
                     onAddGoalButtonClicked = {navController.navigate(TimelyScreen.AddGoal.name)},
-                    onDeleteGoal = {goal -> viewModel.deleteGoal(goal)}
+                    onDeleteGoal = {goal -> viewModel.deleteGoal(goal)},
+                    remaining = uiState.remainingMinutesInDay
                 )
             }
         }

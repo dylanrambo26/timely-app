@@ -1,6 +1,7 @@
 package com.example.timemanagementapp.ui
 
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
@@ -28,10 +29,20 @@ class GoalsViewModel : ViewModel() {
     var userNewGoalTitle by mutableStateOf("")
         private set
 
+    val totalMinutesInDay = 24 * 60
+
     //Add a goal to the Goals list
-    fun addGoal(goalTitle: String, goalTimeLimitHours: String, goalTimeLimitMinutes: String){
+    fun addGoal(goalTitle: String, goalTimeLimitHours: String, goalTimeLimitMinutes: String): Boolean{
         val userHours = goalTimeLimitHours.toIntOrNull() ?: 0
         val userMinutes = goalTimeLimitMinutes.toIntOrNull() ?: 0
+        val newGoalMinutes = userHours * 60 + userMinutes
+
+
+        val currentTotal = _uiState.value.goals.sumOf { it.timeLimit.hours * 60 + it.timeLimit.minutes}
+
+        if(currentTotal + newGoalMinutes > totalMinutesInDay){
+            return false
+        }
 
         val newGoal = Goal(
             goalTitle = goalTitle,
@@ -42,6 +53,8 @@ class GoalsViewModel : ViewModel() {
                 goals = currentState.goals + newGoal
             )
         }
+        recalculateTotalMinutes()
+        return true
     }
 
     //Update the user's new hours field
@@ -70,6 +83,18 @@ class GoalsViewModel : ViewModel() {
         _uiState.update { currentState ->
             currentState.copy(
                 goals = currentState.goals - goal
+            )
+        }
+        recalculateTotalMinutes()
+    }
+
+    private fun recalculateTotalMinutes(){
+        val total = _uiState.value.goals.sumOf { it.timeLimit.hours * 60 + it.timeLimit.minutes }
+        val remaining = totalMinutesInDay - total
+        _uiState.update { current ->
+            current.copy(
+                totalMinutesTaken = total,
+                remainingMinutesInDay = remaining
             )
         }
     }
