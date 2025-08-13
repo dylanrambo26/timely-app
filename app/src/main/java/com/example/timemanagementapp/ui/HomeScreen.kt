@@ -39,6 +39,7 @@ import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 fun HomeScreen(
     goalsText: String,
     onEditButtonClicked: () -> Unit = {},
+    remaining: Int,
     modifier: Modifier = Modifier
 ){
     Column (
@@ -65,6 +66,8 @@ fun HomeScreen(
                 text= goalsText
             )
         }
+        TimeFilled(filled = (60 * 24) - remaining) //Total amount of minutes in a day - free time
+        TimeRemaining(remaining = remaining)
         Spacer(modifier = Modifier.height(100.dp))
         Box(
             modifier = Modifier
@@ -111,6 +114,7 @@ fun HomeScreenPreview(){
     TimeManagementAppTheme {
         HomeScreen(
             TestData.goalText,
+            remaining = 870,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(dimensionResource(R.dimen.padding_medium))

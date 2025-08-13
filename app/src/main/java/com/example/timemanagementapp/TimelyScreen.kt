@@ -180,6 +180,7 @@ fun TimelyApp(
                 HomeScreen(
                     goalsText = uiState.goals.joinToString("\n"){"${it.goalTitle} - ${it.timeLimit.toReadable()}"},
                     onEditButtonClicked = {navController.navigate(TimelyScreen.EditGoals.name)},
+                    remaining = uiState.remainingMinutesInDay,
                     modifier = Modifier
                         .fillMaxSize()
                         .padding(dimensionResource(R.dimen.padding_medium))
