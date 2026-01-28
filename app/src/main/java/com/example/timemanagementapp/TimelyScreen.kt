@@ -40,6 +40,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.timemanagementapp.data.TimeDuration
@@ -68,6 +69,7 @@ enum class TimelyScreen(@StringRes val title: Int){
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Preview
 fun TimelyApp(
     viewModel: GoalsViewModel = viewModel(),
     navController: NavHostController = rememberNavController()
@@ -110,7 +112,7 @@ fun TimelyApp(
                         actions = {
                             //Settings Button
                             IconButton(
-                                onClick = ({ /*TODO*/ })) {
+                                onClick = ({ /*TODO: Add settings functionality*/ })) {
                                 Icon(
                                     imageVector = Icons.Filled.Settings,
                                     contentDescription = "Settings Button"
@@ -134,7 +136,7 @@ fun TimelyApp(
                             onClick = ({/*TODO*/ })) {
                                 Icon(
                                     imageVector = Icons.Outlined.DateRange,
-                                    contentDescription = "Settings Button",
+                                    contentDescription = "Calendar Button",
                                     modifier = Modifier.size(50.dp)
                                 )
                             }
@@ -146,7 +148,7 @@ fun TimelyApp(
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.Home,
-                                contentDescription = "Settings Button",
+                                contentDescription = "Home Page Button",
                                 modifier = Modifier.size(50.dp)
                             )
                         }
@@ -159,7 +161,7 @@ fun TimelyApp(
                         {
                             Image(
                                 painter = painterResource(id = R.drawable.graph_image),
-                                contentDescription = "Settings Button",
+                                contentDescription = "Analytics Button",
                                 modifier = Modifier.size(50.dp)
                             )
                         }
@@ -213,6 +215,7 @@ fun TimelyApp(
                     currentGoals = uiState.goals,
                     onAddGoalButtonClicked = {navController.navigate(TimelyScreen.AddGoal.name)},
                     onDeleteGoal = {goal -> viewModel.deleteGoal(goal)},
+                    onEditGoal = {/*goal -> viewModel.editGoal(goal, goal)*/},
                     remaining = uiState.remainingMinutesInDay
                 )
             }

@@ -5,5 +5,6 @@ package com.example.timemanagementapp.data
  */
 data class Goal(
     val timeLimit: TimeDuration,
-    val goalTitle: String
+    val goalTitle: String,
+    val goalID: Long,
 )

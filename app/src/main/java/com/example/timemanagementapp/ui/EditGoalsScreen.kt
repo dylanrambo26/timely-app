@@ -35,12 +35,16 @@ import com.example.timemanagementapp.data.Goal
 import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 
+/*Todo: Pass the information of existing goal for onEditGoal to the editonegoalscreen to auto-populate the fields, user can then edit as they like and submit, resulting
+Gamestate will reflect it.
+*/
 
 @Composable
 fun EditGoalsScreen(
     currentGoals: List<Goal>,
     onAddGoalButtonClicked: () -> Unit = {},
     onDeleteGoal: (Goal) -> Unit,
+    onEditGoal: (Goal) -> Unit,
     remaining: Int
 ){
 
@@ -52,7 +56,7 @@ fun EditGoalsScreen(
         GoalList(
             goals = currentGoals,
             onDeleteGoal = onDeleteGoal,
-            onEditGoal = {/*TODO*/},
+            onEditGoal = onEditGoal,
             modifier = Modifier
                 .weight(1f)
                 .padding(dimensionResource(R.dimen.padding_medium))
@@ -97,20 +101,21 @@ fun EditGoalsScreen(
 
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun EditGoalsScreenPreview(){
     TimeManagementAppTheme {
         EditGoalsScreen(
             currentGoals = TestData.goals,
             onDeleteGoal = {},
+            onEditGoal = {},
             onAddGoalButtonClicked = {},
             remaining = 870
         )
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun EditGoalsEmptyListScreenPreview(){
     val emptyGoals = emptyList<Goal>()
@@ -118,6 +123,7 @@ fun EditGoalsEmptyListScreenPreview(){
         EditGoalsScreen(
             currentGoals = emptyGoals,
             onDeleteGoal = {},
+            onEditGoal = {},
             onAddGoalButtonClicked = {},
             remaining = 1440
         )

@@ -197,7 +197,7 @@ fun AddGoalScreen(
 }
 
 //Preview the AddLogScreen
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun AddGoalScreenPreview(){
     TimeManagementAppTheme {

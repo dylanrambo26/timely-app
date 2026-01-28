@@ -4,6 +4,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.toMutableStateList
+import androidx.compose.ui.graphics.painter.BrushPainter
 import androidx.lifecycle.ViewModel
 import com.example.timemanagementapp.data.Goal
 import com.example.timemanagementapp.data.GoalsUiState
@@ -46,7 +48,8 @@ class GoalsViewModel : ViewModel() {
 
         val newGoal = Goal(
             goalTitle = goalTitle,
-            timeLimit = TimeDuration(userHours, userMinutes)
+            timeLimit = TimeDuration(userHours, userMinutes),
+            goalID = (_uiState.value.goals.maxOfOrNull { it.goalID} ?: 0) + 1 //Find value of largest goalID and set next GoalID to maxcurrentID + 1, if list empty/null, id = 1
         )
         _uiState.update { currentState ->
             currentState.copy(
@@ -56,6 +59,17 @@ class GoalsViewModel : ViewModel() {
         recalculateTotalMinutes()
         return true
     }
+
+    /*fun editGoal(existingGoal: Goal, updatedGoal: Goal): {
+
+        _uiState.update { currentState ->
+            val mutableGoalsList = currentState.goals.toMutableList();
+
+            currentState.copy(
+                goals =
+            )
+        }
+    }*/
 
     //Update the user's new hours field
     fun updateNewUserHours(userHours: String){
