@@ -101,6 +101,9 @@ fun TimelyApp(
                 TimelyScreen.EditGoals -> {
                     TimelySmallTopAppBar(stringResource(R.string.edit_goals))
                 }
+                TimelyScreen.EditOneGoal-> {
+                    TimelySmallTopAppBar(stringResource(R.string.edit_one_goal_top_bar_text))
+                }
                 //Home Screen and Default
                 else -> {
                     MediumTopAppBar(
@@ -260,7 +263,8 @@ fun TimelyApp(
                             viewModel.editGoal(updatedGoal)
                         },
                         onSaveButtonPressed = {navController.popBackStack()},
-                        onCancelButtonPressed = {navController.popBackStack()}
+                        onCancelButtonPressed = {navController.popBackStack()},
+                        remaining = uiState.remainingMinutesInDay
                     )
                 }
             }

@@ -42,7 +42,8 @@ fun EditOneGoalScreen(
     onGoalTitleChanged: (String) -> Unit,
     editGoal: () -> Boolean,
     onSaveButtonPressed: () -> Unit,
-    onCancelButtonPressed: () -> Unit
+    onCancelButtonPressed: () -> Unit,
+    remaining: Int
 ){
     var errorMessage by remember { mutableStateOf<String?>(null) }
     Column(
@@ -51,6 +52,7 @@ fun EditOneGoalScreen(
             .padding(dimensionResource(R.dimen.padding_medium)),
         verticalArrangement = Arrangement.Center
     ) {
+        TimeRemaining(remaining = remaining)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -168,7 +170,8 @@ fun EditOneGoalScreenPreview(){
             onGoalTitleChanged = {},
             editGoal = { -> false},
             onSaveButtonPressed = {},
-            onCancelButtonPressed = {}
+            onCancelButtonPressed = {},
+            remaining = 870
         )
     }
 }
