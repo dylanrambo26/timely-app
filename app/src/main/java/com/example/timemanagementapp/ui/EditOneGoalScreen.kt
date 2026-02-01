@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
@@ -20,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -126,9 +128,6 @@ fun EditOneGoalScreen(
                     if(success){
                         onSaveButtonPressed()
                     }
-                    else{
-                        println("failed")
-                    }
                 },
                 modifier = Modifier
                     .fillMaxWidth()
@@ -138,6 +137,17 @@ fun EditOneGoalScreen(
                     text = stringResource(R.string.save_edit_one_goal),
                     fontSize = 16.sp,
                     color = Color.Green
+                )
+            }
+        }
+
+        if (errorMessage != null){
+            errorMessage?.let { message ->
+                Text(
+                    text = message,
+                    color = MaterialTheme.colorScheme.onError,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(8.dp)
                 )
             }
         }
