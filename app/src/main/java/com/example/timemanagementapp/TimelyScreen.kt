@@ -35,6 +35,9 @@ import androidx.compose.material3.BottomAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.TopAppBar
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -42,10 +45,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavType
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.navArgument
 import com.example.timemanagementapp.data.TimeDuration
 import com.example.timemanagementapp.ui.AddGoalScreen
 import com.example.timemanagementapp.ui.EditGoalsScreen
+import com.example.timemanagementapp.ui.EditOneGoalScreen
 import com.example.timemanagementapp.ui.HomeScreen
 
 /**
@@ -59,7 +65,8 @@ enum class TimelyScreen(@StringRes val title: Int){
     Analytics(title = R.string.analytics),
     Settings(title = R.string.settings),
     AddGoal(title = R.string.add_log),
-    EditGoals(title = R.string.edit_goals)
+    EditGoals(title = R.string.edit_goals),
+    EditOneGoal(title = R.string.edit_one_goal)
 }
 
 /**
@@ -188,7 +195,7 @@ fun TimelyApp(
                         .padding(dimensionResource(R.dimen.padding_medium))
                 )
             }
-            //Add Log composable
+            //Add Goal composable
             composable(route = TimelyScreen.AddGoal.name){
                 AddGoalScreen(
                     onUserHourChanged = {viewModel.updateNewUserHours(it)},
@@ -215,9 +222,47 @@ fun TimelyApp(
                     currentGoals = uiState.goals,
                     onAddGoalButtonClicked = {navController.navigate(TimelyScreen.AddGoal.name)},
                     onDeleteGoal = {goal -> viewModel.deleteGoal(goal)},
-                    onEditGoal = {/*goal -> viewModel.editGoal(goal, goal)*/},
+                    onEditGoal = {goal ->
+                        viewModel.startEditingGoal(goal.goalID)
+                        navController.navigate(TimelyScreen.EditOneGoal.name)
+                    },
                     remaining = uiState.remainingMinutesInDay
                 )
+            }
+            composable(route = TimelyScreen.EditOneGoal.name){
+                val goal = viewModel.getEditingGoal()
+                val goalId = goal?.goalID
+                if(goal == null){
+                    Text("No goal selected")
+                    return@composable
+                }
+                var hours by rememberSaveable { mutableStateOf(goal.timeLimit.hours.toString()) }
+                var minutes by rememberSaveable { mutableStateOf(goal.timeLimit.minutes.toString()) }
+                var title by rememberSaveable { mutableStateOf(goal.goalTitle) }
+
+                if (goalId != null) {
+                    EditOneGoalScreen(
+                        goalID = goalId,
+                        goalHours = hours,
+                        goalMinutes = minutes,
+                        goalTitle = title,
+                        onGoalHourChanged = {hours = it},
+                        onGoalMinutesChanged = {minutes = it},
+                        onGoalTitleChanged = {title = it},
+                        editGoal = {
+                            val updatedGoal = goal.copy(
+                                goalTitle = title,
+                                timeLimit = TimeDuration(
+                                    hours.toIntOrNull() ?: 0,
+                                    minutes.toIntOrNull() ?: 0
+                                )
+                            )
+                            viewModel.editGoal(updatedGoal)
+                        },
+                        onSaveButtonPressed = {navController.popBackStack()},
+                        onCancelButtonPressed = {navController.popBackStack()}
+                    )
+                }
             }
         }
 

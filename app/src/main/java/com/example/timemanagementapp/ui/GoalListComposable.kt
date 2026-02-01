@@ -71,7 +71,7 @@ fun GoalList(
                         modifier = Modifier
                             .weight(1f)
                     ) {
-                        Text(text = goal.goalID.toString())
+                        Text(text = goal.goalID.toString()) //TODO delete later
                         Text(text = goal.goalTitle)
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(text = "${goal.timeLimit.hours}h ${goal.timeLimit.minutes}m")

@@ -60,16 +60,36 @@ class GoalsViewModel : ViewModel() {
         return true
     }
 
-    /*fun editGoal(existingGoal: Goal, updatedGoal: Goal): {
+    private val _editingGoalId = MutableStateFlow<Long?>(null)
+    fun startEditingGoal(goalId: Long){
+        _editingGoalId.value = goalId
+    }
+    fun clearEditingGoal(){
+        _editingGoalId.value = null
+    }
+    fun getEditingGoal(): Goal? {
+        val id = _editingGoalId.value ?: return null
+        return uiState.value.goals.firstOrNull {it.goalID == id}
+    }
 
+    fun editGoal(updatedGoal: Goal): Boolean{
+        val newGoalMinutes = updatedGoal.timeLimit.hours * 60 + updatedGoal.timeLimit.minutes
+        val currentTotal = _uiState.value.goals.sumOf { it.timeLimit.hours * 60 + it.timeLimit.minutes}
+
+        if(currentTotal + newGoalMinutes > totalMinutesInDay){
+            return false
+        }
         _uiState.update { currentState ->
-            val mutableGoalsList = currentState.goals.toMutableList();
-
             currentState.copy(
-                goals =
+                goals = currentState.goals.map {
+                    if (it.goalID == updatedGoal.goalID) updatedGoal else it
+                }
             )
         }
-    }*/
+        recalculateTotalMinutes()
+        clearEditingGoal()
+        return true
+    }
 
     //Update the user's new hours field
     fun updateNewUserHours(userHours: String){

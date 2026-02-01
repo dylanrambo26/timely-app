@@ -7,14 +7,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.data.Goal
 import com.example.timemanagementapp.data.TimeDuration
@@ -22,13 +31,18 @@ import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 
 @Composable
 fun EditOneGoalScreen(
+    goalID: Long,
     goalMinutes: String,
     goalHours: String,
     goalTitle: String,
     onGoalHourChanged: (String) -> Unit,
     onGoalMinutesChanged: (String) -> Unit,
-    onGoalTitleChanged: (String) -> Unit
+    onGoalTitleChanged: (String) -> Unit,
+    editGoal: () -> Boolean,
+    onSaveButtonPressed: () -> Unit,
+    onCancelButtonPressed: () -> Unit
 ){
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -82,6 +96,51 @@ fun EditOneGoalScreen(
                 Text("Goal Title")
             }
         )
+
+        Row(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            //Cancel Edit Button
+            OutlinedButton(
+                onClick = onCancelButtonPressed,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                Text(
+                    text = stringResource(R.string.cancel_edit_one_goal),
+                    fontSize = 16.sp,
+                    color = Color.Red
+                )
+            }
+
+            //Save Goal Button
+            OutlinedButton(
+                onClick = {
+                    val success = editGoal()
+                    errorMessage = if(!success){
+                        "Day already filled with goals. Delete or edit goals to free up time."
+                    }else{
+                        null
+                    }
+                    if(success){
+                        onSaveButtonPressed()
+                    }
+                    else{
+                        println("failed")
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+            ) {
+                Text(
+                    text = stringResource(R.string.save_edit_one_goal),
+                    fontSize = 16.sp,
+                    color = Color.Green
+                )
+            }
+        }
     }
 }
 
@@ -90,12 +149,16 @@ fun EditOneGoalScreen(
 fun EditOneGoalScreenPreview(){
     TimeManagementAppTheme {
         EditOneGoalScreen(
+            goalID = 1,
             goalMinutes = "30",
             goalHours = "1",
             goalTitle = "GoalTest",
             onGoalHourChanged = {},
             onGoalMinutesChanged = {},
-            onGoalTitleChanged = {}
+            onGoalTitleChanged = {},
+            editGoal = { -> false},
+            onSaveButtonPressed = {},
+            onCancelButtonPressed = {}
         )
     }
 }

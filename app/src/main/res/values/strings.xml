@@ -10,5 +10,8 @@
     <string name="add_goal">Add Goal</string>
     <string name="top_app_bar_add_goal">Add a new Goal</string>
     <string name="edit_goals">Edit Goals</string>
+    <string name="edit_one_goal">Edit One Goal</string>
     <string name="edit_todays_goals">Edit Today\'s Goals</string>
+    <string name="cancel_edit_one_goal">Cancel</string>
+    <string name="save_edit_one_goal">Save</string>
 </resources>
