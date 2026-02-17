@@ -21,6 +21,11 @@ class AddGoalViewModel(private val goalsRepository: GoalsRepository) : ViewModel
             goalUiState.copy(goalDetails = goalDetails, isEntryValid = validateInput(goalDetails))
     }
 
+    fun clearUiState(){
+        goalUiState =
+            goalUiState.copy(goalDetails = GoalDetails(), isEntryValid = false, errorMessage = "")
+    }
+
     private fun validateInput(uiState: GoalDetails = goalUiState.goalDetails): Boolean {
         val h = uiState.hours.toIntOrNull()
         if (h == null){

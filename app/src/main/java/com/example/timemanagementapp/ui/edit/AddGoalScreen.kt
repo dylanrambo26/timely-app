@@ -1,11 +1,15 @@
 package com.example.timemanagementapp.ui.edit
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -17,9 +21,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -27,56 +34,55 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
+import com.example.timemanagementapp.data.Goal
 import com.example.timemanagementapp.ui.AppViewModelProvider
+import com.example.timemanagementapp.ui.GoalList
+//import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.components.TimeRemaining
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import kotlinx.coroutines.launch
 
-object EditGoalDestination : NavigationDest {
-    override val route = "edit_goal"
-    override val titleRes = R.string.edit_one_goal
-    const val goalIdArg = "goalId"
-    val routeWithArgs = "$route/{$goalIdArg}"
+
+object AddGoalDestination : NavigationDest{
+    override val route = "add_goal"
+    override val titleRes = R.string.top_app_bar_add_goal
 }
 
 @Composable
-fun EditOneGoalScreen(
-    modifier: Modifier = Modifier,
-    viewModel: EditGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    navigateBack: () -> Unit
+fun AddGoalScreen(
+    viewModel: AddGoalViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
     val coroutineScope = rememberCoroutineScope()
-
-    EditOneGoalBody(
+    AddGoalBody(
         goalUiState = viewModel.goalUiState,
         onGoalValueChange = viewModel::updateUiState,
-        onSaveGoalClick = {
+        onAddGoalClicked = {
             coroutineScope.launch {
-                viewModel.updateGoal()
-                navigateBack()
+                viewModel.saveGoal()
             }
         },
-        navigateBack = navigateBack
+        onClearButtonClicked = { viewModel.clearUiState() },
     )
 }
 
 @Composable
-fun EditOneGoalBody(
+fun AddGoalBody(
     goalUiState: GoalUiState,
     onGoalValueChange: (GoalDetails) -> Unit,
-    onSaveGoalClick: () -> Unit,
-    navigateBack: () -> Unit,
+    onAddGoalClicked: () -> Unit,
+    onClearButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ){
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(dimensionResource(R.dimen.padding_medium)),
+        horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
         TimeRemaining(remaining = goalUiState.remainingMinutesInDay)
-        EditGoalInputForm(
+        AddGoalInputForm(
             goalDetails = goalUiState.goalDetails,
             onValueChange = onGoalValueChange,
             modifier = Modifier.fillMaxWidth()
@@ -85,32 +91,31 @@ fun EditOneGoalBody(
         Row(
             modifier = Modifier.padding(16.dp)
         ) {
-            //Cancel Edit Button
+            //Clear Fields Button
             OutlinedButton(
-                onClick = navigateBack,
+                onClick = onClearButtonClicked,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
             ) {
                 Text(
-                    text = stringResource(R.string.cancel_edit_one_goal),
+                    text = stringResource(R.string.clear_fields),
                     fontSize = 16.sp,
-                    color = Color.Red
                 )
             }
 
-            //Save Goal Button
+            //Add Goal Button
             OutlinedButton(
-                onClick = onSaveGoalClick,
+                onClick = onAddGoalClicked,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
                 enabled = goalUiState.isEntryValid
             ) {
                 Text(
-                    text = stringResource(R.string.save_edit_one_goal),
+                    text = stringResource(R.string.add_goal),
                     fontSize = 16.sp,
-                    color = Color.Green
+                    color = Color.White
                 )
             }
         }
@@ -122,11 +127,24 @@ fun EditOneGoalBody(
                 modifier = Modifier.padding(8.dp)
             )
         }
+        //Spacer(modifier = Modifier.padding(24.dp))
+        /*Button(
+            onClick = navigate,
+        ){
+            Image(
+                painter = painterResource(R.drawable.return_icon),
+                contentDescription = "Return to Home"
+            )
+            Spacer(modifier = Modifier.padding(8.dp))
+            Text(
+                text = "Return To Home"
+            )
+        }*/
     }
 }
 
 @Composable
-fun EditGoalInputForm(
+fun AddGoalInputForm(
     goalDetails: GoalDetails,
     modifier: Modifier = Modifier,
     onValueChange: (GoalDetails) -> Unit = {}
@@ -140,6 +158,7 @@ fun EditGoalInputForm(
             value = goalDetails.hours,
             onValueChange = {onValueChange(goalDetails.copy(hours = it))},
             singleLine = true,
+            shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(dimensionResource(R.dimen.padding_medium))
@@ -154,6 +173,7 @@ fun EditGoalInputForm(
             value = goalDetails.minutes,
             onValueChange = {onValueChange(goalDetails.copy(minutes = it))},
             singleLine = true,
+            shape = RoundedCornerShape(16.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(dimensionResource(R.dimen.padding_medium))
@@ -168,8 +188,9 @@ fun EditGoalInputForm(
     //Goal Title Text Field
     OutlinedTextField(
         value = goalDetails.title,
-        onValueChange = {onValueChange(goalDetails.copy(title = it))},
+        onValueChange = { onValueChange(goalDetails.copy(title = it)) },
         singleLine = true,
+        shape = RoundedCornerShape(16.dp),
         modifier = Modifier
             .fillMaxWidth()
             .padding(dimensionResource(R.dimen.padding_medium)),
@@ -180,19 +201,20 @@ fun EditGoalInputForm(
     )
 }
 
+//Preview the AddLogScreen
 @Preview(showBackground = true)
 @Composable
-fun EditOneGoalScreenPreview(){
+fun AddGoalScreenPreview(){
     TimeManagementAppTheme {
-        EditOneGoalBody(
-           goalUiState = GoalUiState(
-               GoalDetails(
-                   title = "Title", hours = "1", minutes = "30"
-               )
-           ),
+        AddGoalBody(
+            goalUiState = GoalUiState(
+                GoalDetails(
+                    title = "Title", hours = "1", minutes = "30"
+                )
+            ),
             onGoalValueChange = {},
-            onSaveGoalClick = {},
-            navigateBack = {}
+            onAddGoalClicked = {},
+            onClearButtonClicked = {}
         )
     }
 }

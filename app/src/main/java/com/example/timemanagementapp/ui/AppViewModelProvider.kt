@@ -2,10 +2,13 @@ package com.example.timemanagementapp.ui
 
 import android.app.Application
 import androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory
+import androidx.lifecycle.createSavedStateHandle
 import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.timemanagementapp.TimelyApplication
+import com.example.timemanagementapp.ui.edit.AddGoalViewModel
+import com.example.timemanagementapp.ui.edit.EditGoalViewModel
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 
 
@@ -16,6 +19,19 @@ object AppViewModelProvider{
         //Initializer for Home View Model
         initializer {
             GoalListViewModel(
+                timelyApplication().container.goalsRepository
+            )
+        }
+
+        initializer {
+            AddGoalViewModel(
+                timelyApplication().container.goalsRepository
+            )
+        }
+
+        initializer {
+            EditGoalViewModel(
+                this.createSavedStateHandle(),
                 timelyApplication().container.goalsRepository
             )
         }

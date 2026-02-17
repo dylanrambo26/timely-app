@@ -1,12 +1,9 @@
 package com.example.timemanagementapp.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavArgs
-import androidx.navigation.NavArgument
 import androidx.navigation.compose.composable
 import com.example.timemanagementapp.ui.edit.EditGoalsDestination
 import com.example.timemanagementapp.ui.home.HomeDestination
@@ -15,7 +12,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import com.example.timemanagementapp.ui.edit.AddGoalDestination
 import com.example.timemanagementapp.ui.AppViewModelProvider
+import com.example.timemanagementapp.ui.edit.AddGoalScreen
 import com.example.timemanagementapp.ui.edit.EditGoalDestination
 import com.example.timemanagementapp.ui.edit.EditGoalsScreen
 import com.example.timemanagementapp.ui.edit.EditOneGoalScreen
@@ -59,10 +58,8 @@ fun TimelyNavHost(
                 viewModel(parentEntry, factory = AppViewModelProvider.Factory)
 
             EditGoalsScreen(
-                onAddGoalButtonClicked = {/*TODO*/},
-                //onDeleteGoal = { /* TODO: put delete goal option in view model, goal -> sharedViewModel.deleteGoal(goal)*/ },
-                onEditGoal = { /*TODO goal ->navController.navigate(EditOneGoal/...) */ },
-                //remaining = sharedViewModel.goalListUiState.collectAsState().value.remainingMinutesInDay,
+                onAddGoalButtonClicked = {navController.navigate(AddGoalDestination.route)},
+                onEditGoal = { navController.navigate("${EditGoalDestination.route}/$it")},
                 viewModel = sharedViewModel
             )
         }
@@ -75,6 +72,11 @@ fun TimelyNavHost(
             EditOneGoalScreen(
                 navigateBack = {navController.popBackStack()},
             )
+        }
+        composable(
+            route = AddGoalDestination.route
+        ){
+            AddGoalScreen()
         }
     }
 }
