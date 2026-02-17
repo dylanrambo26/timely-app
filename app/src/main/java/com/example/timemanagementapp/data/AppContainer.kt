@@ -1,7 +1,6 @@
 package com.example.timemanagementapp.data
 
 import android.content.Context
-import androidx.compose.ui.graphics.drawscope.DrawContext
 
 
 /**
@@ -13,6 +12,6 @@ interface AppContainer{
 
 class AppDataContainer(private val context: Context) : AppContainer {
     override val goalsRepository: GoalsRepository by lazy {
-        OfflineGoalsRepository(GoalsDatabase.getDatabase(context).itemDao())
+        OfflineGoalsRepository(GoalsDatabase.getDatabase(context).goalDao())
     }
 }

@@ -7,7 +7,7 @@ import androidx.room.RoomDatabase
 
 @Database(entities = [Goal::class], version = 1, exportSchema = false)
 abstract class GoalsDatabase : RoomDatabase(){
-    abstract fun itemDao(): GoalDao
+    abstract fun goalDao(): GoalDao
     companion object {
 
         @Volatile

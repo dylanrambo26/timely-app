@@ -23,7 +23,7 @@ interface GoalDao {
     fun getGoal(id: Int): Flow<Goal>
 
     //Get all goals in ascending order of least amount of time to highest remaining
-    @Query("SELECT * from goals ORDER BY goalTitle ASC")
+    @Query("SELECT * from goals ORDER BY goalID ASC")
     fun getAllGoals(): Flow<List<Goal>>
 
     //COALESCE used to turn null values to 0 in order to handle nulls when table is empty
