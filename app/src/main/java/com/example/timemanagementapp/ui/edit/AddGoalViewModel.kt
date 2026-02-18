@@ -7,7 +7,9 @@ import com.example.timemanagementapp.data.Goal
 import com.example.timemanagementapp.data.GoalsRepository
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.viewModelScope
 import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY
+import kotlinx.coroutines.launch
 
 class AddGoalViewModel(private val goalsRepository: GoalsRepository) : ViewModel(){
 
@@ -15,6 +17,16 @@ class AddGoalViewModel(private val goalsRepository: GoalsRepository) : ViewModel
     var goalUiState by mutableStateOf(GoalUiState())
         private set
 
+
+    init {
+        viewModelScope.launch {
+            goalsRepository.getTotalMinutesStream().collect { totalMinutes ->
+                goalUiState = goalUiState.copy(
+                    remainingMinutesInDay = MINUTES_IN_24_HOUR_DAY - totalMinutes
+                )
+            }
+        }
+    }
 
     fun updateUiState(goalDetails: GoalDetails){
         goalUiState =

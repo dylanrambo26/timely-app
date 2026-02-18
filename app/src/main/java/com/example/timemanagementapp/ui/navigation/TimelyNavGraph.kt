@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
+import androidx.navigation.navigation
 import com.example.timemanagementapp.ui.edit.AddGoalDestination
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.edit.AddGoalScreen
@@ -35,48 +36,53 @@ fun TimelyNavHost(
         startDestination = GoalListGraph.route,
         modifier = modifier
     ){
-        composable(route = HomeDestination.route){ backStackEntry ->
-            val parentEntry = remember(backStackEntry){
-                navController.getBackStackEntry(GoalListGraph.route)
-            }
-            val sharedViewModel: GoalListViewModel =
-                viewModel(parentEntry, factory = AppViewModelProvider.Factory)
-
-            HomeScreen(
-                navigateToCalendar = {/*TODO*/},
-                navigateToSettings = {/*TODO*/},
-                navigateToAnalytics = {/*TODO*/},
-                navigateToEditGoals = {navController.navigate(EditGoalsDestination.route)},
-                viewModel = sharedViewModel
-            )
-        }
-        composable(route = EditGoalsDestination.route){ backStackEntry ->
-            val parentEntry = remember(backStackEntry){
-                navController.getBackStackEntry(GoalListGraph.route)
-            }
-            val sharedViewModel: GoalListViewModel =
-                viewModel(parentEntry, factory = AppViewModelProvider.Factory)
-
-            EditGoalsScreen(
-                onAddGoalButtonClicked = {navController.navigate(AddGoalDestination.route)},
-                onEditGoal = { navController.navigate("${EditGoalDestination.route}/$it")},
-                viewModel = sharedViewModel
-            )
-        }
-        composable(
-            route = EditGoalDestination.routeWithArgs,
-            arguments = listOf(navArgument(EditGoalDestination.goalIdArg) {
-                type = NavType.IntType
-            })
-        ) {
-            EditOneGoalScreen(
-                navigateBack = {navController.popBackStack()},
-            )
-        }
-        composable(
-            route = AddGoalDestination.route
+        navigation(
+            route = GoalListGraph.route,
+            startDestination = HomeDestination.route
         ){
-            AddGoalScreen()
+            composable(route = HomeDestination.route){ backStackEntry ->
+                val parentEntry = remember(backStackEntry){
+                    navController.getBackStackEntry(GoalListGraph.route)
+                }
+                val sharedViewModel: GoalListViewModel =
+                    viewModel(parentEntry, factory = AppViewModelProvider.Factory)
+
+                HomeScreen(
+                    navigateToCalendar = {/*TODO*/},
+                    navigateToSettings = {/*TODO*/},
+                    navigateToAnalytics = {/*TODO*/},
+                    navigateToEditGoals = {navController.navigate(EditGoalsDestination.route)},
+                    viewModel = sharedViewModel
+                )
+            }
+            composable(route = EditGoalsDestination.route){ backStackEntry ->
+                val parentEntry = remember(backStackEntry){
+                    navController.getBackStackEntry(GoalListGraph.route)
+                }
+                val sharedViewModel: GoalListViewModel =
+                    viewModel(parentEntry, factory = AppViewModelProvider.Factory)
+
+                EditGoalsScreen(
+                    onAddGoalButtonClicked = {navController.navigate(AddGoalDestination.route)},
+                    onEditGoal = { navController.navigate("${EditGoalDestination.route}/${it.goalID}")},
+                    viewModel = sharedViewModel
+                )
+            }
+            composable(
+                route = EditGoalDestination.routeWithArgs,
+                arguments = listOf(navArgument(EditGoalDestination.goalIdArg) {
+                    type = NavType.IntType
+                })
+            ) {
+                EditOneGoalScreen(
+                    navigateBack = {navController.popBackStack()},
+                )
+            }
+            composable(
+                route = AddGoalDestination.route
+            ){
+                AddGoalScreen()
+            }
         }
     }
 }

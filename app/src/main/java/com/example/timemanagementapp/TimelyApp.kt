@@ -36,6 +36,7 @@ fun TimelyApp(navController: NavHostController = rememberNavController()){
     TimelyNavHost(navController = navController)
 }
 
+//TODO Add Scaffolds to each screen to make bottom bar and top bar persist
 @Composable
 fun TimelyBottomAppBar(
     modifier: Modifier = Modifier

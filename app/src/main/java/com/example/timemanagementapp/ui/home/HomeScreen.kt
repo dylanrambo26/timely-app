@@ -39,6 +39,7 @@ import com.example.timemanagementapp.ui.components.TimeFilled
 import com.example.timemanagementapp.ui.components.TimeRemaining
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 //import com.example.timemanagementapp.data.TestData
@@ -99,7 +100,7 @@ fun HomeScreen(
 
     ){  innerPadding ->
         HomeBody(
-            goalsText = goalListUiState.goalList.joinToString("\n"){"${it.goalTitle} - ${it.hours} H ${it.minutes} M"},
+            goalsText = goalListUiState.goalList.joinToString("\n"){"${it.goalTitle} - ${it.hours}h ${it.minutes}m"},
             modifier = modifier.padding(innerPadding),
             onEditButtonClicked = navigateToEditGoals,
             remaining = goalListUiState.remainingMinutesInDay
@@ -119,7 +120,7 @@ fun HomeBody(
     modifier: Modifier = Modifier
 ){
     Column (
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize(),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -139,7 +140,7 @@ fun HomeBody(
             Text(
                 modifier = Modifier
                     .padding(8.dp),
-                text= goalsText
+                text= "Debug: $goalsText",
             )
         }
         TimeFilled(filled = (60 * 24) - remaining) //Total amount of minutes in a day - free time
