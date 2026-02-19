@@ -11,6 +11,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
@@ -25,6 +26,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
+import com.example.timemanagementapp.TimelyBottomAppBar
+import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.ui.AppViewModelProvider
 //import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.components.TimeRemaining
@@ -40,19 +43,34 @@ object AddGoalDestination : NavigationDest{
 
 @Composable
 fun AddGoalScreen(
-    viewModel: AddGoalViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: AddGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    navigateToHome: () -> Unit,
+    navigateToCalendar: () -> Unit, //TODO
+    navigateToAnalytics: () -> Unit, //TODO
 ){
     val coroutineScope = rememberCoroutineScope()
-    AddGoalBody(
-        goalUiState = viewModel.goalUiState,
-        onGoalValueChange = viewModel::updateUiState,
-        onAddGoalClicked = {
-            coroutineScope.launch {
-                viewModel.saveGoal()
-            }
-        },
-        onClearButtonClicked = { viewModel.clearUiState() },
-    )
+    Scaffold(
+        topBar = { TimelySmallTopAppBar(stringResource(R.string.add_goal)) },
+        bottomBar = {
+            TimelyBottomAppBar(
+                onCalendarClick = navigateToCalendar,
+                onHomeClick = navigateToHome,
+                onAnalyticsClick = navigateToAnalytics
+            )
+        }
+    ) { innerPadding ->
+        AddGoalBody(
+            goalUiState = viewModel.goalUiState,
+            onGoalValueChange = viewModel::updateUiState,
+            onAddGoalClicked = {
+                coroutineScope.launch {
+                    viewModel.saveGoal()
+                }
+            },
+            onClearButtonClicked = { viewModel.clearUiState() },
+            modifier = Modifier.padding(innerPadding)
+        )
+    }
 }
 
 @Composable

@@ -46,12 +46,12 @@ object EditGoalsDestination : NavigationDest{
 
 @Composable
 fun EditGoalsScreen(
-    //currentGoals: List<Goal>,
     onAddGoalButtonClicked: () -> Unit = {},
-    //onDeleteGoal: (Goal) -> Unit,
     onEditGoal: (Goal) -> Unit,
-    //remaining: Int,
-    viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    navigateToHome: () -> Unit,
+    navigateToCalendar: () -> Unit, //TODO
+    navigateToAnalytics: () -> Unit, //TODO
 ){
     val goalListUiState by viewModel.goalListUiState.collectAsState()
     Scaffold(
@@ -59,7 +59,11 @@ fun EditGoalsScreen(
             TimelySmallTopAppBar(stringResource(R.string.edit_todays_goals))
                  },
         bottomBar = {
-            TimelyBottomAppBar()
+            TimelyBottomAppBar(
+                onCalendarClick = navigateToCalendar,
+                onHomeClick = navigateToHome,
+                onAnalyticsClick = navigateToAnalytics
+            )
         }
     ) { innerPadding ->
         EditGoalsBody(

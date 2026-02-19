@@ -65,6 +65,9 @@ fun TimelyNavHost(
                 EditGoalsScreen(
                     onAddGoalButtonClicked = {navController.navigate(AddGoalDestination.route)},
                     onEditGoal = { navController.navigate("${EditGoalDestination.route}/${it.goalID}")},
+                    navigateToHome = {navController.navigate(HomeDestination.route)},
+                    navigateToCalendar = {/*TODO*/},
+                    navigateToAnalytics = {/*TODO*/},
                     viewModel = sharedViewModel
                 )
             }
@@ -76,12 +79,19 @@ fun TimelyNavHost(
             ) {
                 EditOneGoalScreen(
                     navigateBack = {navController.popBackStack()},
+                    navigateToHome = {navController.navigate(HomeDestination.route)},
+                    navigateToCalendar = {/*TODO*/},
+                    navigateToAnalytics = {/*TODO*/},
                 )
             }
             composable(
                 route = AddGoalDestination.route
             ){
-                AddGoalScreen()
+                AddGoalScreen(
+                    navigateToHome = {navController.navigate(HomeDestination.route)},
+                    navigateToCalendar = {/*TODO*/},
+                    navigateToAnalytics = {/*TODO*/},
+                )
             }
         }
     }

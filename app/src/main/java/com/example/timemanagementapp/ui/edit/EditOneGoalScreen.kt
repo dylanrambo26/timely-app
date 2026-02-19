@@ -10,6 +10,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -27,6 +28,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
+import com.example.timemanagementapp.TimelyBottomAppBar
+import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.components.TimeRemaining
 import com.example.timemanagementapp.ui.navigation.NavigationDest
@@ -44,21 +47,35 @@ object EditGoalDestination : NavigationDest {
 fun EditOneGoalScreen(
     modifier: Modifier = Modifier,
     viewModel: EditGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    navigateBack: () -> Unit
+    navigateBack: () -> Unit,
+    navigateToHome: () -> Unit,
+    navigateToCalendar: () -> Unit, //TODO
+    navigateToAnalytics: () -> Unit, //TODO
 ){
     val coroutineScope = rememberCoroutineScope()
+    Scaffold(
+        topBar = { TimelySmallTopAppBar(stringResource(R.string.edit_one_goal)) },
+        bottomBar = {
+            TimelyBottomAppBar(
+                onCalendarClick = navigateToCalendar,
+                onHomeClick = navigateToHome,
+                onAnalyticsClick = navigateToAnalytics
+            )}
+    ) { innerPadding ->
+        EditOneGoalBody(
+            goalUiState = viewModel.goalUiState,
+            onGoalValueChange = viewModel::updateUiState,
+            onSaveGoalClick = {
+                coroutineScope.launch {
+                    viewModel.updateGoal()
+                    navigateBack()
+                }
+            },
+            navigateBack = navigateBack,
+            modifier = modifier.padding(innerPadding)
+        )
+    }
 
-    EditOneGoalBody(
-        goalUiState = viewModel.goalUiState,
-        onGoalValueChange = viewModel::updateUiState,
-        onSaveGoalClick = {
-            coroutineScope.launch {
-                viewModel.updateGoal()
-                navigateBack()
-            }
-        },
-        navigateBack = navigateBack
-    )
 }
 
 @Composable

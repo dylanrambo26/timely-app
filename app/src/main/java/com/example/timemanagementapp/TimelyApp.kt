@@ -39,6 +39,9 @@ fun TimelyApp(navController: NavHostController = rememberNavController()){
 //TODO Add Scaffolds to each screen to make bottom bar and top bar persist
 @Composable
 fun TimelyBottomAppBar(
+    onCalendarClick: () -> Unit = {},
+    onHomeClick: () -> Unit = {},
+    onAnalyticsClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ){
     BottomAppBar(
@@ -49,7 +52,8 @@ fun TimelyBottomAppBar(
             ){
                 //Calendar Button
                 IconButton(
-                    onClick = ({/*TODO*/ })) {
+                    onClick = onCalendarClick
+                ) {
                     Icon(
                         imageVector = Icons.Outlined.DateRange,
                         contentDescription = "Calendar Button",
@@ -60,7 +64,7 @@ fun TimelyBottomAppBar(
 
                 //Home Button
                 IconButton(
-                    onClick = {/*navController.navigate(TimelyScreen.Home.name)*/}
+                    onClick = onHomeClick
                 ) {
                     Icon(
                         imageVector = Icons.Outlined.Home,
@@ -72,7 +76,7 @@ fun TimelyBottomAppBar(
 
                 //Analytics Page Button
                 IconButton(
-                    onClick = ({ /*TODO*/ })
+                    onClick = onAnalyticsClick
                 )
                 {
                     Image(

@@ -95,7 +95,11 @@ fun HomeScreen(
             )
         },
         bottomBar = {
-            TimelyBottomAppBar()
+            TimelyBottomAppBar(
+                onCalendarClick = navigateToCalendar,
+                onAnalyticsClick = navigateToAnalytics,
+                onHomeClick = {}
+            )
         }
 
     ){  innerPadding ->
