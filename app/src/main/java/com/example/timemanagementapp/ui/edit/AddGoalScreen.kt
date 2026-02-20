@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -14,6 +16,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,8 +34,11 @@ import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.ui.AppViewModelProvider
 //import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.components.TimeRemaining
+import com.example.timemanagementapp.ui.goal.GoalListUiState
+import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
+import androidx.compose.runtime.getValue
 import kotlinx.coroutines.launch
 
 
@@ -44,11 +50,13 @@ object AddGoalDestination : NavigationDest{
 @Composable
 fun AddGoalScreen(
     viewModel: AddGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    goalListViewModel: GoalListViewModel,
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val coroutineScope = rememberCoroutineScope()
+    val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
     Scaffold(
         topBar = { TimelySmallTopAppBar(stringResource(R.string.add_goal)) },
         bottomBar = {
@@ -61,6 +69,7 @@ fun AddGoalScreen(
     ) { innerPadding ->
         AddGoalBody(
             goalUiState = viewModel.goalUiState,
+            goalListUiState = goalListUiState,
             onGoalValueChange = viewModel::updateUiState,
             onAddGoalClicked = {
                 coroutineScope.launch {
@@ -76,6 +85,7 @@ fun AddGoalScreen(
 @Composable
 fun AddGoalBody(
     goalUiState: GoalUiState,
+    goalListUiState: GoalListUiState,
     onGoalValueChange: (GoalDetails) -> Unit,
     onAddGoalClicked: () -> Unit,
     onClearButtonClicked: () -> Unit,
@@ -88,6 +98,19 @@ fun AddGoalBody(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxWidth()
+        ) {
+            items(goalListUiState.goalList){goal ->
+                Text(
+                    modifier = Modifier
+                        .padding(8.dp),
+                    text= "${goal.goalTitle} - ${goal.hours}h ${goal.minutes}m",
+                )
+            }
+        }
         TimeRemaining(remaining = goalUiState.remainingMinutesInDay)
         AddGoalInputForm(
             goalDetails = goalUiState.goalDetails,
@@ -134,19 +157,6 @@ fun AddGoalBody(
                 modifier = Modifier.padding(8.dp)
             )
         }
-        //Spacer(modifier = Modifier.padding(24.dp))
-        /*Button(
-            onClick = navigate,
-        ){
-            Image(
-                painter = painterResource(R.drawable.return_icon),
-                contentDescription = "Return to Home"
-            )
-            Spacer(modifier = Modifier.padding(8.dp))
-            Text(
-                text = "Return To Home"
-            )
-        }*/
     }
 }
 
@@ -221,7 +231,8 @@ fun AddGoalScreenPreview(){
             ),
             onGoalValueChange = {},
             onAddGoalClicked = {},
-            onClearButtonClicked = {}
+            onClearButtonClicked = {},
+            goalListUiState = GoalListUiState(listOf())
         )
     }
 }

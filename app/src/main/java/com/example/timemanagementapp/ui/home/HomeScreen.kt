@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
@@ -42,6 +44,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.timemanagementapp.ui.goal.GoalListUiState
 //import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
@@ -104,7 +107,7 @@ fun HomeScreen(
 
     ){  innerPadding ->
         HomeBody(
-            goalsText = goalListUiState.goalList.joinToString("\n"){"${it.goalTitle} - ${it.hours}h ${it.minutes}m"},
+            goalListUiState = goalListUiState,
             modifier = modifier.padding(innerPadding),
             onEditButtonClicked = navigateToEditGoals,
             remaining = goalListUiState.remainingMinutesInDay
@@ -118,7 +121,7 @@ fun HomeScreen(
  */
 @Composable
 fun HomeBody(
-    goalsText: String,
+    goalListUiState: GoalListUiState,
     onEditButtonClicked: () -> Unit = {},
     remaining: Int,
     modifier: Modifier = Modifier
@@ -141,11 +144,19 @@ fun HomeBody(
                     .padding(8.dp),
             )
             Spacer(modifier = Modifier.width(64.dp))
-            Text(
+            LazyColumn(
                 modifier = Modifier
-                    .padding(8.dp),
-                text= "Debug: $goalsText",
-            )
+                    .weight(1f)
+                    .fillMaxWidth()
+            ) {
+                items(goalListUiState.goalList){goal ->
+                    Text(
+                        modifier = Modifier
+                            .padding(8.dp),
+                        text= "${goal.goalTitle} - ${goal.hours}h ${goal.minutes}m",
+                    )
+                }
+            }
         }
         TimeFilled(filled = (60 * 24) - remaining) //Total amount of minutes in a day - free time
         TimeRemaining(remaining = remaining)
@@ -193,7 +204,7 @@ fun HomeBody(
 fun HomeBodyPreview(){
     TimeManagementAppTheme{
         HomeBody(
-            goalsText = "",
+            goalListUiState = GoalListUiState(listOf()),
             remaining = 870,
             modifier = Modifier
                 .fillMaxSize()
