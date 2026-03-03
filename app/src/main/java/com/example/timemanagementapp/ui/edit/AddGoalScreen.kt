@@ -156,7 +156,7 @@ fun AddGoalBody(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                enabled = goalUiState.isEntryValid
+                //enabled = goalUiState.isEntryValid
             ) {
                 Text(
                     text = stringResource(R.string.add_goal),
@@ -165,10 +165,10 @@ fun AddGoalBody(
                 )
             }
         }
-        if(goalUiState.errorMessage != ""){
+        if(goalUiState.errorMessage.isNotBlank()){
             Text(
                 text = goalUiState.errorMessage,
-                color = MaterialTheme.colorScheme.onError,
+                color = MaterialTheme.colorScheme.error,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(8.dp)
             )

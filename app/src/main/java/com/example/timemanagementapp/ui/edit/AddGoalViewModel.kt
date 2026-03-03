@@ -63,12 +63,14 @@ class AddGoalViewModel(private val goalsRepository: GoalsRepository) : ViewModel
 
         if(m !in 0..59){
             goalUiState = goalUiState.copy(errorMessage = "Minutes must be between 0 and 59.")
+            return false
         }
 
         val newMinutes = h * 60 + m
 
         if(newMinutes > goalUiState.remainingMinutesInDay){
             goalUiState = goalUiState.copy(errorMessage = "The goal's allotted time must be less than the remaining time in the day. Delete or edit the other goals before saving this goal.")
+            return false
         }
         goalUiState = goalUiState.copy(errorMessage = "")
         return true

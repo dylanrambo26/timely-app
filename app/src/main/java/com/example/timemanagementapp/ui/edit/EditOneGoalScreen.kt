@@ -67,8 +67,8 @@ fun EditOneGoalScreen(
             onGoalValueChange = viewModel::updateUiState,
             onSaveGoalClick = {
                 coroutineScope.launch {
-                    viewModel.updateGoal()
-                    navigateBack()
+                    val saved = viewModel.updateGoal()
+                    if(saved) navigateBack()
                 }
             },
             navigateBack = navigateBack,
@@ -122,7 +122,6 @@ fun EditOneGoalBody(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
-                enabled = goalUiState.isEntryValid
             ) {
                 Text(
                     text = stringResource(R.string.save_edit_one_goal),
@@ -131,10 +130,10 @@ fun EditOneGoalBody(
                 )
             }
         }
-        if(goalUiState.errorMessage != ""){
+        if(goalUiState.errorMessage.isNotBlank()){
             Text(
                 text = goalUiState.errorMessage,
-                color = MaterialTheme.colorScheme.onError,
+                color = MaterialTheme.colorScheme.error,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(8.dp)
             )

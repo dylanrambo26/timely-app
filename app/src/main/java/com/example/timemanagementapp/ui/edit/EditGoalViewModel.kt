@@ -24,14 +24,41 @@ class EditGoalViewModel(
     private val goalId: Int = checkNotNull(savedStateHandle[EditGoalDestination.goalIdArg])
 
     private fun validateInput(uiState: GoalDetails = goalUiState.goalDetails): Boolean {
-        val h = uiState.hours.toIntOrNull() ?: return false
-        val m = uiState.minutes.toIntOrNull() ?: return false
-        if(uiState.title.isBlank()) return false
-        if(h < 0) return false
-        if(m !in 0..59) return false
+        val h = uiState.hours.toIntOrNull()
+        if (h == null){
+            goalUiState = goalUiState.copy(errorMessage = "Hours must be a valid number.")
+            return false
+        }
+
+        val m = uiState.minutes.toIntOrNull()
+        if (m == null){
+            goalUiState = goalUiState.copy(errorMessage = "Minutes must be a valid number.")
+            return false
+        }
+
+        if(uiState.title.isBlank()){
+            goalUiState = goalUiState.copy(errorMessage = "Title cannot be empty.")
+            return false
+        }
+
+        if(h < 0){
+            goalUiState = goalUiState.copy(errorMessage = "Hours cannot be a negative number.")
+            return false
+        }
+
+        if(m !in 0..59){
+            goalUiState = goalUiState.copy(errorMessage = "Minutes must be between 0 and 59.")
+            return false
+        }
 
         val newMinutes = h * 60 + m
-        return newMinutes <= goalUiState.remainingMinutesInDay
+
+        if(newMinutes > goalUiState.remainingMinutesInDay){
+            goalUiState = goalUiState.copy(errorMessage = "The goal's allotted time must be less than the remaining time in the day. Delete or edit the other goals before saving this goal.")
+            return false
+        }
+        goalUiState = goalUiState.copy(errorMessage = "")
+        return true
     }
 
     init {
@@ -62,10 +89,10 @@ class EditGoalViewModel(
             goalUiState.copy(goalDetails = goalDetails, isEntryValid = validateInput(goalDetails))
     }
 
-    suspend fun updateGoal() {
-        if(validateInput(goalUiState.goalDetails)){
-            goalsRepository.updateGoal(goalUiState.goalDetails.toGoal())
-        }
+    suspend fun updateGoal(): Boolean{
+        if(!validateInput(goalUiState.goalDetails)) return false
+        goalsRepository.updateGoal(goalUiState.goalDetails.toGoal())
+        return true
     }
 }
 
