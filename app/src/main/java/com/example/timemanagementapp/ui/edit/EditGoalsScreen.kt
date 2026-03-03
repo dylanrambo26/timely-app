@@ -1,4 +1,4 @@
-package com.example.timemanagementapp.ui
+package com.example.timemanagementapp.ui.edit
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,51 +10,87 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
-import com.example.timemanagementapp.TimelyScreen
+import com.example.timemanagementapp.TimelyBottomAppBar
+import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.data.Goal
-import com.example.timemanagementapp.data.TestData
-import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
+//import com.example.timemanagementapp.data.TestData
+import com.example.timemanagementapp.ui.AppViewModelProvider
+import com.example.timemanagementapp.ui.components.GoalList
+import com.example.timemanagementapp.ui.components.TimeRemaining
+import com.example.timemanagementapp.ui.goal.GoalListUiState
+import com.example.timemanagementapp.ui.goal.GoalListViewModel
+import com.example.timemanagementapp.ui.navigation.NavigationDest
 
-/*Todo: Pass the information of existing goal for onEditGoal to the editonegoalscreen to auto-populate the fields, user can then edit as they like and submit, resulting
-Gamestate will reflect it.
-*/
+object EditGoalsDestination : NavigationDest{
+    override val route = "edit_goals"
+    override val titleRes = R.string.edit_todays_goals
+}
 
 @Composable
 fun EditGoalsScreen(
-    currentGoals: List<Goal>,
     onAddGoalButtonClicked: () -> Unit = {},
+    onEditGoal: (Goal) -> Unit,
+    viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    navigateToHome: () -> Unit,
+    navigateToCalendar: () -> Unit, //TODO
+    navigateToAnalytics: () -> Unit, //TODO
+){
+    val goalListUiState by viewModel.goalListUiState.collectAsState()
+    Scaffold(
+        topBar = {
+            TimelySmallTopAppBar(stringResource(R.string.edit_todays_goals))
+                 },
+        bottomBar = {
+            TimelyBottomAppBar(
+                onCalendarClick = navigateToCalendar,
+                onHomeClick = navigateToHome,
+                onAnalyticsClick = navigateToAnalytics
+            )
+        }
+    ) { innerPadding ->
+        EditGoalsBody(
+            goalListUiState = goalListUiState,
+            onDeleteGoal = {goal -> viewModel.deleteGoal(goal)},
+            onEditGoal = onEditGoal,
+            onAddGoal = onAddGoalButtonClicked,
+            modifier = Modifier.padding(innerPadding)
+        )
+    }
+}
+
+@Composable
+fun EditGoalsBody(
+    goalListUiState: GoalListUiState,
     onDeleteGoal: (Goal) -> Unit,
     onEditGoal: (Goal) -> Unit,
-    remaining: Int
+    onAddGoal: () -> Unit,
+    modifier: Modifier = Modifier
 ){
-
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         GoalList(
-            goals = currentGoals,
+            goals = goalListUiState.goalList,
             onDeleteGoal = onDeleteGoal,
             onEditGoal = onEditGoal,
             modifier = Modifier
@@ -68,8 +104,8 @@ fun EditGoalsScreen(
             thickness = 1.dp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
 
-        )
-        TimeRemaining(remaining = remaining)
+            )
+        TimeRemaining(remaining = goalListUiState.remainingMinutesInDay)
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -77,7 +113,7 @@ fun EditGoalsScreen(
             horizontalArrangement = Arrangement.Center
         ){
             IconButton(
-                onClick = onAddGoalButtonClicked,
+                onClick = onAddGoal,
                 modifier = Modifier
                     .align(Alignment.CenterVertically)
                     .size(100.dp),
@@ -100,17 +136,17 @@ fun EditGoalsScreen(
     }
 
 }
-
+/*
 @Preview(showBackground = true)
 @Composable
 fun EditGoalsScreenPreview(){
     TimeManagementAppTheme {
         EditGoalsScreen(
-            currentGoals = TestData.goals,
+            //currentGoals = TestData.goals,
             onDeleteGoal = {},
             onEditGoal = {},
             onAddGoalButtonClicked = {},
-            remaining = 870
+            //remaining = 870
         )
     }
 }
@@ -121,11 +157,11 @@ fun EditGoalsEmptyListScreenPreview(){
     val emptyGoals = emptyList<Goal>()
     TimeManagementAppTheme {
         EditGoalsScreen(
-            currentGoals = emptyGoals,
+            //currentGoals = emptyGoals,
             onDeleteGoal = {},
             onEditGoal = {},
             onAddGoalButtonClicked = {},
-            remaining = 1440
+            //remaining = 1440
         )
     }
-}
+}*/

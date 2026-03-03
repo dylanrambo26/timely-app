@@ -1,4 +1,4 @@
-package com.example.timemanagementapp.ui
+package com.example.timemanagementapp.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -74,7 +74,7 @@ fun GoalList(
                         Text(text = goal.goalID.toString()) //TODO delete later
                         Text(text = goal.goalTitle)
                         Spacer(modifier = Modifier.width(12.dp))
-                        Text(text = "${goal.timeLimit.hours}h ${goal.timeLimit.minutes}m")
+                        Text(text = "${goal.hours}h ${goal.minutes}m")
                     }
                     if (onDeleteGoal != null || onEditGoal != null){
                         Row {
