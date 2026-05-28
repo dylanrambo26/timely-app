@@ -45,6 +45,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.timemanagementapp.ui.components.DisplayTime
+import com.example.timemanagementapp.ui.components.FilledTime
+import com.example.timemanagementapp.ui.components.TimeRemainingInDay
 import com.example.timemanagementapp.ui.goal.GoalListUiState
 //import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
@@ -159,8 +161,8 @@ fun HomeBody(
         //TimeFilled(filled = (60 * 24) - remaining) //Total amount of minutes in a day - free time
         //TimeRemaining(remaining = remaining)
 
-        DisplayTime(duration = if((60 * 24) - remaining > getTimeRemainingInDay()) getTimeRemainingInDay() else (60 * 24) - remaining, stringResource(R.string.time_filled_of_remaining_time_in_day))
-        DisplayTime(duration = getTimeRemainingInDay(), stringResource(R.string.time_remaining_in_day))
+        FilledTime(remaining = remaining)
+        TimeRemainingInDay()
         HorizontalDivider(
             modifier = Modifier
                 .fillMaxWidth()
