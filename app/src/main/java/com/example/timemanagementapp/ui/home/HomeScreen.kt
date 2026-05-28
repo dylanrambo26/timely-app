@@ -38,18 +38,18 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.ui.AppViewModelProvider
-import com.example.timemanagementapp.ui.components.TimeFilled
-import com.example.timemanagementapp.ui.components.TimeRemaining
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.timemanagementapp.ui.components.DisplayTime
 import com.example.timemanagementapp.ui.goal.GoalListUiState
 //import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
+import com.example.timemanagementapp.util.getTimeRemainingInDay
 
 
 object HomeDestination : NavigationDest {
@@ -156,8 +156,11 @@ fun HomeBody(
                 )
             }
         }
-        TimeFilled(filled = (60 * 24) - remaining) //Total amount of minutes in a day - free time
-        TimeRemaining(remaining = remaining)
+        //TimeFilled(filled = (60 * 24) - remaining) //Total amount of minutes in a day - free time
+        //TimeRemaining(remaining = remaining)
+
+        DisplayTime(duration = if((60 * 24) - remaining > getTimeRemainingInDay()) getTimeRemainingInDay() else (60 * 24) - remaining, stringResource(R.string.time_filled_of_remaining_time_in_day))
+        DisplayTime(duration = getTimeRemainingInDay(), stringResource(R.string.time_remaining_in_day))
         HorizontalDivider(
             modifier = Modifier
                 .fillMaxWidth()

@@ -15,4 +15,8 @@
     <string name="cancel_edit_one_goal">Cancel</string>
     <string name="save_edit_one_goal">Save</string>
     <string name="edit_one_goal_top_bar_text">Edit A Goal</string>
+    <string name="time_filled_of_remaining_time_in_day">Time Filled of Remaining Time in Day: </string>
+    <string name="time_remaining_in_day">Remaining Time in Day: </string>
+    <string name="available_time_in_full_day">Available Time out of Full Day: </string>
+    <string name="current_filled_time">Current Filled Time: </string>
 </resources>

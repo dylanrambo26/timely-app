@@ -8,9 +8,9 @@ import androidx.compose.ui.res.dimensionResource
 import com.example.timemanagementapp.R
 
 @Composable
-fun TimeFilled(filled: Int){
+fun DisplayTime(duration: Int, title: String){
     Text(
-        text = "Filled Time: ${filled / 60}h ${filled % 60}m",
+        text = "$title ${duration / 60}h ${duration % 60}m",
         modifier = Modifier
             .padding(dimensionResource(R.dimen.padding_medium))
     )
