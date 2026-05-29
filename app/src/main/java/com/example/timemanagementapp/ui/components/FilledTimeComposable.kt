@@ -37,6 +37,6 @@ fun FilledTime(remaining: Int){
 
     DisplayTime(
         duration = filledTime,
-        title = stringResource(R.string.time_filled_of_remaining_time_in_day)
+        title = stringResource(R.string.time_filled_of_remaining_time_in_day) + "\n"
     )
 }

@@ -1,5 +1,6 @@
 package com.example.timemanagementapp.ui.home
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
@@ -25,6 +27,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -42,6 +45,7 @@ import com.example.timemanagementapp.ui.navigation.NavigationDest
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.timemanagementapp.ui.components.DisplayTime
@@ -161,6 +165,9 @@ fun HomeBody(
         //TimeFilled(filled = (60 * 24) - remaining) //Total amount of minutes in a day - free time
         //TimeRemaining(remaining = remaining)
 
+        Text(
+            "Current Task: Studying"
+        )
         FilledTime(remaining = remaining)
         TimeRemainingInDay()
         HorizontalDivider(
@@ -176,24 +183,49 @@ fun HomeBody(
                 .fillMaxWidth()
                 .padding(vertical = 12.dp)
         ) {
-            //Add Log Button
-            IconButton (
-                onClick = onEditButtonClicked,
-                modifier = Modifier.size(100.dp)
+            //Edit Log Button
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .weight(1f)
             ) {
-                Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit today's goals",
-                    modifier = Modifier
-                        .size(100.dp)
+                IconButton(
+                    onClick = onEditButtonClicked,
+                    modifier = Modifier.size(100.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit today's goals",
+                        modifier = Modifier
+                            .size(100.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = stringResource(R.string.edit_todays_goals),
+                    textAlign = TextAlign.Center
                 )
             }
-            Spacer(modifier = Modifier.width(16.dp))
-            Text(
-                text = stringResource(R.string.edit_todays_goals),
-                textAlign = TextAlign.Center
-            )
 
+            Surface(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth()
+                    .clickable {
+                        //TODO add change current task functionality here
+                    },
+                shape = RoundedCornerShape(12.dp)
+            ){
+                Box(
+                    modifier = Modifier.padding(20.dp),
+                    contentAlignment = Alignment.Center
+                ){
+                    Text(
+                        "Click Here to Change Current Task",
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
         }
     }
 }
