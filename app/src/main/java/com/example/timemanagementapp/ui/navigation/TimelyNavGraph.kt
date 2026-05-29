@@ -52,6 +52,7 @@ fun TimelyNavHost(
                     navigateToSettings = {/*TODO*/},
                     navigateToAnalytics = {/*TODO*/},
                     navigateToEditGoals = {navController.navigate(EditGoalsDestination.route)},
+                    navigateToChangeCurrentTask = {},
                     viewModel = sharedViewModel
                 )
             }

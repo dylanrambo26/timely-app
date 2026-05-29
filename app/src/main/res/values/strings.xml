@@ -19,4 +19,6 @@
     <string name="time_remaining_in_day">Remaining Time in Day: </string>
     <string name="available_time_in_full_day">Available Time out of Full Day: </string>
     <string name="current_filled_time">Current Filled Time: </string>
+    <string name="change_current_task">Change Current Task</string>
+    <string name="save_current_task">Save Current Task</string>
 </resources>

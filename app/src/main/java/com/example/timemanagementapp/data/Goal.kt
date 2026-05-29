@@ -16,4 +16,6 @@ data class Goal(
     val hours: Int,
     val minutes: Int,
     val goalTitle: String,
+
+    val completedMinutes: Int = 0,
 )

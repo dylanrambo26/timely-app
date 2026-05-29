@@ -72,6 +72,7 @@ fun HomeScreen(
     navigateToCalendar: () -> Unit,
     navigateToAnalytics: () -> Unit,
     navigateToSettings: () -> Unit,
+    navigateToChangeCurrentTask: () -> Unit,
     modifier: Modifier = Modifier,
     viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
@@ -118,6 +119,7 @@ fun HomeScreen(
             goalListUiState = goalListUiState,
             modifier = modifier.padding(innerPadding),
             onEditButtonClicked = navigateToEditGoals,
+            onCurrentTaskClicked = navigateToChangeCurrentTask,
             remaining = goalListUiState.remainingMinutesInDay
         )
 }}
@@ -131,6 +133,7 @@ fun HomeScreen(
 fun HomeBody(
     goalListUiState: GoalListUiState,
     onEditButtonClicked: () -> Unit = {},
+    onCurrentTaskClicked: () -> Unit = {},
     remaining: Int,
     modifier: Modifier = Modifier
 ){
@@ -212,9 +215,10 @@ fun HomeBody(
                     .weight(1f)
                     .fillMaxWidth()
                     .clickable {
-                        //TODO add change current task functionality here
+                        onCurrentTaskClicked()
                     },
-                shape = RoundedCornerShape(12.dp)
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.primaryContainer
             ){
                 Box(
                     modifier = Modifier.padding(20.dp),
