@@ -175,7 +175,7 @@ fun HomeBody(
         }
 
         Text(
-            "Current Task: ${currentTask?.goalTitle}"
+            "Current Task: ${currentTask?.goalTitle ?: "No Active Task"}"
         )
         FilledTime(remaining = remaining)
         TimeRemainingInDay()
