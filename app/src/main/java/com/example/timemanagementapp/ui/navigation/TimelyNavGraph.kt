@@ -15,6 +15,8 @@ import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.example.timemanagementapp.ui.edit.AddGoalDestination
 import com.example.timemanagementapp.ui.AppViewModelProvider
+import com.example.timemanagementapp.ui.currenttask.CurrentTaskDestination
+import com.example.timemanagementapp.ui.currenttask.CurrentTaskScreen
 import com.example.timemanagementapp.ui.edit.AddGoalScreen
 import com.example.timemanagementapp.ui.edit.EditGoalDestination
 import com.example.timemanagementapp.ui.edit.EditGoalsScreen
@@ -52,8 +54,8 @@ fun TimelyNavHost(
                     navigateToSettings = {/*TODO*/},
                     navigateToAnalytics = {/*TODO*/},
                     navigateToEditGoals = {navController.navigate(EditGoalsDestination.route)},
-                    navigateToChangeCurrentTask = {},
-                    viewModel = sharedViewModel
+                    navigateToChangeCurrentTask = {navController.navigate(CurrentTaskDestination.route)},
+                    goalListViewModel = sharedViewModel
                 )
             }
             composable(route = EditGoalsDestination.route){ backStackEntry ->
@@ -97,6 +99,24 @@ fun TimelyNavHost(
                     navigateToCalendar = {/*TODO*/},
                     navigateToAnalytics = {/*TODO*/},
                     goalListViewModel = sharedViewModel
+                )
+            }
+            composable(
+                route = CurrentTaskDestination.route
+            ){ backStackEntry ->
+                val parentEntry = remember(backStackEntry){
+                    navController.getBackStackEntry(GoalListGraph.route)
+                }
+                val sharedViewModel: GoalListViewModel =
+                    viewModel(parentEntry, factory = AppViewModelProvider.Factory)
+
+                //possibly share currentTaskViewmodel between this screen and home for consistency
+                CurrentTaskScreen(
+                    goalListViewModel = sharedViewModel,
+                    navigateToHome = {navController.navigate(HomeDestination.route)},
+                    navigateToCalendar = {/*TODO*/},
+                    navigateToAnalytics = {/*TODO*/},
+                    navigateBack = {navController.popBackStack()}
                 )
             }
         }

@@ -1,5 +1,6 @@
 package com.example.timemanagementapp.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
@@ -36,8 +37,10 @@ import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 fun GoalList(
     modifier: Modifier = Modifier,
     goals: List<Goal>,
+    selectedGoalId: Int? = null,
     onDeleteGoal: ((Goal) -> Unit)? = null,
     onEditGoal: ((Goal) -> Unit)? = null,
+    onGoalClick: ((Goal) -> Unit)? = null,
 ) {
     val listState = rememberLazyListState()
     val previousSize = rememberPreviousLazyColumn(goals.size)
@@ -65,44 +68,54 @@ fun GoalList(
         }
         else{
             items(goals) { goal ->
-                Row(
+                val isSelected = goal.goalID == selectedGoalId
+                Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.secondaryContainer
-                    ) {
-                        Box(
-                            modifier = Modifier.padding(20.dp),
-                            contentAlignment = Alignment.Center
-                        ){
-                            Row(
-                                horizontalArrangement = Arrangement.Start,
-                            ) {
-                                Text(text = goal.goalID.toString()) //TODO delete later
-                                Text(text = goal.goalTitle)
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text(text = "${goal.hours}h ${goal.minutes}m")
+                        .padding(8.dp)
+                        .then(
+                            if(onGoalClick != null){
+                                Modifier.clickable { onGoalClick(goal)}
+                            } else {
+                                Modifier
                             }
-                            if (onDeleteGoal != null || onEditGoal != null){
-                                Row {
-                                    if (onDeleteGoal != null) {
-                                        IconButton(onClick = {onDeleteGoal(goal)})
-                                        {
-                                            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
-                                        }
+                        ),
+                    shape = RoundedCornerShape(12.dp),
+                    color = if(isSelected){
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.secondaryContainer
+                    }
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                    ) {
+                        Row {
+                            Text(text = goal.goalID.toString()) //TODO delete later
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = goal.goalTitle)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(text = "${goal.hours}h ${goal.minutes}m")
+                        }
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        if (onDeleteGoal != null || onEditGoal != null){
+                            Row {
+                                if (onDeleteGoal != null) {
+                                    IconButton(onClick = {onDeleteGoal(goal)})
+                                    {
+                                        Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
                                     }
-                                    if (onEditGoal != null){
-                                        IconButton(onClick = {onEditGoal(goal) })
-                                        {
-                                            Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
-                                        }
+                                }
+                                if (onEditGoal != null){
+                                    IconButton(onClick = {onEditGoal(goal) })
+                                    {
+                                        Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
                                     }
                                 }
                             }
@@ -133,7 +146,9 @@ fun GoalListPreview(){
                 Goal(0,1,0, "study"),
                 Goal(1,1,0, "sleep"),
                 Goal(2,3,0, "video games"),
-            )
+            ),
+            onDeleteGoal = {},
+            onEditGoal = {}
         )
     }
 }

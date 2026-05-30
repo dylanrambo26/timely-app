@@ -22,6 +22,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -55,6 +58,7 @@ fun CurrentTaskScreen(
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
+    navigateBack: () -> Unit
 ){
     val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
     val currentTaskUiState by currentTaskViewModel.currentTaskUiState.collectAsState()
@@ -73,6 +77,11 @@ fun CurrentTaskScreen(
         CurrentTaskBody(
             goalListUiState = goalListUiState,
             currentTaskUiState = currentTaskUiState,
+            onSaveCurrentTaskPressed = {goalId ->
+                currentTaskViewModel.setCurrentTask(goalId)
+            },
+            navigateToHome = navigateToHome,
+            navigateBack = navigateBack,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -82,8 +91,9 @@ fun CurrentTaskScreen(
 fun CurrentTaskBody(
     goalListUiState: GoalListUiState,
     currentTaskUiState: CurrentTaskUiState,
-    //onSaveChangesPressed: (Goal) -> Unit,
-    //onCancelChangesPressed:
+    onSaveCurrentTaskPressed: (Int) -> Unit,
+    navigateToHome: () -> Unit,
+    navigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ){
     Column(
@@ -91,8 +101,14 @@ fun CurrentTaskBody(
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        var selectedGoalId by rememberSaveable { mutableStateOf<Int?>(null) }
+
         GoalList(
             goals = goalListUiState.goalList,
+            selectedGoalId = selectedGoalId,
+            onGoalClick = {goal ->
+                selectedGoalId = goal.goalID
+            },
             modifier = Modifier
                 .weight(1f)
                 .padding(dimensionResource(R.dimen.padding_medium))
@@ -109,9 +125,9 @@ fun CurrentTaskBody(
         Row(
             modifier = Modifier.padding(16.dp)
         ) {
-            //Cancel Edit Button
+            //Cancel Button
             OutlinedButton(
-                onClick = { /*navigateBack*/ },
+                onClick = navigateBack,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
@@ -125,8 +141,13 @@ fun CurrentTaskBody(
 
             //Save Goal Button
             OutlinedButton(
-                onClick = {/*onSaveGoalClick*/},
-                //enabled = ,
+                onClick = {
+                    selectedGoalId?.let {goalId ->
+                        onSaveCurrentTaskPressed(goalId)
+                        navigateToHome()
+                    }
+                },
+                enabled = selectedGoalId != null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
@@ -181,9 +202,12 @@ fun CurrentTaskBodyPreview(){
                 Goal(2,3,0, "video games")
             )),
             currentTaskUiState = CurrentTaskUiState(0),
+            onSaveCurrentTaskPressed = {},
             modifier = Modifier
                 .fillMaxSize()
-                .padding(dimensionResource(R.dimen.padding_medium))
+                .padding(dimensionResource(R.dimen.padding_medium)),
+            navigateToHome = {},
+            navigateBack = {}
         )
     }
 }

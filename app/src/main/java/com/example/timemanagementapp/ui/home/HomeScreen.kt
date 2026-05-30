@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -44,18 +43,16 @@ import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
-import com.example.timemanagementapp.ui.components.DisplayTime
 import com.example.timemanagementapp.ui.components.FilledTime
 import com.example.timemanagementapp.ui.components.TimeRemainingInDay
+import com.example.timemanagementapp.ui.currenttask.CurrentTaskUiState
+import com.example.timemanagementapp.ui.currenttask.CurrentTaskViewModel
 import com.example.timemanagementapp.ui.goal.GoalListUiState
 //import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
-import com.example.timemanagementapp.util.getTimeRemainingInDay
 
 
 object HomeDestination : NavigationDest {
@@ -74,9 +71,11 @@ fun HomeScreen(
     navigateToSettings: () -> Unit,
     navigateToChangeCurrentTask: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    goalListViewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    currentTaskViewModel: CurrentTaskViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
-    val goalListUiState by viewModel.goalListUiState.collectAsState()
+    val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
+    val currentTaskUiState by currentTaskViewModel.currentTaskUiState.collectAsState()
     Scaffold(
         //Top bar and bottom bar persist through each navigation
         topBar = {
@@ -117,6 +116,7 @@ fun HomeScreen(
     ){  innerPadding ->
         HomeBody(
             goalListUiState = goalListUiState,
+            currentTaskUiState = currentTaskUiState,
             modifier = modifier.padding(innerPadding),
             onEditButtonClicked = navigateToEditGoals,
             onCurrentTaskClicked = navigateToChangeCurrentTask,
@@ -132,8 +132,10 @@ fun HomeScreen(
 @Composable
 fun HomeBody(
     goalListUiState: GoalListUiState,
+    currentTaskUiState: CurrentTaskUiState,
     onEditButtonClicked: () -> Unit = {},
     onCurrentTaskClicked: () -> Unit = {},
+    
     remaining: Int,
     modifier: Modifier = Modifier
 ){
@@ -168,8 +170,12 @@ fun HomeBody(
         //TimeFilled(filled = (60 * 24) - remaining) //Total amount of minutes in a day - free time
         //TimeRemaining(remaining = remaining)
 
+        var currentTask = goalListUiState.goalList.find {
+            it.goalID == currentTaskUiState.currentTaskID
+        }
+
         Text(
-            "Current Task: Studying"
+            "Current Task: ${currentTask?.goalTitle}"
         )
         FilledTime(remaining = remaining)
         TimeRemainingInDay()
@@ -240,6 +246,7 @@ fun HomeBodyPreview(){
     TimeManagementAppTheme{
         HomeBody(
             goalListUiState = GoalListUiState(listOf()),
+            currentTaskUiState = CurrentTaskUiState(null),
             remaining = 870,
             modifier = Modifier
                 .fillMaxSize()
