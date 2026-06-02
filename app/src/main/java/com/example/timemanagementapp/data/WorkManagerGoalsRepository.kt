@@ -17,14 +17,15 @@ class WorkManagerGoalsRepository(
     private val workManager = WorkManager.getInstance(context)
 
     override fun scheduleTimerJob(goal: Goal){
-        val durationMillis = (goal.hours * 60L + goal.minutes) * 60_000L
+        val durationMinutes = goal.hours * 60L + goal.minutes
 
         val request =
             OneTimeWorkRequestBuilder<TimerWorker>()
-                .setInitialDelay(durationMillis, TimeUnit.MILLISECONDS)
+                .setInitialDelay(durationMinutes, TimeUnit.MINUTES)
                 .setInputData(
                     workDataOf(
-                        "goalId" to goal.goalID
+                        "goalId" to goal.goalID,
+                        "goalTitle" to goal.goalTitle
                     )
                 )
                 .build()

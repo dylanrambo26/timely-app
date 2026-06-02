@@ -22,8 +22,10 @@ class TimerWorker(context: Context, params: WorkerParameters) : CoroutineWorker(
             val goalId = inputData.getInt("goalId", -1)
             val goalTitle = inputData.getString("goalTitle")
 
-            if(goalId == -1 || goalTitle == null)
+            if(goalId == -1 || goalTitle == null){
+                Log.e(TAG, "Invalid input data: goalId=$goalId goalTitle=$goalTitle")
                 return Result.failure()
+            }
             Log.d(TAG, "Timer finished for goalId=$goalId")
 
 //            val db = GoalsDatabase.getDatabase(applicationContext)
