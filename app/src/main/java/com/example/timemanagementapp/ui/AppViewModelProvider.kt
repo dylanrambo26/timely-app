@@ -39,7 +39,9 @@ object AppViewModelProvider{
 
         initializer {
             CurrentTaskViewModel(
-                timelyApplication().container.userPreferencesRepository
+                timelyApplication().container.userPreferencesRepository,
+                timelyApplication().container.goalsRepository,
+                timelyApplication().container.workManagerGoalsRepository
             )
         }
     }

@@ -77,8 +77,8 @@ fun CurrentTaskScreen(
         CurrentTaskBody(
             goalListUiState = goalListUiState,
             currentTaskUiState = currentTaskUiState,
-            onSaveCurrentTaskPressed = {goalId ->
-                currentTaskViewModel.setCurrentTask(goalId)
+            onSaveCurrentTaskPressed = {goal ->
+                currentTaskViewModel.startTaskTimer(goal)
             },
             navigateToHome = navigateToHome,
             navigateBack = navigateBack,
@@ -91,7 +91,7 @@ fun CurrentTaskScreen(
 fun CurrentTaskBody(
     goalListUiState: GoalListUiState,
     currentTaskUiState: CurrentTaskUiState,
-    onSaveCurrentTaskPressed: (Int) -> Unit,
+    onSaveCurrentTaskPressed: (Goal) -> Unit,
     navigateToHome: () -> Unit,
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -102,6 +102,11 @@ fun CurrentTaskBody(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         var selectedGoalId by rememberSaveable { mutableStateOf<Int?>(null) }
+
+        val selectedGoal = goalListUiState.goalList
+            .firstOrNull{
+                it.goalID == selectedGoalId
+            }
 
         GoalList(
             goals = goalListUiState.goalList,
@@ -142,12 +147,12 @@ fun CurrentTaskBody(
             //Save Goal Button
             OutlinedButton(
                 onClick = {
-                    selectedGoalId?.let {goalId ->
-                        onSaveCurrentTaskPressed(goalId)
+                    selectedGoal?.let {goal ->
+                        onSaveCurrentTaskPressed(goal)
                         navigateToHome()
                     }
                 },
-                enabled = selectedGoalId != null,
+                enabled = selectedGoal != null,
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f),
@@ -201,7 +206,7 @@ fun CurrentTaskBodyPreview(){
                 Goal(1,1,0, "sleep"),
                 Goal(2,3,0, "video games")
             )),
-            currentTaskUiState = CurrentTaskUiState(0),
+            currentTaskUiState = CurrentTaskUiState(Goal(0,1,0, "study")),
             onSaveCurrentTaskPressed = {},
             modifier = Modifier
                 .fillMaxSize()

@@ -45,7 +45,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.timemanagementapp.ui.components.DisplayTime
 import com.example.timemanagementapp.ui.components.FilledTime
+import com.example.timemanagementapp.ui.components.RemainingTaskTime
 import com.example.timemanagementapp.ui.components.TimeRemainingInDay
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskUiState
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskViewModel
@@ -53,6 +55,7 @@ import com.example.timemanagementapp.ui.goal.GoalListUiState
 //import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
+import kotlin.time.Duration.Companion.minutes
 
 
 object HomeDestination : NavigationDest {
@@ -167,15 +170,20 @@ fun HomeBody(
                 )
             }
         }
-        //TimeFilled(filled = (60 * 24) - remaining) //Total amount of minutes in a day - free time
-        //TimeRemaining(remaining = remaining)
 
-        var currentTask = goalListUiState.goalList.find {
-            it.goalID == currentTaskUiState.currentTaskID
+
+
+        /*val currentTask = currentTaskUiState.currentTask
+        var remainingTaskTime = (currentTask?.hours?.times(60))?.plus(currentTask.minutes)?.minus(currentTask.completedMinutes)*/
+
+        /*remainingTaskTime?.let {
+            DisplayTime(title = "Time Remaining on Current Task: ", duration = it)
+        }*/
+        currentTaskUiState.currentTask?.let {goal ->
+            RemainingTaskTime(goal)
         }
-
         Text(
-            "Current Task: ${currentTask?.goalTitle ?: "No Active Task"}"
+            "Current Task: ${currentTaskUiState.currentTask?.goalTitle ?: "No Active Task"}"
         )
         FilledTime(remaining = remaining)
         TimeRemainingInDay()

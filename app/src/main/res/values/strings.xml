@@ -21,4 +21,5 @@
     <string name="current_filled_time">Current Filled Time: </string>
     <string name="change_current_task">Change Current Task</string>
     <string name="save_current_task">Save Current Task</string>
+    <string name="current_task_time_remaining">Time Remaining on Current Task: </string>
 </resources>

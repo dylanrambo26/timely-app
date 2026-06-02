@@ -22,6 +22,9 @@ interface GoalDao {
     @Query("SELECT * from goals WHERE goalID = :id")
     fun getGoal(id: Int): Flow<Goal>
 
+    @Query("SELECT * from goals WHERE goalID = :id")
+    suspend fun getGoalOnce(id: Int): Goal
+
     //Get all goals in ascending order of least amount of time to highest remaining
     @Query("SELECT * from goals ORDER BY goalID ASC")
     fun getAllGoals(): Flow<List<Goal>>
@@ -29,4 +32,12 @@ interface GoalDao {
     //COALESCE used to turn null values to 0 in order to handle nulls when table is empty
     @Query("SELECT COALESCE(SUM(hours * 60 + minutes), 0) FROM goals")
     fun getSumOfTotalMinutes(): Flow<Int>
+
+    /*//Increment the completed minutes by 1, will happen every minute passed
+    @Query("""
+        UPDATE goals
+        SET completedMinutes = completedMinutes + 1
+        WHERE goalID = :id
+    """)
+    suspend fun incrementCompletedMinutes(id: Int)*/
 }
