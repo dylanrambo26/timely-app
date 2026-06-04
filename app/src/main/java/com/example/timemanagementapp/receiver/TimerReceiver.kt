@@ -9,6 +9,10 @@ import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.timemanagementapp.R
+import com.example.timemanagementapp.data.GoalsDatabase
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 class TimerReceiver : BroadcastReceiver(){
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
@@ -20,6 +24,11 @@ class TimerReceiver : BroadcastReceiver(){
         val goalTitle = intent.getStringExtra("goalTitle") ?: return
 
         Log.d("TimerReceiver", "Timer finished for $goalTitle")
+
+        CoroutineScope(Dispatchers.IO).launch{
+            val db = GoalsDatabase.getDatabase(context)
+            db.goalDao().markGoalCompleted(goalId)
+        }
 
         showTaskFinishedNotification(goalId = goalId, goalTitle = goalTitle, context = context)
     }

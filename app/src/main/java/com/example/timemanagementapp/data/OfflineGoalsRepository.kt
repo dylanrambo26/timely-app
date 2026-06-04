@@ -17,5 +17,5 @@ class OfflineGoalsRepository(private val goalDao: GoalDao): GoalsRepository{
 
     override suspend fun updateGoal(goal: Goal) = goalDao.update(goal)
 
-    //override suspend fun incrementCompletedMinutes(id: Int) = goalDao.incrementCompletedMinutes(id)
+    override suspend fun markGoalCompleted(id: Int) = goalDao.markGoalCompleted(id)
 }

@@ -18,7 +18,7 @@ private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
 interface AppContainer{
     val goalsRepository: GoalsRepository
     val userPreferencesRepository: UserPreferencesRepository
-    val workManagerGoalsRepository: WorkManagerGoalsRepository
+    val alarmManagerGoalsRepository: AlarmManagerGoalsRepository
 }
 
 class AppDataContainer(private val context: Context) : AppContainer {
@@ -30,7 +30,7 @@ class AppDataContainer(private val context: Context) : AppContainer {
         UserPreferencesRepository(context.dataStore)
     }
 
-    override val workManagerGoalsRepository: WorkManagerGoalsRepository by lazy {
-        WorkManagerGoalsRepository(context)
+    override val alarmManagerGoalsRepository: AlarmManagerGoalsRepository by lazy {
+        AlarmManagerGoalsRepository(context)
     }
 }

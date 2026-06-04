@@ -6,10 +6,9 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
-import androidx.work.WorkManager
 import com.example.timemanagementapp.receiver.TimerReceiver
 
-class WorkManagerGoalsRepository(
+class AlarmManagerGoalsRepository(
    private val context: Context
 ) : TimerRepository {
     companion object {

@@ -42,4 +42,10 @@ data class GoalListUiState(
     val goalList: List<Goal> = listOf(),
     val totalMinutes: Int = 0,
     val remainingMinutesInDay: Int = MINUTES_IN_24_HOUR_DAY - totalMinutes
-)
+){
+    val incompleteGoals: List<Goal>
+        get() = goalList.filter { !it.completed }
+
+    val completeGoals: List<Goal>
+        get() = goalList.filter { it.completed }
+}

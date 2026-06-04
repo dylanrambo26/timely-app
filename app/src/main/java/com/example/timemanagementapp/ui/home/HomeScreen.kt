@@ -162,7 +162,21 @@ fun HomeBody(
             contentPadding = PaddingValues(vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            items(goalListUiState.goalList){goal ->
+            item {
+                Text("Incomplete Goals: ")
+            }
+            items(goalListUiState.incompleteGoals){goal ->
+                Text(
+                    modifier = Modifier
+                        .padding(8.dp),
+                    text= "${goal.goalTitle} - ${goal.hours}h ${goal.minutes}m"
+                )
+            }
+
+            item {
+                Text("Completed Goals: ")
+            }
+            items(goalListUiState.completeGoals){goal ->
                 Text(
                     modifier = Modifier
                         .padding(8.dp),
@@ -185,6 +199,13 @@ fun HomeBody(
         Text(
             "Current Task: ${currentTaskUiState.currentTask?.goalTitle ?: "No Active Task"}"
         )
+        val currentTaskStatusText = if (currentTaskUiState.currentTask?.completed == true){
+            "Current Task Status: completed"
+        } else {
+            "Current Task Status: incomplete"
+        }
+
+        Text(text = currentTaskStatusText)
         FilledTime(remaining = remaining)
         TimeRemainingInDay()
         HorizontalDivider(

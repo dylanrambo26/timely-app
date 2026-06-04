@@ -17,6 +17,6 @@ data class Goal(
     val minutes: Int,
     val goalTitle: String,
 
-    //val completedMinutes: Int = 0,
+    val completed: Boolean = false,
     val startTimeMillis: Long = 0L
 )

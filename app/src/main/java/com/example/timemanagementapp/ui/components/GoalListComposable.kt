@@ -67,7 +67,7 @@ fun GoalList(
             }
         }
         else{
-            items(goals) { goal ->
+            items(goals.filter { !it.completed }) { goal ->
                 val isSelected = goal.goalID == selectedGoalId
                 Surface(
                     modifier = Modifier

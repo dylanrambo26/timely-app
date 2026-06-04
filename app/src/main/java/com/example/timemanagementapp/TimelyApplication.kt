@@ -6,13 +6,11 @@ import android.app.NotificationManager
 import android.content.Context
 import android.os.Build
 import androidx.datastore.core.DataStore
-import androidx.datastore.dataStore
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.timemanagementapp.data.AppContainer
 import com.example.timemanagementapp.data.AppDataContainer
 import com.example.timemanagementapp.data.UserPreferencesRepository
 import androidx.datastore.preferences.core.Preferences
-import com.example.timemanagementapp.data.WorkManagerGoalsRepository
 
 
 private const val CURRENT_TASK_PREFERENCE_NAME = "current_task_preferences"

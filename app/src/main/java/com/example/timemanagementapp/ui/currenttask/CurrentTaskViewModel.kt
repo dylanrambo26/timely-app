@@ -5,7 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.timemanagementapp.data.Goal
 import com.example.timemanagementapp.data.GoalsRepository
 import com.example.timemanagementapp.data.UserPreferencesRepository
-import com.example.timemanagementapp.data.WorkManagerGoalsRepository
+import com.example.timemanagementapp.data.AlarmManagerGoalsRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 class CurrentTaskViewModel(
     private val userPreferencesRepository: UserPreferencesRepository,
     private val goalsRepository: GoalsRepository,
-    private val workManagerGoalsRepository: WorkManagerGoalsRepository
+    private val alarmManagerGoalsRepository: AlarmManagerGoalsRepository
 ): ViewModel(){
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
@@ -60,7 +60,7 @@ class CurrentTaskViewModel(
 
             userPreferencesRepository.saveCurrentTaskID(goal.goalID)
 
-            workManagerGoalsRepository.scheduleTimer(goal)
+            alarmManagerGoalsRepository.scheduleTimer(goal)
         }
     }
 
