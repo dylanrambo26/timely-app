@@ -19,6 +19,7 @@ class TimerWorker(context: Context, params: WorkerParameters) : CoroutineWorker(
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
     override suspend fun doWork(): Result {
         return try {
+            Log.d(TAG, "Worker started")
             val goalId = inputData.getInt("goalId", -1)
             val goalTitle = inputData.getString("goalTitle")
 

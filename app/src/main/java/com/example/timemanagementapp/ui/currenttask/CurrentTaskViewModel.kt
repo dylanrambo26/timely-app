@@ -2,28 +2,17 @@ package com.example.timemanagementapp.ui.currenttask
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
 import com.example.timemanagementapp.data.Goal
 import com.example.timemanagementapp.data.GoalsRepository
 import com.example.timemanagementapp.data.UserPreferencesRepository
 import com.example.timemanagementapp.data.WorkManagerGoalsRepository
-import com.example.timemanagementapp.ui.goal.GoalListUiState
-import com.example.timemanagementapp.ui.goal.GoalListViewModel
-import com.example.timemanagementapp.util.millisUntilNextMinute
-import com.example.timemanagementapp.worker.TimerWorker
-import kotlinx.coroutines.Job
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import java.util.concurrent.TimeUnit
 
 class CurrentTaskViewModel(
     private val userPreferencesRepository: UserPreferencesRepository,
@@ -71,7 +60,7 @@ class CurrentTaskViewModel(
 
             userPreferencesRepository.saveCurrentTaskID(goal.goalID)
 
-            workManagerGoalsRepository.scheduleTimerJob(goal)
+            workManagerGoalsRepository.scheduleTimer(goal)
         }
     }
 
