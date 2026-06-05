@@ -10,9 +10,15 @@ import com.example.timemanagementapp.R
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 
 @Composable
-fun DisplayTime(duration: Int, title: String){
+fun DisplayTimer(duration: Int, isDone: Boolean, title: String){
+    val durationText = when{
+        isDone -> "$title Timer Over"
+        duration == 0 -> "$title Less than 1 minute"
+        else -> "$title ${duration / 60}h ${duration % 60}m"
+    }
+
     Text(
-        text = "$title ${duration / 60}h ${duration % 60}m",
+        text = durationText,
         modifier = Modifier
             .padding(dimensionResource(R.dimen.padding_medium))
     )
@@ -20,10 +26,11 @@ fun DisplayTime(duration: Int, title: String){
 
 @Preview(showBackground = true)
 @Composable
-fun DisplayTimePreview(){
+fun DisplayTimerPreview(){
     TimeManagementAppTheme {
-        DisplayTime(
-            duration = 0,
+        DisplayTimer(
+            duration = 3,
+            isDone = false,
             title = "Task: "
         )
     }

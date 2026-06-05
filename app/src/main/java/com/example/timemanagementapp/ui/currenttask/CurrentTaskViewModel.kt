@@ -43,11 +43,6 @@ class CurrentTaskViewModel(
                 initialValue = CurrentTaskUiState()
             )
 
-    /*fun setCurrentTask(goalId: Int){
-        viewModelScope.launch {
-            userPreferencesRepository.saveCurrentTaskID(goalId)
-        }
-    }*/
     fun startTaskTimer(goal: Goal){
         viewModelScope.launch {
             val startTime = System.currentTimeMillis()

@@ -4,13 +4,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableLongStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.data.Goal
-import com.example.timemanagementapp.util.getTimeRemainingInDay
+import com.example.timemanagementapp.util.calculateRemainingTime
 import com.example.timemanagementapp.util.millisUntilNextMinute
 import kotlinx.coroutines.delay
 
@@ -20,25 +20,27 @@ fun RemainingTaskTime(goal: Goal){
         mutableIntStateOf(0)
     }
 
-    LaunchedEffect(Unit) {
+    var isDone by remember { mutableStateOf(false) }
+
+    //Need keyed LaunchedEffect when a new goal is selected for current task to recompose with new coroutine
+    LaunchedEffect(goal.goalID) {
         while(true){
-            val totalMillis = (goal.hours * 60L + goal.minutes) * 60_000L
+            val remainingTimeState = calculateRemainingTime(
+                startTimeMillis = goal.startTimeMillis,
+                hours = goal.hours,
+                minutes = goal.minutes,
+                currentTimeMillis = System.currentTimeMillis()
+            )
+            remainingMinutes = remainingTimeState.remainingMinutes
+            isDone = remainingTimeState.isDone
 
-            val remainingMillis =
-                if (goal.startTimeMillis != 0L) {
-                    val endTime = goal.startTimeMillis + totalMillis
-                    (endTime - System.currentTimeMillis()).coerceAtLeast(0)
-                } else {
-                    totalMillis
-                }
-
-            remainingMinutes = (remainingMillis / 60_000).toInt()
             delay(millisUntilNextMinute())
         }
     }
 
-    DisplayTime(
+    DisplayTimer(
         duration = remainingMinutes,
+        isDone = isDone,
         title = stringResource(R.string.current_task_time_remaining)
     )
 }

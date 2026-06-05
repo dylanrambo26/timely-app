@@ -128,7 +128,7 @@ fun AddGoalBody(
             }
         }
         //TimeRemaining(remaining = goalUiState.remainingMinutesInDay)
-        DisplayTime(duration = goalUiState.remainingMinutesInDay, stringResource(R.string.available_time_in_full_day))
+        DisplayTime(duration = goalUiState.remainingMinutesInDay, title = stringResource(R.string.available_time_in_full_day))
         AddGoalInputForm(
             goalDetails = goalUiState.goalDetails,
             onValueChange = onGoalValueChange,

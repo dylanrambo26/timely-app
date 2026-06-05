@@ -106,7 +106,7 @@ fun EditGoalsBody(
 
             )
         //TimeRemaining(remaining = goalListUiState.remainingMinutesInDay)
-        DisplayTime(duration = goalListUiState.remainingMinutesInDay, stringResource(R.string.available_time_in_full_day))
+        DisplayTime(duration = goalListUiState.remainingMinutesInDay, title = stringResource(R.string.available_time_in_full_day))
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
