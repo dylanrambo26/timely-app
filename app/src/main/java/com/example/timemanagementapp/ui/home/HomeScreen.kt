@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -79,7 +80,6 @@ fun HomeScreen(
     goalListViewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     currentTaskViewModel: CurrentTaskViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
-    val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
     val currentTaskUiState by currentTaskViewModel.currentTaskUiState.collectAsState()
     Scaffold(
         //Top bar and bottom bar persist through each navigation
@@ -120,12 +120,10 @@ fun HomeScreen(
 
     ){  innerPadding ->
         HomeBody(
-            goalListUiState = goalListUiState,
             currentTaskUiState = currentTaskUiState,
             modifier = modifier.padding(innerPadding),
             onEditButtonClicked = navigateToEditGoals,
             onCurrentTaskClicked = navigateToChangeCurrentTask,
-            remaining = goalListUiState.remainingMinutesInDay
         )
 }}
 
@@ -136,23 +134,19 @@ fun HomeScreen(
  */
 @Composable
 fun HomeBody(
-    goalListUiState: GoalListUiState,
     currentTaskUiState: CurrentTaskUiState,
     onEditButtonClicked: () -> Unit = {},
     onCurrentTaskClicked: () -> Unit = {},
-    
-    remaining: Int,
     modifier: Modifier = Modifier
 ){
     Column (
         modifier = modifier
             .fillMaxSize()
             .navigationBarsPadding(),
-        //verticalArrangement = Arrangement.spacedBy(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
         Text(
-            text= "Today's Goals:",
+            text= stringResource(R.string.current_task) + " ${currentTaskUiState.currentTask?.goalTitle ?: "No Active Task"}",
             textAlign = TextAlign.Start,
             modifier = Modifier
                 .fillMaxWidth(),
@@ -164,66 +158,62 @@ fun HomeBody(
             contentPadding = PaddingValues(vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            item {
-                Text("Incomplete Goals: ")
+            item{
+                currentTaskUiState.currentTask?.let {goal ->
+                    RemainingTaskTime(goal)
+                }
             }
-            items(goalListUiState.incompleteGoals){goal ->
-                Text(
-                    modifier = Modifier
-                        .padding(8.dp),
-                    text= "${goal.goalTitle} - ${goal.hours}h ${goal.minutes}m"
-                )
+            item{
+                val currentTaskStatusText = when(currentTaskUiState.currentTask?.status){
+                    GoalStatus.COMPLETED -> stringResource(R.string.current_task_status_completed)
+                    GoalStatus.NOT_STARTED -> stringResource(R.string.current_task_status_not_complete)
+                    GoalStatus.RUNNING -> stringResource(R.string.current_task_status_running)
+                    GoalStatus.PAUSED -> stringResource(R.string.current_task_status_paused)
+                    null -> ""
+                }
+
+                Text(text = currentTaskStatusText)
             }
 
-            item {
-                Text("Completed Goals: ")
-            }
-            items(goalListUiState.completeGoals){goal ->
-                Text(
-                    modifier = Modifier
-                        .padding(8.dp),
-                    text= "${goal.goalTitle} - ${goal.hours}h ${goal.minutes}m"
-                )
+            item{
+                TimeRemainingInDay()
             }
         }
 
-
-
-        /*val currentTask = currentTaskUiState.currentTask
-        var remainingTaskTime = (currentTask?.hours?.times(60))?.plus(currentTask.minutes)?.minus(currentTask.completedMinutes)*/
-
-        /*remainingTaskTime?.let {
-            DisplayTime(title = "Time Remaining on Current Task: ", duration = it)
-        }*/
-        currentTaskUiState.currentTask?.let {goal ->
-            RemainingTaskTime(goal)
-        }
-        Text(
-            "Current Task: ${currentTaskUiState.currentTask?.goalTitle ?: "No Active Task"}"
-        )
-        val currentTaskStatusText = when(currentTaskUiState.currentTask?.status){
-            GoalStatus.COMPLETED -> stringResource(R.string.current_task_status_completed)
-            GoalStatus.NOT_STARTED -> stringResource(R.string.current_task_status_not_complete)
-            GoalStatus.RUNNING -> stringResource(R.string.current_task_status_running)
-            GoalStatus.PAUSED -> stringResource(R.string.current_task_status_paused)
-            null -> ""
-        }
-
-        Text(text = currentTaskStatusText)
-        FilledTime(remaining = remaining)
-        TimeRemainingInDay()
         HorizontalDivider(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 12.dp),
             thickness = 4.dp
         )
+
+        val pauseButtonEnabled = (currentTaskUiState.currentTask?.status == GoalStatus.RUNNING) ||
+                (currentTaskUiState.currentTask?.status == GoalStatus.PAUSED)
+
+        Button(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            onClick = {/*TODO*/},
+            enabled = pauseButtonEnabled
+        ){
+            val pauseButtonText = when(currentTaskUiState.currentTask?.status){
+            GoalStatus.PAUSED -> "Task is Paused: Click to Resume"
+            GoalStatus.RUNNING -> "Pause Current Task"
+            GoalStatus.NOT_STARTED -> "Task Not Started"
+            GoalStatus.COMPLETED -> "Task Complete"
+            null -> ""
+        }
+            Text(text = pauseButtonText, textAlign = TextAlign.Center)
+        }
+
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 12.dp)
+                .weight(0.67f)
         ) {
             //Edit Log Button
             Column(
@@ -278,15 +268,13 @@ fun HomeBody(
 fun HomeBodyPreview(){
     TimeManagementAppTheme{
         HomeBody(
-            goalListUiState = GoalListUiState(listOf()),
             currentTaskUiState = CurrentTaskUiState(Goal(
                 goalID = 0,
                 hours = 1,
                 minutes = 30,
                 goalTitle = "study",
-                status = GoalStatus.COMPLETED
+                status = GoalStatus.PAUSED
             )),
-            remaining = 870,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(dimensionResource(R.dimen.padding_medium))

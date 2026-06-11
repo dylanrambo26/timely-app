@@ -26,4 +26,5 @@
     <string name="current_task_status_not_complete">Current Task Status: incomplete</string>
     <string name="current_task_status_running">Current Task Status: running</string>
     <string name="current_task_status_paused">Current Task Status: paused</string>
+    <string name="current_task">Current Task: </string>
 </resources>
