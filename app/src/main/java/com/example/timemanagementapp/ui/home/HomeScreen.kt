@@ -45,6 +45,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
+import com.example.timemanagementapp.data.Goal
+import com.example.timemanagementapp.data.GoalStatus
 import com.example.timemanagementapp.ui.components.DisplayTime
 import com.example.timemanagementapp.ui.components.FilledTime
 import com.example.timemanagementapp.ui.components.RemainingTaskTime
@@ -199,10 +201,12 @@ fun HomeBody(
         Text(
             "Current Task: ${currentTaskUiState.currentTask?.goalTitle ?: "No Active Task"}"
         )
-        val currentTaskStatusText = if (currentTaskUiState.currentTask?.completed == true){
-            "Current Task Status: completed"
-        } else {
-            "Current Task Status: incomplete"
+        val currentTaskStatusText = when(currentTaskUiState.currentTask?.status){
+            GoalStatus.COMPLETED -> stringResource(R.string.current_task_status_completed)
+            GoalStatus.NOT_STARTED -> stringResource(R.string.current_task_status_not_complete)
+            GoalStatus.RUNNING -> stringResource(R.string.current_task_status_running)
+            GoalStatus.PAUSED -> stringResource(R.string.current_task_status_paused)
+            null -> ""
         }
 
         Text(text = currentTaskStatusText)
@@ -275,7 +279,13 @@ fun HomeBodyPreview(){
     TimeManagementAppTheme{
         HomeBody(
             goalListUiState = GoalListUiState(listOf()),
-            currentTaskUiState = CurrentTaskUiState(null),
+            currentTaskUiState = CurrentTaskUiState(Goal(
+                goalID = 0,
+                hours = 1,
+                minutes = 30,
+                goalTitle = "study",
+                status = GoalStatus.COMPLETED
+            )),
             remaining = 870,
             modifier = Modifier
                 .fillMaxSize()

@@ -38,6 +38,7 @@ import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.data.Goal
+import com.example.timemanagementapp.data.GoalStatus
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.components.DisplayTime
 import com.example.timemanagementapp.ui.components.GoalList
@@ -202,11 +203,11 @@ fun CurrentTaskBodyPreview(){
     TimeManagementAppTheme {
         CurrentTaskBody(
             goalListUiState = GoalListUiState(listOf(
-                Goal(0,1,0, "study"),
-                Goal(1,1,0, "sleep"),
-                Goal(2,3,0, "video games")
+                Goal(0,1,0, "study", GoalStatus.NOT_STARTED),
+                Goal(1,1,0, "sleep", GoalStatus.NOT_STARTED),
+                Goal(2,3,0, "video games", GoalStatus.NOT_STARTED)
             )),
-            currentTaskUiState = CurrentTaskUiState(Goal(0,1,0, "study")),
+            currentTaskUiState = CurrentTaskUiState(Goal(0,1,0, "study", GoalStatus.NOT_STARTED)),
             onSaveCurrentTaskPressed = {},
             modifier = Modifier
                 .fillMaxSize()

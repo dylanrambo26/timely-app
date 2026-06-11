@@ -3,6 +3,7 @@ package com.example.timemanagementapp.ui.goal
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.timemanagementapp.data.Goal
+import com.example.timemanagementapp.data.GoalStatus
 import com.example.timemanagementapp.data.GoalsRepository
 import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY
 import kotlinx.coroutines.flow.SharingStarted
@@ -44,8 +45,8 @@ data class GoalListUiState(
     val remainingMinutesInDay: Int = MINUTES_IN_24_HOUR_DAY - totalMinutes
 ){
     val incompleteGoals: List<Goal>
-        get() = goalList.filter { !it.completed }
+        get() = goalList.filter { it.status == GoalStatus.NOT_STARTED }
 
     val completeGoals: List<Goal>
-        get() = goalList.filter { it.completed }
+        get() = goalList.filter { it.status == GoalStatus.COMPLETED }
 }

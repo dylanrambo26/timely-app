@@ -31,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.data.Goal
+import com.example.timemanagementapp.data.GoalStatus
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 
 @Composable
@@ -67,7 +68,7 @@ fun GoalList(
             }
         }
         else{
-            items(goals.filter { !it.completed }) { goal ->
+            items(goals.filter { it.status == GoalStatus.NOT_STARTED }) { goal ->
                 val isSelected = goal.goalID == selectedGoalId
                 Surface(
                     modifier = Modifier

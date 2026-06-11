@@ -34,15 +34,26 @@ interface GoalDao {
     fun getSumOfTotalMinutes(): Flow<Int>
 
     //Set the completed field of the goal to true
-    @Query(
+    /*@Query(
         """
             UPDATE goals
             SET completed = 1
             WHERE goalID = :id
         """
     )
-    suspend fun markGoalCompleted(id: Int)
+    suspend fun markGoalCompleted(id: Int)*/
 
+    @Query(
+        """
+            UPDATE goals
+            SET status = :status
+            WHERE goalID = :id
+        """
+    )
+    suspend fun updateGoalStatus(
+        id: Int,
+        status: GoalStatus
+    )
     //Get all goals that are completed in ascending order of goalIds
     /*@Query(
         """

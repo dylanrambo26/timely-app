@@ -9,6 +9,7 @@ import androidx.annotation.RequiresPermission
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.example.timemanagementapp.R
+import com.example.timemanagementapp.data.GoalStatus
 import com.example.timemanagementapp.data.GoalsDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -27,7 +28,7 @@ class TimerReceiver : BroadcastReceiver(){
 
         CoroutineScope(Dispatchers.IO).launch{
             val db = GoalsDatabase.getDatabase(context)
-            db.goalDao().markGoalCompleted(goalId)
+            db.goalDao().updateGoalStatus(goalId, GoalStatus.COMPLETED)
         }
 
         showTaskFinishedNotification(goalId = goalId, goalTitle = goalTitle, context = context)
