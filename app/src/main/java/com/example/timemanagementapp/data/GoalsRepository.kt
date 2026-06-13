@@ -19,4 +19,6 @@ interface GoalsRepository {
     suspend fun updateGoal(goal: Goal)
 
     suspend fun updateGoalStatus(id: Int, status: GoalStatus)
+
+    suspend fun updateCompletedMillis(id: Int, millis: Long)
 }

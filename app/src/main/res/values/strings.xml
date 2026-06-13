@@ -23,7 +23,7 @@
     <string name="save_current_task">Save Current Task</string>
     <string name="current_task_time_remaining">Time Remaining on Current Task: </string>
     <string name="current_task_status_completed">Current Task Status: completed</string>
-    <string name="current_task_status_not_complete">Current Task Status: incomplete</string>
+    <string name="current_task_status_not_started">Current Task Status: not started</string>
     <string name="current_task_status_running">Current Task Status: running</string>
     <string name="current_task_status_paused">Current Task Status: paused</string>
     <string name="current_task">Current Task: </string>

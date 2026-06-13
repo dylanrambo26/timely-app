@@ -9,17 +9,21 @@ fun calculateRemainingTime(
     startTimeMillis: Long,
     hours: Int,
     minutes: Int,
-    currentTimeMillis: Long
+    currentTimeMillis: Long,
+    completedMillis: Long
 ): RemainingTimeState {
-    val totalMillis = (hours * 60L + minutes) * 60_000L
+    val totalMillis = (hours * 60L + minutes) * 60_000L - completedMillis
+
+    val activeSessionMillis = if(startTimeMillis != 0L){
+        currentTimeMillis - startTimeMillis
+    } else{
+        0L
+    }
+
+    val elapsedMillis = completedMillis + activeSessionMillis
 
     //Clamp endTime to 0 if less than 0
-    val remainingMillis = if (startTimeMillis != 0L){
-        val endTime = startTimeMillis + totalMillis
-        (endTime - currentTimeMillis).coerceAtLeast(0)
-    } else{
-        totalMillis
-    }
+    val remainingMillis = (totalMillis - elapsedMillis).coerceAtLeast(0L)
 
     return RemainingTimeState(
         remainingMinutes = (remainingMillis / 60_000).toInt(),

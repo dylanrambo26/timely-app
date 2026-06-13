@@ -28,7 +28,12 @@ class TimerReceiver : BroadcastReceiver(){
 
         CoroutineScope(Dispatchers.IO).launch{
             val db = GoalsDatabase.getDatabase(context)
-            db.goalDao().updateGoalStatus(goalId, GoalStatus.COMPLETED)
+            val goal = db.goalDao().getGoalOnce(goalId)
+            db.goalDao().update(goal.copy(
+                completedMillis = (goal.hours * 60L + goal.minutes) * 60_000L,
+                startTimeMillis = 0L,
+                status = GoalStatus.COMPLETED
+            ))
         }
 
         showTaskFinishedNotification(goalId = goalId, goalTitle = goalTitle, context = context)
@@ -46,7 +51,7 @@ class TimerReceiver : BroadcastReceiver(){
         )
             .setSmallIcon(R.drawable.outline_calendar_check_24)
             .setContentTitle("Task Complete")
-            .setContentText("Your $goalTitle task is done.")
+            .setContentText("Your \"$goalTitle\" task is done.")
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .build()

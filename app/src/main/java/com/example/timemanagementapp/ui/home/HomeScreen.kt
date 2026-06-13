@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Edit
@@ -48,17 +47,12 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.timemanagementapp.data.Goal
 import com.example.timemanagementapp.data.GoalStatus
-import com.example.timemanagementapp.ui.components.DisplayTime
-import com.example.timemanagementapp.ui.components.FilledTime
 import com.example.timemanagementapp.ui.components.RemainingTaskTime
 import com.example.timemanagementapp.ui.components.TimeRemainingInDay
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskUiState
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskViewModel
-import com.example.timemanagementapp.ui.goal.GoalListUiState
-//import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
-import kotlin.time.Duration.Companion.minutes
 
 
 object HomeDestination : NavigationDest {
@@ -122,19 +116,22 @@ fun HomeScreen(
         HomeBody(
             currentTaskUiState = currentTaskUiState,
             modifier = modifier.padding(innerPadding),
+            onPauseButtonClicked = { currentTaskViewModel.stopTaskTimer() },
+            onResumeButtonClicked = { currentTaskUiState.currentTask?.let { currentTaskViewModel.startTaskTimer(it) } },
             onEditButtonClicked = navigateToEditGoals,
             onCurrentTaskClicked = navigateToChangeCurrentTask,
         )
 }}
 
 /**
- * @param goalsText - The list of current goals from the uiState in a joined String
  * @param onEditButtonClicked - function that will navigate to Add Log screen when clicked
  * @param modifier
  */
 @Composable
 fun HomeBody(
     currentTaskUiState: CurrentTaskUiState,
+    onPauseButtonClicked: () -> Unit = {},
+    onResumeButtonClicked: () -> Unit = {},
     onEditButtonClicked: () -> Unit = {},
     onCurrentTaskClicked: () -> Unit = {},
     modifier: Modifier = Modifier
@@ -166,7 +163,7 @@ fun HomeBody(
             item{
                 val currentTaskStatusText = when(currentTaskUiState.currentTask?.status){
                     GoalStatus.COMPLETED -> stringResource(R.string.current_task_status_completed)
-                    GoalStatus.NOT_STARTED -> stringResource(R.string.current_task_status_not_complete)
+                    GoalStatus.NOT_STARTED -> stringResource(R.string.current_task_status_not_started)
                     GoalStatus.RUNNING -> stringResource(R.string.current_task_status_running)
                     GoalStatus.PAUSED -> stringResource(R.string.current_task_status_paused)
                     null -> ""
@@ -194,8 +191,15 @@ fun HomeBody(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
-            onClick = {/*TODO*/},
-            enabled = pauseButtonEnabled
+            onClick = {
+                if(currentTaskUiState.currentTask?.status == GoalStatus.RUNNING){
+                    onPauseButtonClicked()
+                }
+                else if(currentTaskUiState.currentTask?.status == GoalStatus.PAUSED){
+                    onResumeButtonClicked()
+                }
+            },
+            enabled = pauseButtonEnabled,
         ){
             val pauseButtonText = when(currentTaskUiState.currentTask?.status){
             GoalStatus.PAUSED -> "Task is Paused: Click to Resume"
@@ -273,11 +277,11 @@ fun HomeBodyPreview(){
                 hours = 1,
                 minutes = 30,
                 goalTitle = "study",
-                status = GoalStatus.PAUSED
+                status = GoalStatus.NOT_STARTED
             )),
             modifier = Modifier
                 .fillMaxSize()
-                .padding(dimensionResource(R.dimen.padding_medium))
+                .padding(dimensionResource(R.dimen.padding_medium)),
         )
     }
 }

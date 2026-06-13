@@ -19,7 +19,7 @@ class AlarmManagerGoalsRepository(
     ) as AlarmManager
 
     override fun scheduleTimer(goal: Goal) {
-        val durationMillis = (goal.hours * 60L + goal.minutes) * 60_000L
+        val durationMillis = ((goal.hours * 60L + goal.minutes) * 60_000L) - goal.completedMillis
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
             if (!alarmManager.canScheduleExactAlarms()){

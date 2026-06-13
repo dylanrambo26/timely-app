@@ -6,6 +6,7 @@ import com.example.timemanagementapp.data.Goal
 import com.example.timemanagementapp.data.GoalsRepository
 import com.example.timemanagementapp.data.UserPreferencesRepository
 import com.example.timemanagementapp.data.AlarmManagerGoalsRepository
+import com.example.timemanagementapp.data.GoalStatus
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
@@ -49,7 +50,8 @@ class CurrentTaskViewModel(
 
             goalsRepository.updateGoal(
                 goal.copy(
-                    startTimeMillis = startTime
+                    startTimeMillis = startTime,
+                    status = GoalStatus.RUNNING
                 )
             )
 
@@ -59,8 +61,20 @@ class CurrentTaskViewModel(
         }
     }
 
-    fun stopTask(){
+    fun stopTaskTimer(){
+        viewModelScope.launch {
+            val currentTask = currentTaskUiState.value.currentTask ?: return@launch
+            val recentCompletedMillis = System.currentTimeMillis() - (currentTask.startTimeMillis)
+            goalsRepository.updateGoal(
+                currentTask.copy(
+                    completedMillis = currentTask.completedMillis + recentCompletedMillis,
+                    startTimeMillis = 0L,
+                    status = GoalStatus.PAUSED
+                )
+            )
 
+            alarmManagerGoalsRepository.cancelTimer(currentTask.goalID)
+        }
     }
 }
 

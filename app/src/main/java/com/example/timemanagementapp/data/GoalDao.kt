@@ -33,16 +33,6 @@ interface GoalDao {
     @Query("SELECT COALESCE(SUM(hours * 60 + minutes), 0) FROM goals")
     fun getSumOfTotalMinutes(): Flow<Int>
 
-    //Set the completed field of the goal to true
-    /*@Query(
-        """
-            UPDATE goals
-            SET completed = 1
-            WHERE goalID = :id
-        """
-    )
-    suspend fun markGoalCompleted(id: Int)*/
-
     @Query(
         """
             UPDATE goals
@@ -54,21 +44,16 @@ interface GoalDao {
         id: Int,
         status: GoalStatus
     )
-    //Get all goals that are completed in ascending order of goalIds
-    /*@Query(
+
+    @Query(
         """
-            SELECT * from goals
-            WHERE completed = 1
-            ORDER BY goalID ASC
+            UPDATE goals
+            SET completedMillis = :millis
+            WHERE goalID = :id
         """
     )
-    fun getCompletedGoals(): Flow<List<Goal>>*/
-
-    /*//Increment the completed minutes by 1, will happen every minute passed
-    @Query("""
-        UPDATE goals
-        SET completedMinutes = completedMinutes + 1
-        WHERE goalID = :id
-    """)
-    suspend fun incrementCompletedMinutes(id: Int)*/
+    suspend fun updateCompletedMillis(
+        id: Int,
+        millis: Long
+    )
 }

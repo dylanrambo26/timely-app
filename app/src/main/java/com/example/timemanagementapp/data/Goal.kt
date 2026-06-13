@@ -18,5 +18,6 @@ data class Goal(
     val goalTitle: String,
 
     val status: GoalStatus = GoalStatus.NOT_STARTED,
-    val startTimeMillis: Long = 0L
+    val startTimeMillis: Long = 0L,
+    val completedMillis: Long = 0L
 )

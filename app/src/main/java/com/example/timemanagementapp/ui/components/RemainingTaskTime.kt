@@ -1,5 +1,6 @@
 package com.example.timemanagementapp.ui.components
 
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,13 +24,16 @@ fun RemainingTaskTime(goal: Goal){
     var isDone by remember { mutableStateOf(false) }
 
     //Need keyed LaunchedEffect when a new goal is selected for current task to recompose with new coroutine
-    LaunchedEffect(goal.goalID) {
+    //also recompose when startTime and completedMillis are changed during pause
+    LaunchedEffect(goal.goalID, goal.startTimeMillis, goal.completedMillis) {
+        Log.d("Remaining Task Time: ", "Relaunch")
         while(true){
             val remainingTimeState = calculateRemainingTime(
                 startTimeMillis = goal.startTimeMillis,
                 hours = goal.hours,
                 minutes = goal.minutes,
-                currentTimeMillis = System.currentTimeMillis()
+                currentTimeMillis = System.currentTimeMillis(),
+                completedMillis = goal.completedMillis
             )
             remainingMinutes = remainingTimeState.remainingMinutes
             isDone = remainingTimeState.isDone
