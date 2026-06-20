@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.provider.Settings
+import android.util.Log
 import com.example.timemanagementapp.receiver.TimerReceiver
 
 class AlarmManagerGoalsRepository(
@@ -53,6 +54,8 @@ class AlarmManagerGoalsRepository(
             triggerTime,
             pendingIntent
         )
+
+        Log.d(CURRENT_TASK_TIMER, "timer set")
     }
 
     override fun cancelTimer(goalId: Int){
@@ -74,5 +77,7 @@ class AlarmManagerGoalsRepository(
             )
 
         alarmManager.cancel(pendingIntent)
+
+        Log.d(CURRENT_TASK_TIMER, "timer canceled")
     }
 }

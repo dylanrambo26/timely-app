@@ -116,7 +116,7 @@ fun HomeScreen(
         HomeBody(
             currentTaskUiState = currentTaskUiState,
             modifier = modifier.padding(innerPadding),
-            onPauseButtonClicked = { currentTaskViewModel.stopTaskTimer() },
+            onPauseButtonClicked = { currentTaskViewModel.pauseTask() },
             onResumeButtonClicked = { currentTaskUiState.currentTask?.let { currentTaskViewModel.startTaskTimer(it) } },
             onEditButtonClicked = navigateToEditGoals,
             onCurrentTaskClicked = navigateToChangeCurrentTask,

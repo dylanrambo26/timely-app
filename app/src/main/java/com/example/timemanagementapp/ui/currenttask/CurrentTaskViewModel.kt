@@ -46,34 +46,41 @@ class CurrentTaskViewModel(
 
     fun startTaskTimer(goal: Goal){
         viewModelScope.launch {
+            if(userPreferencesRepository.getCurrentTaskID() != null){
+                stopTaskTimer()
+            }
+
             val startTime = System.currentTimeMillis()
 
-            goalsRepository.updateGoal(
-                goal.copy(
-                    startTimeMillis = startTime,
-                    status = GoalStatus.RUNNING
-                )
+            val updatedGoal = goal.copy(
+                startTimeMillis = startTime,
+                status = GoalStatus.RUNNING
             )
+            goalsRepository.updateGoal(updatedGoal)
 
-            userPreferencesRepository.saveCurrentTaskID(goal.goalID)
+            userPreferencesRepository.saveCurrentTaskID(updatedGoal.goalID)
 
-            alarmManagerGoalsRepository.scheduleTimer(goal)
+            alarmManagerGoalsRepository.scheduleTimer(updatedGoal)
         }
     }
 
-    fun stopTaskTimer(){
-        viewModelScope.launch {
-            val currentTask = currentTaskUiState.value.currentTask ?: return@launch
-            val recentCompletedMillis = System.currentTimeMillis() - (currentTask.startTimeMillis)
-            goalsRepository.updateGoal(
-                currentTask.copy(
-                    completedMillis = currentTask.completedMillis + recentCompletedMillis,
-                    startTimeMillis = 0L,
-                    status = GoalStatus.PAUSED
-                )
+    suspend fun stopTaskTimer(){
+        val currentTask = currentTaskUiState.value.currentTask ?: return
+        val recentCompletedMillis = System.currentTimeMillis() - (currentTask.startTimeMillis)
+        goalsRepository.updateGoal(
+            currentTask.copy(
+                completedMillis = currentTask.completedMillis + recentCompletedMillis,
+                startTimeMillis = 0L,
+                status = GoalStatus.PAUSED
             )
+        )
 
-            alarmManagerGoalsRepository.cancelTimer(currentTask.goalID)
+        alarmManagerGoalsRepository.cancelTimer(currentTask.goalID)
+    }
+
+    fun pauseTask(){
+        viewModelScope.launch {
+            stopTaskTimer()
         }
     }
 }
