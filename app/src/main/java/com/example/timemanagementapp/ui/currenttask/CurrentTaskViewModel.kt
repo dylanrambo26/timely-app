@@ -1,5 +1,6 @@
 package com.example.timemanagementapp.ui.currenttask
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.timemanagementapp.data.Goal
@@ -46,7 +47,11 @@ class CurrentTaskViewModel(
 
     fun startTaskTimer(goal: Goal){
         viewModelScope.launch {
-            if(userPreferencesRepository.getCurrentTaskID() != null){
+            val currentTask = currentTaskUiState.value.currentTask
+
+            //Only stop the timer if the previous task was still running and is a different task than the incoming task
+            //This is used when the user changes the task while the task is running
+            if(currentTask != null && currentTask.goalID != goal.goalID && currentTask.status == GoalStatus.RUNNING){
                 stopTaskTimer()
             }
 
@@ -66,7 +71,19 @@ class CurrentTaskViewModel(
 
     suspend fun stopTaskTimer(){
         val currentTask = currentTaskUiState.value.currentTask ?: return
+
+        if(currentTask.status == GoalStatus.COMPLETED) return
+
+        if (currentTask.startTimeMillis <= 0L) {
+            Log.e(
+                "Timer",
+                "Invalid startTimeMillis: ${currentTask.startTimeMillis}"
+            )
+            return
+        }
+
         val recentCompletedMillis = System.currentTimeMillis() - (currentTask.startTimeMillis)
+
         goalsRepository.updateGoal(
             currentTask.copy(
                 completedMillis = currentTask.completedMillis + recentCompletedMillis,
@@ -76,6 +93,8 @@ class CurrentTaskViewModel(
         )
 
         alarmManagerGoalsRepository.cancelTimer(currentTask.goalID)
+
+
     }
 
     fun pauseTask(){

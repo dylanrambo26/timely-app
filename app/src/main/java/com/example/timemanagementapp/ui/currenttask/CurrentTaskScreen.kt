@@ -115,6 +115,10 @@ fun CurrentTaskBody(
             onGoalClick = {goal ->
                 selectedGoalId = goal.goalID
             },
+            goalStatusFilters = setOf(
+                GoalStatus.PAUSED,
+                GoalStatus.NOT_STARTED
+            ),
             modifier = Modifier
                 .weight(1f)
                 .padding(dimensionResource(R.dimen.padding_medium))

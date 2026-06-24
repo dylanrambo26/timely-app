@@ -42,6 +42,7 @@ fun GoalList(
     onDeleteGoal: ((Goal) -> Unit)? = null,
     onEditGoal: ((Goal) -> Unit)? = null,
     onGoalClick: ((Goal) -> Unit)? = null,
+    goalStatusFilters: Set<GoalStatus> = emptySet(),
 ) {
     val listState = rememberLazyListState()
     val previousSize = rememberPreviousLazyColumn(goals.size)
@@ -68,7 +69,14 @@ fun GoalList(
             }
         }
         else{
-            items(goals.filter { it.status == GoalStatus.NOT_STARTED }) { goal ->
+            val filteredGoals = if (goalStatusFilters.isEmpty()){
+                goals
+            } else {
+                goals.filter { it.status in goalStatusFilters }
+            }
+            items(
+                filteredGoals
+            ) { goal ->
                 val isSelected = goal.goalID == selectedGoalId
                 Surface(
                     modifier = Modifier

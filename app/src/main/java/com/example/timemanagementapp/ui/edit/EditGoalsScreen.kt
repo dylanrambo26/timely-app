@@ -31,6 +31,7 @@ import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.data.Goal
+import com.example.timemanagementapp.data.GoalStatus
 //import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.components.DisplayTime
@@ -93,6 +94,10 @@ fun EditGoalsBody(
             goals = goalListUiState.goalList,
             onDeleteGoal = onDeleteGoal,
             onEditGoal = onEditGoal,
+            goalStatusFilters = setOf(
+                GoalStatus.NOT_STARTED,
+                GoalStatus.PAUSED
+            ),
             modifier = Modifier
                 .weight(1f)
                 .padding(dimensionResource(R.dimen.padding_medium))
