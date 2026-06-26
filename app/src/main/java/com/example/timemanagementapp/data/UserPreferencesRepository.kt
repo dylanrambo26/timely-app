@@ -12,6 +12,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.io.IOException
 
+//Used to store the id of the goal that the user wants as the current task
 class UserPreferencesRepository(
     private val dataStore: DataStore<Preferences>
 ) {
@@ -37,9 +38,5 @@ class UserPreferencesRepository(
         dataStore.edit { preferences ->
             preferences[CURRENT_TASK_ID] = currentTaskID
         }
-    }
-
-    suspend fun getCurrentTaskID(): Int?{
-        return currentTaskID.first()
     }
 }

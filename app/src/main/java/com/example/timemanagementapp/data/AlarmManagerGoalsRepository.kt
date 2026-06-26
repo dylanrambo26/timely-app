@@ -9,6 +9,7 @@ import android.provider.Settings
 import android.util.Log
 import com.example.timemanagementapp.receiver.TimerReceiver
 
+//Used by CurrentTaskViewModel to schedule alarm notifications when the task is done
 class AlarmManagerGoalsRepository(
    private val context: Context
 ) : TimerRepository {
@@ -58,6 +59,7 @@ class AlarmManagerGoalsRepository(
         Log.d(CURRENT_TASK_TIMER, "timer set")
     }
 
+    //Cancel the alarm broadcast
     override fun cancelTimer(goalId: Int){
         val alarmManager = context.getSystemService(
             Context.ALARM_SERVICE

@@ -109,6 +109,7 @@ fun CurrentTaskBody(
                 it.goalID == selectedGoalId
             }
 
+        //Display a goal list filtered for goals that are paused and not started only
         GoalList(
             goals = goalListUiState.goalList,
             selectedGoalId = selectedGoalId,
@@ -169,35 +170,6 @@ fun CurrentTaskBody(
                 )
             }
         }
-        //TimeRemaining(remaining = goalListUiState.remainingMinutesInDay)
-        //DisplayTime(duration = goalListUiState.remainingMinutesInDay, stringResource(R.string.available_time_in_full_day))
-        /*Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ){
-            IconButton(
-                onClick = onAddGoal,
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .size(100.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.AddCircle,
-                    contentDescription = stringResource(R.string.add_goal),
-                    modifier = Modifier
-                        .size(100.dp)
-                )
-            }
-            Spacer(modifier = Modifier.width(30.dp))
-            Text(
-                text = stringResource(R.string.top_app_bar_add_goal),
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-            )
-        }
-        Spacer(modifier = Modifier.height(100.dp))*/
     }
 
 }
