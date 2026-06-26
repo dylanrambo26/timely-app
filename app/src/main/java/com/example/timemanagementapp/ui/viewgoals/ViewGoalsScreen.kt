@@ -1,17 +1,18 @@
 package com.example.timemanagementapp.ui.viewgoals
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -25,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -34,15 +36,15 @@ import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.data.Goal
 import com.example.timemanagementapp.data.GoalStatus
 import com.example.timemanagementapp.ui.AppViewModelProvider
-import com.example.timemanagementapp.ui.components.DisplayTime
 import com.example.timemanagementapp.ui.components.GoalList
 import com.example.timemanagementapp.ui.goal.GoalListUiState
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
+import com.example.timemanagementapp.ui.theme.completedGoal
 import com.example.timemanagementapp.util.completedGoals
-import com.example.timemanagementapp.util.filterByStatus
 import com.example.timemanagementapp.util.incompleteGoals
+import androidx.compose.foundation.layout.Box
 
 /*object ViewGoalsDestination : NavigationDest{
     override val route = "view_goals"
@@ -108,34 +110,74 @@ fun ViewGoalsBody(
 
             )
         Row(
-            modifier = Modifier
-                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ){
-            IconButton(
-                onClick = onAddGoal,
+            modifier = Modifier
+                .fillMaxWidth()
+        ) {
+            Box(
                 modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .size(100.dp),
+                    .size(20.dp)
+                    .background(MaterialTheme.colorScheme.completedGoal)
+            )
+            Text(text = " = Completed")
+        }
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 12.dp)
+                .weight(0.33f)
+        ) {
+            //Edit Log Button
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .weight(1f)
             ) {
-                Icon(
-                    imageVector = Icons.Default.AddCircle,
-                    contentDescription = stringResource(R.string.add_goal),
-                    modifier = Modifier
-                        .size(100.dp)
+                IconButton(
+                    onClick = onEditGoalsClicked,
+                    modifier = Modifier.size(100.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Edit,
+                        contentDescription = "Edit today's goals",
+                        modifier = Modifier
+                            .size(100.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = stringResource(R.string.edit_todays_goals),
+                    textAlign = TextAlign.Center
                 )
             }
-            Spacer(modifier = Modifier.width(30.dp))
-            Text(
-                text = stringResource(R.string.top_app_bar_add_goal),
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-            )
-        }
-        Spacer(modifier = Modifier.height(100.dp))
-    }
 
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                IconButton(
+                    onClick = onAddGoal,
+                    modifier = Modifier
+                        .size(100.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.AddCircle,
+                        contentDescription = stringResource(R.string.add_goal),
+                        modifier = Modifier
+                            .size(100.dp)
+                    )
+                }
+                Text(
+                    text = stringResource(R.string.add_goal),
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+    }
 }
 @Preview(showBackground = true)
 @Composable
