@@ -17,9 +17,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -68,7 +65,7 @@ object HomeDestination : NavigationDest {
 fun HomeScreen(
 
     //TODO add navigation and screens for Calendar, Analytics, and Settings
-    navigateToEditGoals: () -> Unit,
+    navigateToViewGoals: () -> Unit,
     navigateToCalendar: () -> Unit,
     navigateToAnalytics: () -> Unit,
     navigateToSettings: () -> Unit,
@@ -121,13 +118,13 @@ fun HomeScreen(
             modifier = modifier.padding(innerPadding),
             onPauseButtonClicked = { currentTaskViewModel.pauseTask() },
             onResumeButtonClicked = { currentTaskUiState.currentTask?.let { currentTaskViewModel.startTaskTimer(it) } },
-            onEditButtonClicked = navigateToEditGoals,
+            onViewButtonClicked = navigateToViewGoals,
             onCurrentTaskClicked = navigateToChangeCurrentTask,
         )
 }}
 
 /**
- * @param onEditButtonClicked - function that will navigate to Add Log screen when clicked
+ * @param onViewButtonClicked - function that will navigate to Add Log screen when clicked
  * @param modifier
  */
 @Composable
@@ -135,7 +132,7 @@ fun HomeBody(
     currentTaskUiState: CurrentTaskUiState,
     onPauseButtonClicked: () -> Unit = {},
     onResumeButtonClicked: () -> Unit = {},
-    onEditButtonClicked: () -> Unit = {},
+    onViewButtonClicked: () -> Unit = {},
     onCurrentTaskClicked: () -> Unit = {},
     modifier: Modifier = Modifier
 ){
@@ -229,7 +226,7 @@ fun HomeBody(
                     .weight(1f)
             ) {
                 IconButton(
-                    onClick = onEditButtonClicked,
+                    onClick = onViewButtonClicked,
                     modifier = Modifier.size(100.dp)
                 ) {
                     Icon(

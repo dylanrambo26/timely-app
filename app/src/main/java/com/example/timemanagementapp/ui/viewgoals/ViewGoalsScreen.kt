@@ -46,10 +46,10 @@ import com.example.timemanagementapp.util.completedGoals
 import com.example.timemanagementapp.util.incompleteGoals
 import androidx.compose.foundation.layout.Box
 
-/*object ViewGoalsDestination : NavigationDest{
+object ViewGoalsDestination : NavigationDest{
     override val route = "view_goals"
     override val titleRes = R.string.view_todays_goals
-}*/
+}
 
 @Composable
 fun ViewGoalsScreen(
@@ -97,6 +97,7 @@ fun ViewGoalsBody(
         val orderedGoalList = goalListUiState.goalList.completedGoals() + goalListUiState.goalList.incompleteGoals()
         GoalList(
             goals = orderedGoalList,
+            addColors = true,
             modifier = Modifier
                 .weight(1f)
                 .padding(dimensionResource(R.dimen.padding_medium))
@@ -121,13 +122,19 @@ fun ViewGoalsBody(
                     .background(MaterialTheme.colorScheme.completedGoal)
             )
             Text(text = " = Completed")
+            Spacer(modifier = Modifier.width(16.dp))
+            Box(
+                modifier = Modifier
+                    .size(20.dp)
+                    .background(MaterialTheme.colorScheme.secondaryContainer)
+            )
+            Text(text = " = Incomplete")
         }
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = 12.dp)
                 .weight(0.33f)
         ) {
             //Edit Log Button
@@ -185,9 +192,9 @@ fun ViewGoalsBodyPreview(){
     TimeManagementAppTheme {
         ViewGoalsBody(
             goalListUiState = GoalListUiState(listOf(
-                Goal(0,1,0, "study", GoalStatus.NOT_STARTED),
+                Goal(0,1,0, "study", GoalStatus.COMPLETED),
                 Goal(1,1,0, "sleep", GoalStatus.NOT_STARTED),
-                Goal(2,3,0, "video games", GoalStatus.NOT_STARTED)
+                Goal(2,3,0, "video games", GoalStatus.COMPLETED)
             )),
             onAddGoal = {},
             onEditGoalsClicked = {},

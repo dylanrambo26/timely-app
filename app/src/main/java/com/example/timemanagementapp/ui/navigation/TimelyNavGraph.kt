@@ -22,6 +22,8 @@ import com.example.timemanagementapp.ui.edit.EditGoalDestination
 import com.example.timemanagementapp.ui.edit.EditGoalsScreen
 import com.example.timemanagementapp.ui.edit.EditOneGoalScreen
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
+import com.example.timemanagementapp.ui.viewgoals.ViewGoalsDestination
+import com.example.timemanagementapp.ui.viewgoals.ViewGoalsScreen
 
 //Parent back-stack entry for goalListViewModel in order to use the same instance on the home and edit goals screens
 object GoalListGraph{
@@ -53,7 +55,7 @@ fun TimelyNavHost(
                     navigateToCalendar = {/*TODO*/},
                     navigateToSettings = {/*TODO*/},
                     navigateToAnalytics = {/*TODO*/},
-                    navigateToEditGoals = {navController.navigate(EditGoalsDestination.route)},
+                    navigateToViewGoals = {navController.navigate(ViewGoalsDestination.route)},
                     navigateToChangeCurrentTask = {navController.navigate(CurrentTaskDestination.route)},
                     goalListViewModel = sharedViewModel
                 )
@@ -117,6 +119,24 @@ fun TimelyNavHost(
                     navigateToCalendar = {/*TODO*/},
                     navigateToAnalytics = {/*TODO*/},
                     navigateBack = {navController.popBackStack()}
+                )
+            }
+            composable(
+                route = ViewGoalsDestination.route
+            ){ backstackEntry ->
+                val parentEntry = remember(backstackEntry){
+                    navController.getBackStackEntry(GoalListGraph.route)
+                }
+                val sharedViewModel: GoalListViewModel =
+                    viewModel(parentEntry, factory = AppViewModelProvider.Factory)
+
+                ViewGoalsScreen(
+                    onAddGoalButtonClicked = {navController.navigate(AddGoalDestination.route)},
+                    onEditGoalsButtonClicked = {navController.navigate(EditGoalsDestination.route)},
+                    navigateToHome = {navController.navigate(HomeDestination.route)},
+                    navigateToCalendar = {/*TODO*/},
+                    navigateToAnalytics = {/*TODO*/},
+                    viewModel = sharedViewModel
                 )
             }
         }
