@@ -5,11 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -40,7 +37,9 @@ import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import androidx.compose.runtime.getValue
+import com.example.timemanagementapp.data.GoalStatus
 import com.example.timemanagementapp.ui.components.DisplayTime
+import com.example.timemanagementapp.ui.components.GoalList
 import kotlinx.coroutines.launch
 
 
@@ -101,33 +100,16 @@ fun AddGoalBody(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        LazyColumn(
+        GoalList(
+            goals = goalListUiState.goalList,
+            goalStatusFilters = setOf(
+                GoalStatus.NOT_STARTED,
+                GoalStatus.PAUSED
+            ),
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth()
-        ) {
-            if(goalListUiState.goalList.isEmpty()) {
-                item {
-                    Text(
-                        "No goals yet - add one below!",
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        textAlign = TextAlign.Center
-                    )
-                }
-            }
-            else{
-                items(goalListUiState.goalList){goal ->
-                    Text(
-                        modifier = Modifier
-                            .padding(8.dp),
-                        text= "${goal.goalTitle} - ${goal.hours}h ${goal.minutes}m",
-                    )
-                }
-            }
-        }
-        //TimeRemaining(remaining = goalUiState.remainingMinutesInDay)
+                .padding(dimensionResource(R.dimen.padding_medium))
+        )
         DisplayTime(duration = goalUiState.remainingMinutesInDay, title = stringResource(R.string.available_time_in_full_day))
         AddGoalInputForm(
             goalDetails = goalUiState.goalDetails,

@@ -1,6 +1,5 @@
 package com.example.timemanagementapp.ui.edit
 
-import android.R
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.example.timemanagementapp.data.Goal
