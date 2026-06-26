@@ -8,6 +8,8 @@ interface GoalsRepository {
 
     fun getGoalStream(id: Int): Flow<Goal?>
 
+    suspend fun getGoalOnce(id: Int): Goal
+
     fun getTotalMinutesStream(): Flow<Int>
 
     suspend fun insertGoal(goal: Goal)
@@ -15,4 +17,8 @@ interface GoalsRepository {
     suspend fun deleteGoal(goal: Goal)
 
     suspend fun updateGoal(goal: Goal)
+
+    suspend fun updateGoalStatus(id: Int, status: GoalStatus)
+
+    suspend fun updateCompletedMillis(id: Int, millis: Long)
 }

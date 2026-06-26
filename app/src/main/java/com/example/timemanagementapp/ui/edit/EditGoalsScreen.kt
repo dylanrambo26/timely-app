@@ -31,10 +31,11 @@ import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.data.Goal
+import com.example.timemanagementapp.data.GoalStatus
 //import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.AppViewModelProvider
+import com.example.timemanagementapp.ui.components.DisplayTime
 import com.example.timemanagementapp.ui.components.GoalList
-import com.example.timemanagementapp.ui.components.TimeRemaining
 import com.example.timemanagementapp.ui.goal.GoalListUiState
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.navigation.NavigationDest
@@ -93,6 +94,10 @@ fun EditGoalsBody(
             goals = goalListUiState.goalList,
             onDeleteGoal = onDeleteGoal,
             onEditGoal = onEditGoal,
+            goalStatusFilters = setOf(
+                GoalStatus.NOT_STARTED,
+                GoalStatus.PAUSED
+            ),
             modifier = Modifier
                 .weight(1f)
                 .padding(dimensionResource(R.dimen.padding_medium))
@@ -105,7 +110,8 @@ fun EditGoalsBody(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
 
             )
-        TimeRemaining(remaining = goalListUiState.remainingMinutesInDay)
+        //TimeRemaining(remaining = goalListUiState.remainingMinutesInDay)
+        DisplayTime(duration = goalListUiState.remainingMinutesInDay, title = stringResource(R.string.available_time_in_full_day))
         Row(
             modifier = Modifier
                 .fillMaxWidth(),

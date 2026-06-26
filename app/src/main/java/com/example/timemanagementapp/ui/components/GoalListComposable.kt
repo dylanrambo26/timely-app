@@ -1,6 +1,8 @@
 package com.example.timemanagementapp.ui.components
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -9,11 +11,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -22,16 +27,22 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.data.Goal
+import com.example.timemanagementapp.data.GoalStatus
+import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 
 @Composable
 fun GoalList(
     modifier: Modifier = Modifier,
     goals: List<Goal>,
+    selectedGoalId: Int? = null,
     onDeleteGoal: ((Goal) -> Unit)? = null,
     onEditGoal: ((Goal) -> Unit)? = null,
+    onGoalClick: ((Goal) -> Unit)? = null,
+    goalStatusFilters: Set<GoalStatus> = emptySet(),
 ) {
     val listState = rememberLazyListState()
     val previousSize = rememberPreviousLazyColumn(goals.size)
@@ -58,36 +69,63 @@ fun GoalList(
             }
         }
         else{
-            items(goals) { goal ->
-                Row(
+            val filteredGoals = if (goalStatusFilters.isEmpty()){
+                goals
+            } else {
+                goals.filter { it.status in goalStatusFilters }
+            }
+            items(
+                filteredGoals
+            ) { goal ->
+                val isSelected = goal.goalID == selectedGoalId
+                Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
+                        .padding(8.dp)
+                        .then(
+                            if(onGoalClick != null){
+                                Modifier.clickable { onGoalClick(goal)}
+                            } else {
+                                Modifier
+                            }
+                        ),
+                    shape = RoundedCornerShape(12.dp),
+                    color = if(isSelected){
+                        MaterialTheme.colorScheme.primaryContainer
+                    } else {
+                        MaterialTheme.colorScheme.secondaryContainer
+                    }
                 ) {
                     Row(
-                        horizontalArrangement = Arrangement.Start,
                         modifier = Modifier
-                            .weight(1f)
+                            .fillMaxWidth()
+                            .padding(20.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween,
                     ) {
-                        Text(text = goal.goalID.toString()) //TODO delete later
-                        Text(text = goal.goalTitle)
-                        Spacer(modifier = Modifier.width(12.dp))
-                        Text(text = "${goal.hours}h ${goal.minutes}m")
-                    }
-                    if (onDeleteGoal != null || onEditGoal != null){
                         Row {
-                            if (onDeleteGoal != null) {
-                                IconButton(onClick = {onDeleteGoal(goal)})
-                                {
-                                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+                            Text(text = goal.goalID.toString()) //TODO delete later
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(text = goal.goalTitle)
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Text(text = "${goal.hours}h ${goal.minutes}m")
+                        }
+
+                        Spacer(modifier = Modifier.weight(1f))
+
+                        if (onDeleteGoal != null || onEditGoal != null){
+                            Row {
+                                if (onDeleteGoal != null) {
+                                    IconButton(onClick = {onDeleteGoal(goal)})
+                                    {
+                                        Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+                                    }
                                 }
-                            }
-                            if (onEditGoal != null){
-                                IconButton(onClick = {onEditGoal(goal) })
-                                {
-                                    Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
+                                if (onEditGoal != null){
+                                    IconButton(onClick = {onEditGoal(goal) })
+                                    {
+                                        Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
+                                    }
                                 }
                             }
                         }
@@ -106,4 +144,20 @@ fun rememberPreviousLazyColumn(value: Int): Int? {
         previous.value = value
     }
     return previous.value
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GoalListPreview(){
+    TimeManagementAppTheme {
+        GoalList(
+            goals = listOf(
+                Goal(0,1,0, "study"),
+                Goal(1,1,0, "sleep"),
+                Goal(2,3,0, "video games"),
+            ),
+            onDeleteGoal = {},
+            onEditGoal = {}
+        )
+    }
 }

@@ -31,7 +31,7 @@ import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.ui.AppViewModelProvider
-import com.example.timemanagementapp.ui.components.TimeRemaining
+import com.example.timemanagementapp.ui.components.DisplayTime
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import kotlinx.coroutines.launch
@@ -92,7 +92,8 @@ fun EditOneGoalBody(
             .padding(dimensionResource(R.dimen.padding_medium)),
         verticalArrangement = Arrangement.Center
     ) {
-        TimeRemaining(remaining = goalUiState.remainingMinutesInDay)
+        //TimeRemaining(remaining = goalUiState.remainingMinutesInDay)
+        DisplayTime(duration = goalUiState.remainingMinutesInDay, title = stringResource(R.string.available_time_in_full_day))
         EditGoalInputForm(
             goalDetails = goalUiState.goalDetails,
             onValueChange = onGoalValueChange,

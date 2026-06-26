@@ -15,4 +15,16 @@
     <string name="cancel_edit_one_goal">Cancel</string>
     <string name="save_edit_one_goal">Save</string>
     <string name="edit_one_goal_top_bar_text">Edit A Goal</string>
+    <string name="time_filled_of_remaining_time_in_day">Time Filled of Remaining Time in Day: </string>
+    <string name="time_remaining_in_day">Remaining Time in Day: </string>
+    <string name="available_time_in_full_day">Available Time out of Full Day: </string>
+    <string name="current_filled_time">Current Filled Time: </string>
+    <string name="change_current_task">Change Current Task</string>
+    <string name="save_current_task">Save Current Task</string>
+    <string name="current_task_time_remaining">Time Remaining on Current Task: </string>
+    <string name="current_task_status_completed">Current Task Status: completed</string>
+    <string name="current_task_status_not_started">Current Task Status: not started</string>
+    <string name="current_task_status_running">Current Task Status: running</string>
+    <string name="current_task_status_paused">Current Task Status: paused</string>
+    <string name="current_task">Current Task: </string>
 </resources>
