@@ -28,4 +28,6 @@
     <string name="current_task_status_running">Current Task Status: running</string>
     <string name="current_task_status_paused">Current Task Status: paused</string>
     <string name="current_task">Current Task: </string>
+    <string name="previous_month">Previous Month</string>"
+    <string name="next_month">Next Month</string>
 </resources>

@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.timemanagementapp.TimelyApplication
+import com.example.timemanagementapp.ui.calendar.CalendarViewModel
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskViewModel
 import com.example.timemanagementapp.ui.edit.AddGoalViewModel
 import com.example.timemanagementapp.ui.edit.EditGoalViewModel
@@ -43,6 +44,10 @@ object AppViewModelProvider{
                 timelyApplication().container.goalsRepository,
                 timelyApplication().container.alarmManagerGoalsRepository
             )
+        }
+
+        initializer {
+            CalendarViewModel()
         }
     }
 }

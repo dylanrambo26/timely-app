@@ -17,6 +17,7 @@ import com.example.timemanagementapp.ui.edit.AddGoalDestination
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.calendar.CalendarDestination
 import com.example.timemanagementapp.ui.calendar.CalendarScreen
+import com.example.timemanagementapp.ui.calendar.CalendarViewModel
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskDestination
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskScreen
 import com.example.timemanagementapp.ui.edit.AddGoalScreen
@@ -63,13 +64,15 @@ fun TimelyNavHost(
                 )
             }
             composable(route = CalendarDestination.route){ backStackEntry ->
-                val parentEntry = remember(backStackEntry){
-                    navController.getBackStackEntry(GoalListGraph.route)
-                }
+                val viewModel: CalendarViewModel = viewModel(
+                    viewModelStoreOwner = backStackEntry,
+                    factory = AppViewModelProvider.Factory
+                )
 
                 CalendarScreen(
                     navigateToHome = {navController.navigate(HomeDestination.route)},
-                    navigateToAnalytics = {/*TODO*/}
+                    navigateToAnalytics = {/*TODO*/},
+                    viewModel = viewModel
                 )
             }
             composable(route = EditGoalsDestination.route){ backStackEntry ->
