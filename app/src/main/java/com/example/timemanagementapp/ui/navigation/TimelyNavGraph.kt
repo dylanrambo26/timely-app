@@ -15,6 +15,8 @@ import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.example.timemanagementapp.ui.edit.AddGoalDestination
 import com.example.timemanagementapp.ui.AppViewModelProvider
+import com.example.timemanagementapp.ui.calendar.CalendarDestination
+import com.example.timemanagementapp.ui.calendar.CalendarScreen
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskDestination
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskScreen
 import com.example.timemanagementapp.ui.edit.AddGoalScreen
@@ -52,12 +54,22 @@ fun TimelyNavHost(
                     viewModel(parentEntry, factory = AppViewModelProvider.Factory)
 
                 HomeScreen(
-                    navigateToCalendar = {/*TODO*/},
+                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToSettings = {/*TODO*/},
                     navigateToAnalytics = {/*TODO*/},
                     navigateToViewGoals = {navController.navigate(ViewGoalsDestination.route)},
                     navigateToChangeCurrentTask = {navController.navigate(CurrentTaskDestination.route)},
                     goalListViewModel = sharedViewModel
+                )
+            }
+            composable(route = CalendarDestination.route){ backStackEntry ->
+                val parentEntry = remember(backStackEntry){
+                    navController.getBackStackEntry(GoalListGraph.route)
+                }
+
+                CalendarScreen(
+                    navigateToHome = {navController.navigate(HomeDestination.route)},
+                    navigateToAnalytics = {/*TODO*/}
                 )
             }
             composable(route = EditGoalsDestination.route){ backStackEntry ->
@@ -71,7 +83,7 @@ fun TimelyNavHost(
                     onAddGoalButtonClicked = {navController.navigate(AddGoalDestination.route)},
                     onEditGoal = { navController.navigate("${EditGoalDestination.route}/${it.goalID}")},
                     navigateToHome = {navController.navigate(HomeDestination.route)},
-                    navigateToCalendar = {/*TODO*/},
+                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToAnalytics = {/*TODO*/},
                     viewModel = sharedViewModel
                 )
@@ -98,7 +110,7 @@ fun TimelyNavHost(
 
                 AddGoalScreen(
                     navigateToHome = {navController.navigate(HomeDestination.route)},
-                    navigateToCalendar = {/*TODO*/},
+                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToAnalytics = {/*TODO*/},
                     goalListViewModel = sharedViewModel
                 )
@@ -116,7 +128,7 @@ fun TimelyNavHost(
                 CurrentTaskScreen(
                     goalListViewModel = sharedViewModel,
                     navigateToHome = {navController.navigate(HomeDestination.route)},
-                    navigateToCalendar = {/*TODO*/},
+                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToAnalytics = {/*TODO*/},
                     navigateBack = {navController.popBackStack()}
                 )
@@ -134,7 +146,7 @@ fun TimelyNavHost(
                     onAddGoalButtonClicked = {navController.navigate(AddGoalDestination.route)},
                     onEditGoalsButtonClicked = {navController.navigate(EditGoalsDestination.route)},
                     navigateToHome = {navController.navigate(HomeDestination.route)},
-                    navigateToCalendar = {/*TODO*/},
+                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToAnalytics = {/*TODO*/},
                     viewModel = sharedViewModel
                 )
