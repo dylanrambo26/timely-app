@@ -39,6 +39,7 @@ import com.example.timemanagementapp.ui.components.GoalList
 import com.example.timemanagementapp.ui.goal.GoalListUiState
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.navigation.NavigationDest
+import com.example.timemanagementapp.util.nonActiveGoals
 
 object EditGoalsDestination : NavigationDest{
     override val route = "edit_goals"
@@ -90,14 +91,12 @@ fun EditGoalsBody(
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        val filteredGoals = goalListUiState.goalList.nonActiveGoals()
+
         GoalList(
-            goals = goalListUiState.goalList,
+            goals = filteredGoals,
             onDeleteGoal = onDeleteGoal,
             onEditGoal = onEditGoal,
-            goalStatusFilters = setOf(
-                GoalStatus.NOT_STARTED,
-                GoalStatus.PAUSED
-            ),
             modifier = Modifier
                 .weight(1f)
                 .padding(dimensionResource(R.dimen.padding_medium))

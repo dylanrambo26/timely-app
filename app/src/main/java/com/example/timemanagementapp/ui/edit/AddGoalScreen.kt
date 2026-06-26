@@ -40,6 +40,8 @@ import androidx.compose.runtime.getValue
 import com.example.timemanagementapp.data.GoalStatus
 import com.example.timemanagementapp.ui.components.DisplayTime
 import com.example.timemanagementapp.ui.components.GoalList
+import com.example.timemanagementapp.util.filterByStatus
+import com.example.timemanagementapp.util.nonActiveGoals
 import kotlinx.coroutines.launch
 
 
@@ -100,12 +102,10 @@ fun AddGoalBody(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
+        val filteredGoals = goalListUiState.goalList.nonActiveGoals()
+
         GoalList(
-            goals = goalListUiState.goalList,
-            goalStatusFilters = setOf(
-                GoalStatus.NOT_STARTED,
-                GoalStatus.PAUSED
-            ),
+            goals = filteredGoals,
             modifier = Modifier
                 .weight(1f)
                 .padding(dimensionResource(R.dimen.padding_medium))

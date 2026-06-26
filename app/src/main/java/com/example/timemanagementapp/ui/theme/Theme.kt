@@ -1,15 +1,28 @@
 package com.example.timemanagementapp.ui.theme
 
 import android.app.Activity
+import androidx.compose.ui.graphics.Color
 import android.os.Build
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.room.util.TableInfo
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,
@@ -55,4 +68,35 @@ fun TimeManagementAppTheme(
         typography = Typography,
         content = content
     )
+}
+
+@Preview(showBackground = true)
+@Composable
+fun ColorPreview(){
+    TimeManagementAppTheme {
+        Column{
+            ColorItem("Primary", MaterialTheme.colorScheme.primary)
+            ColorItem("Secondary", MaterialTheme.colorScheme.secondary)
+            ColorItem("Surface", MaterialTheme.colorScheme.surface)
+            ColorItem("Background", MaterialTheme.colorScheme.background)
+            ColorItem("Primary Container", MaterialTheme.colorScheme.primaryContainer)
+            ColorItem("Secondary Container", MaterialTheme.colorScheme.secondaryContainer)
+        }
+    }
+}
+
+@Composable
+fun ColorItem(name: String, color: Color) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .background(color),
+        contentAlignment = Alignment.CenterStart
+    ) {
+        Text(
+            text = name,
+            modifier = Modifier.padding(start = 16.dp)
+        )
+    }
 }
