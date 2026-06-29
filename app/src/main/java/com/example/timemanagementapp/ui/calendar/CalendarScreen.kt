@@ -1,6 +1,5 @@
 package com.example.timemanagementapp.ui.calendar
 
-import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -8,10 +7,13 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.material.icons.Icons
@@ -37,8 +39,12 @@ import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import java.time.LocalDate
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.ui.tooling.preview.PreviewLightDark
+import com.example.timemanagementapp.data.Goal
+import com.example.timemanagementapp.data.GoalStatus
+import com.example.timemanagementapp.ui.components.GoalList
+import com.example.timemanagementapp.ui.theme.selectedDate
 import java.time.YearMonth
 
 object CalendarDestination : NavigationDest {
@@ -71,6 +77,7 @@ fun CalendarScreen(
             selectedDate = viewModel.selectedDate,
             onPrevMonth = viewModel::previousMonth,
             onNextMonth = viewModel::nextMonth,
+            onDateSelected = viewModel::selectDate,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -82,6 +89,8 @@ fun CalendarBody(
     selectedDate: LocalDate = LocalDate.now(),
     onPrevMonth: () -> Unit,
     onNextMonth: () -> Unit,
+    goals: List<Goal> = emptyList(), //TODO delete
+    onDateSelected: (LocalDate) -> Unit = {},
     displayedMonth: YearMonth = YearMonth.now(),
     modifier: Modifier = Modifier
 ){
@@ -99,23 +108,79 @@ fun CalendarBody(
         CalendarGrid(
             calendarCells = calendarCells,
             selectedDate = selectedDate,
-            onDateSelected = {},
+            onDateSelected = onDateSelected,
+        )
+        GoalInformation(
+            goals = goals,
+            selectedDate = selectedDate
         )
     }
 }
 
+//TODO Edit strings to have selected date values
 @Composable
+fun GoalInformation(
+    goals: List<Goal> = emptyList(),
+    selectedDate: LocalDate,
+    onEditGoalsClicked: () -> Unit = {},
+){
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        GoalList(
+            goals = goals,
+            addColors = true,
+            modifier = Modifier.weight(1f)
+        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier
+                .weight(1f)
+        ) {
+            IconButton(
+                onClick = onEditGoalsClicked,
+                modifier = Modifier.size(100.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Edit,
+                    contentDescription = "Edit today's goals",
+                    modifier = Modifier
+                        .size(100.dp)
+                )
+            }
+            Spacer(modifier = Modifier.width(16.dp))
+            Text(
+                text = "Edit ${selectedDate.monthValue}/${selectedDate.dayOfMonth} Goals",
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+
+}
+    @Composable
 fun CalendarCell(
     date: LocalDate?,
     selectedDate: LocalDate?,
     onClick: (LocalDate) -> Unit,
 ){
-    val cellColor = if (date == null) {
-        MaterialTheme.colorScheme.secondaryContainer
-    } else if (date == selectedDate) {
-        MaterialTheme.colorScheme.primaryContainer
-    } else {
-        MaterialTheme.colorScheme.surface
+    val today = LocalDate.now()
+
+    val cellColor = when (date) {
+        null -> {
+            MaterialTheme.colorScheme.secondaryContainer
+        }
+        selectedDate -> {
+            MaterialTheme.colorScheme.selectedDate
+        }
+        today -> {
+            MaterialTheme.colorScheme.primaryContainer
+        }
+        else -> {
+            MaterialTheme.colorScheme.surface
+        }
     }
 
     Box(
@@ -222,20 +287,76 @@ fun CalendarBodyPreview(){
         val viewModel = CalendarViewModel()
         CalendarBody(
             calendarCells = viewModel.generateCalendarCells(YearMonth.now()),
-            selectedDate = LocalDate.now(),
+            selectedDate = LocalDate.of(2026, 6, 3),
             onPrevMonth = {},
-            onNextMonth = {}
+            onNextMonth = {},
+            goals = listOf(
+                Goal(
+                    goalID = 1,
+                    hours = 1,
+                    minutes = 30,
+                    goalTitle = "Study",
+                    status = GoalStatus.NOT_STARTED
+                ),
+                Goal(
+                    goalID = 2,
+                    hours = 1,
+                    minutes = 30,
+                    goalTitle = "work",
+                    status = GoalStatus.COMPLETED
+                ),
+                Goal(
+                    goalID = 3,
+                    hours = 1,
+                    minutes = 30,
+                    goalTitle = "test",
+                    status = GoalStatus.NOT_STARTED
+                )
+            )
         )
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, showSystemUi = false)
 @Composable
 fun CalendarScreenPreview(){
     TimeManagementAppTheme {
         CalendarScreen(
             navigateToHome = {},
             navigateToAnalytics = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun GoalInformationPreview(){
+    TimeManagementAppTheme {
+        GoalInformation(
+            goals = listOf(
+                Goal(
+                    goalID = 1,
+                    hours = 1,
+                    minutes = 30,
+                    goalTitle = "Study",
+                    status = GoalStatus.NOT_STARTED
+                ),
+                Goal(
+                    goalID = 2,
+                    hours = 1,
+                    minutes = 30,
+                    goalTitle = "work",
+                    status = GoalStatus.COMPLETED
+                ),
+                Goal(
+                    goalID = 3,
+                    hours = 1,
+                    minutes = 30,
+                    goalTitle = "test",
+                    status = GoalStatus.NOT_STARTED
+                )
+            ),
+            selectedDate = LocalDate.now()
         )
     }
 }

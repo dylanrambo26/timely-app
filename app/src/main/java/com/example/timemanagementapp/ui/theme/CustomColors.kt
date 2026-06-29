@@ -6,3 +6,6 @@ import androidx.compose.ui.graphics.luminance
 
 val ColorScheme.completedGoal: Color
     get() = if(surface.luminance() > 0.5f) CompletedGoalLight else CompletedGoalDark
+
+val ColorScheme.selectedDate: Color
+    get() = if(surface.luminance() > 0.5f) selectedDateLight else selectedDateDark
