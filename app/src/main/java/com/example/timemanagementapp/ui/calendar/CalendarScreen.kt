@@ -91,16 +91,15 @@ fun CalendarBody(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         CalendarHeader(
+            previousMonthClicked = onPrevMonth,
+            nextMonthClicked = onNextMonth,
             displayedMonth = displayedMonth,
-            modifier = modifier
         )
-        WeekdayHeader(
-            modifier = modifier
-        )
+        WeekdayHeader()
         CalendarGrid(
             calendarCells = calendarCells,
             selectedDate = selectedDate,
-            onDateSelected = {}
+            onDateSelected = {},
         )
     }
 }
@@ -146,7 +145,7 @@ fun CalendarGrid(
     onDateSelected: (LocalDate) -> Unit,
 ){
     LazyVerticalGrid(
-        columns = GridCells.Fixed(7)
+        columns = GridCells.Fixed(7),
     ) {
         items(calendarCells){ date ->
             CalendarCell(
@@ -179,6 +178,8 @@ fun WeekdayHeader(
 
 @Composable
 fun CalendarHeader(
+    previousMonthClicked: () -> Unit = {},
+    nextMonthClicked: () -> Unit = {},
     displayedMonth: YearMonth,
     modifier: Modifier = Modifier
 ){
@@ -190,7 +191,7 @@ fun CalendarHeader(
         verticalAlignment = Alignment.CenterVertically
     ){
         IconButton(
-            onClick = {/*TODO Previous Month Button*/}
+            onClick = previousMonthClicked
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
@@ -204,7 +205,7 @@ fun CalendarHeader(
         )
 
         IconButton(
-            onClick = {/*TODO Next Month Button*/}
+            onClick = nextMonthClicked
         ) {
             Icon(
                 imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -224,6 +225,17 @@ fun CalendarBodyPreview(){
             selectedDate = LocalDate.now(),
             onPrevMonth = {},
             onNextMonth = {}
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun CalendarScreenPreview(){
+    TimeManagementAppTheme {
+        CalendarScreen(
+            navigateToHome = {},
+            navigateToAnalytics = {}
         )
     }
 }
