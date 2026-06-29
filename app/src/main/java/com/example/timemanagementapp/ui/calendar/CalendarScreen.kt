@@ -43,6 +43,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.MaterialTheme
 import com.example.timemanagementapp.data.Goal
 import com.example.timemanagementapp.data.GoalStatus
+import com.example.timemanagementapp.data.testGoalsSizeThree
 import com.example.timemanagementapp.ui.components.GoalList
 import com.example.timemanagementapp.ui.theme.selectedDate
 import java.time.YearMonth
@@ -56,7 +57,8 @@ object CalendarDestination : NavigationDest {
 fun CalendarScreen(
     navigateToHome: () -> Unit,
     navigateToAnalytics: () -> Unit, //TODO
-    viewModel: CalendarViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    viewModel: CalendarViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    goals: List<Goal> = emptyList(), //TODO delete
 ){
     Scaffold(
         topBar = {
@@ -76,6 +78,7 @@ fun CalendarScreen(
             calendarCells = viewModel.calendarCells,
             selectedDate = viewModel.selectedDate,
             onPrevMonth = viewModel::previousMonth,
+            goals = goals,
             onNextMonth = viewModel::nextMonth,
             onDateSelected = viewModel::selectDate,
             modifier = Modifier.padding(innerPadding)
@@ -290,29 +293,7 @@ fun CalendarBodyPreview(){
             selectedDate = LocalDate.of(2026, 6, 3),
             onPrevMonth = {},
             onNextMonth = {},
-            goals = listOf(
-                Goal(
-                    goalID = 1,
-                    hours = 1,
-                    minutes = 30,
-                    goalTitle = "Study",
-                    status = GoalStatus.NOT_STARTED
-                ),
-                Goal(
-                    goalID = 2,
-                    hours = 1,
-                    minutes = 30,
-                    goalTitle = "work",
-                    status = GoalStatus.COMPLETED
-                ),
-                Goal(
-                    goalID = 3,
-                    hours = 1,
-                    minutes = 30,
-                    goalTitle = "test",
-                    status = GoalStatus.NOT_STARTED
-                )
-            )
+            goals = testGoalsSizeThree
         )
     }
 }
@@ -323,7 +304,8 @@ fun CalendarScreenPreview(){
     TimeManagementAppTheme {
         CalendarScreen(
             navigateToHome = {},
-            navigateToAnalytics = {}
+            navigateToAnalytics = {},
+            goals = testGoalsSizeThree
         )
     }
 }
@@ -333,29 +315,7 @@ fun CalendarScreenPreview(){
 fun GoalInformationPreview(){
     TimeManagementAppTheme {
         GoalInformation(
-            goals = listOf(
-                Goal(
-                    goalID = 1,
-                    hours = 1,
-                    minutes = 30,
-                    goalTitle = "Study",
-                    status = GoalStatus.NOT_STARTED
-                ),
-                Goal(
-                    goalID = 2,
-                    hours = 1,
-                    minutes = 30,
-                    goalTitle = "work",
-                    status = GoalStatus.COMPLETED
-                ),
-                Goal(
-                    goalID = 3,
-                    hours = 1,
-                    minutes = 30,
-                    goalTitle = "test",
-                    status = GoalStatus.NOT_STARTED
-                )
-            ),
+            goals = testGoalsSizeThree,
             selectedDate = LocalDate.now()
         )
     }

@@ -7,8 +7,11 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 
 @Database(
-    entities = [Goal::class],
-    version = 6,
+    entities = [
+        Goal::class,
+        CalendarEvent::class
+    ],
+    version = 7,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
