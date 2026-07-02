@@ -4,9 +4,9 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.timemanagementapp.data.Goal
-import com.example.timemanagementapp.data.GoalDao
-import com.example.timemanagementapp.data.GoalsDatabase
+import com.example.timemanagementapp.data.goal.Goal
+import com.example.timemanagementapp.data.goal.GoalDao
+import com.example.timemanagementapp.data.goal.GoalsDatabase
 import com.example.timemanagementapp.util.GOALDAOTEST_TOTAL_MINUTES
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking

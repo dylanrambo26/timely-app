@@ -37,10 +37,10 @@ import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import androidx.compose.runtime.getValue
-import com.example.timemanagementapp.data.GoalStatus
 import com.example.timemanagementapp.ui.components.DisplayTime
 import com.example.timemanagementapp.ui.components.GoalList
-import com.example.timemanagementapp.util.filterByStatus
+import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListUiState
+import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
 import com.example.timemanagementapp.util.nonActiveGoals
 import kotlinx.coroutines.launch
 
@@ -53,13 +53,14 @@ object AddGoalDestination : NavigationDest{
 @Composable
 fun AddGoalScreen(
     viewModel: AddGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    goalListViewModel: GoalListViewModel,
+    //goalListViewModel: GoalListViewModel,
+    scheduledGoalsListViewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val coroutineScope = rememberCoroutineScope()
-    val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
+    val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
     Scaffold(
         topBar = { TimelySmallTopAppBar(stringResource(R.string.add_goal)) },
         bottomBar = {
@@ -72,7 +73,8 @@ fun AddGoalScreen(
     ) { innerPadding ->
         AddGoalBody(
             goalUiState = viewModel.goalUiState,
-            goalListUiState = goalListUiState,
+            //goalListUiState = goalListUiState,
+            scheduledGoalsListUiState = scheduledGoalsListUiState,
             onGoalValueChange = viewModel::updateUiState,
             onAddGoalClicked = {
                 coroutineScope.launch {
@@ -88,7 +90,8 @@ fun AddGoalScreen(
 @Composable
 fun AddGoalBody(
     goalUiState: GoalUiState,
-    goalListUiState: GoalListUiState,
+    //goalListUiState: GoalListUiState,
+    scheduledGoalsListUiState: ScheduledGoalsListUiState,
     onGoalValueChange: (GoalDetails) -> Unit,
     onAddGoalClicked: () -> Unit,
     onClearButtonClicked: () -> Unit,
@@ -102,7 +105,7 @@ fun AddGoalBody(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        val filteredGoals = goalListUiState.goalList.nonActiveGoals()
+        val filteredGoals = scheduledGoalsListUiState.scheduledGoalsList.nonActiveGoals()
 
         GoalList(
             goals = filteredGoals,
@@ -218,6 +221,7 @@ fun AddGoalInputForm(
 }
 
 //Preview the AddLogScreen
+/*
 @Preview(showBackground = true)
 @Composable
 fun AddGoalScreenPreview(){
@@ -234,4 +238,4 @@ fun AddGoalScreenPreview(){
             goalListUiState = GoalListUiState(listOf())
         )
     }
-}
+}*/

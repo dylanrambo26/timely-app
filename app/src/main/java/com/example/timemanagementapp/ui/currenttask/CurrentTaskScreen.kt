@@ -1,20 +1,11 @@
 package com.example.timemanagementapp.ui.currenttask
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -37,16 +28,18 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
-import com.example.timemanagementapp.data.Goal
-import com.example.timemanagementapp.data.GoalStatus
+import com.example.timemanagementapp.data.goal.Goal
+import com.example.timemanagementapp.data.goal.GoalStatus
+import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
 import com.example.timemanagementapp.ui.AppViewModelProvider
-import com.example.timemanagementapp.ui.components.DisplayTime
 import com.example.timemanagementapp.ui.components.GoalList
 import com.example.timemanagementapp.ui.goal.GoalListUiState
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
-import com.example.timemanagementapp.util.filterByStatus
+import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListUiState
+import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
+import com.example.timemanagementapp.util.incompleteGoals
 import com.example.timemanagementapp.util.nonActiveGoals
 
 object CurrentTaskDestination : NavigationDest{
@@ -56,14 +49,15 @@ object CurrentTaskDestination : NavigationDest{
 
 @Composable
 fun CurrentTaskScreen(
-    goalListViewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    //goalListViewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    scheduledGoalsListViewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     currentTaskViewModel: CurrentTaskViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
     navigateBack: () -> Unit
 ){
-    val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
+    val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
     val currentTaskUiState by currentTaskViewModel.currentTaskUiState.collectAsState()
     Scaffold(
         topBar = {
@@ -78,10 +72,11 @@ fun CurrentTaskScreen(
         }
     ) { innerPadding ->
         CurrentTaskBody(
-            goalListUiState = goalListUiState,
+            //goalListUiState = goalListUiState,
+            scheduledGoalsListUiState = scheduledGoalsListUiState,
             currentTaskUiState = currentTaskUiState,
-            onSaveCurrentTaskPressed = {goal ->
-                currentTaskViewModel.startTaskTimer(goal)
+            onSaveCurrentTaskPressed = {scheduledGoalWithGoal ->
+                currentTaskViewModel.startTaskTimer(scheduledGoalWithGoal)
             },
             navigateToHome = navigateToHome,
             navigateBack = navigateBack,
@@ -92,9 +87,10 @@ fun CurrentTaskScreen(
 
 @Composable
 fun CurrentTaskBody(
-    goalListUiState: GoalListUiState,
+    //goalListUiState: GoalListUiState,
+    scheduledGoalsListUiState: ScheduledGoalsListUiState,
     currentTaskUiState: CurrentTaskUiState,
-    onSaveCurrentTaskPressed: (Goal) -> Unit,
+    onSaveCurrentTaskPressed: (ScheduledGoalWithGoal) -> Unit,
     navigateToHome: () -> Unit,
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -106,18 +102,18 @@ fun CurrentTaskBody(
     ) {
         var selectedGoalId by rememberSaveable { mutableStateOf<Int?>(null) }
 
-        val selectedGoal = goalListUiState.goalList
+        val selectedGoal = scheduledGoalsListUiState.scheduledGoalsList
             .firstOrNull{
-                it.goalID == selectedGoalId
+                it.scheduledGoal.scheduledGoalId == selectedGoalId
             }
-        val filteredGoals = goalListUiState.goalList.nonActiveGoals()
+        val filteredGoals = scheduledGoalsListUiState.scheduledGoalsList.incompleteGoals()
 
         //Display a goal list filtered for goals that are paused and not started only
         GoalList(
             goals = filteredGoals,
             selectedGoalId = selectedGoalId,
-            onGoalClick = {goal ->
-                selectedGoalId = goal.goalID
+            onGoalClick = {combinedGoal ->
+                selectedGoalId = combinedGoal.scheduledGoal.scheduledGoalId
             },
             modifier = Modifier
                 .weight(1f)
@@ -172,7 +168,7 @@ fun CurrentTaskBody(
     }
 
 }
-@Preview(showBackground = true)
+/*@Preview(showBackground = true)
 @Composable
 fun CurrentTaskBodyPreview(){
     TimeManagementAppTheme {
@@ -191,4 +187,4 @@ fun CurrentTaskBodyPreview(){
             navigateBack = {}
         )
     }
-}
+}*/

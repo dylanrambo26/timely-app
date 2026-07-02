@@ -41,8 +41,8 @@ import java.time.LocalDate
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.MaterialTheme
-import com.example.timemanagementapp.data.Goal
-import com.example.timemanagementapp.data.GoalStatus
+import com.example.timemanagementapp.data.goal.Goal
+import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
 import com.example.timemanagementapp.data.testGoalsSizeThree
 import com.example.timemanagementapp.ui.components.GoalList
 import com.example.timemanagementapp.ui.theme.selectedDate
@@ -58,7 +58,7 @@ fun CalendarScreen(
     navigateToHome: () -> Unit,
     navigateToAnalytics: () -> Unit, //TODO
     viewModel: CalendarViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    goals: List<Goal> = emptyList(), //TODO delete
+    goals: List<ScheduledGoalWithGoal> = emptyList(), //TODO delete
 ){
     Scaffold(
         topBar = {
@@ -92,7 +92,7 @@ fun CalendarBody(
     selectedDate: LocalDate = LocalDate.now(),
     onPrevMonth: () -> Unit,
     onNextMonth: () -> Unit,
-    goals: List<Goal> = emptyList(), //TODO delete
+    goals: List<ScheduledGoalWithGoal> = emptyList(), //TODO delete
     onDateSelected: (LocalDate) -> Unit = {},
     displayedMonth: YearMonth = YearMonth.now(),
     modifier: Modifier = Modifier
@@ -123,7 +123,7 @@ fun CalendarBody(
 //TODO Edit strings to have selected date values
 @Composable
 fun GoalInformation(
-    goals: List<Goal> = emptyList(),
+    goals: List<ScheduledGoalWithGoal> = emptyList(),
     selectedDate: LocalDate,
     onEditGoalsClicked: () -> Unit = {},
 ){

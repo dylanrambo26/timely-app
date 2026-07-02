@@ -1,6 +1,7 @@
 package com.example.timemanagementapp.data
 
 import androidx.room.TypeConverter
+import com.example.timemanagementapp.data.goal.GoalStatus
 import java.time.LocalDate
 
 class Converters {

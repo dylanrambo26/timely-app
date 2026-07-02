@@ -1,4 +1,4 @@
-package com.example.timemanagementapp.data
+package com.example.timemanagementapp.data.calendar
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey

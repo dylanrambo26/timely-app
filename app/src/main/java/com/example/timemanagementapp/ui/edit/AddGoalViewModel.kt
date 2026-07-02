@@ -2,8 +2,8 @@ package com.example.timemanagementapp.ui.edit
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.example.timemanagementapp.data.Goal
-import com.example.timemanagementapp.data.GoalsRepository
+import com.example.timemanagementapp.data.goal.Goal
+import com.example.timemanagementapp.data.goal.GoalsRepository
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.viewModelScope
@@ -12,6 +12,7 @@ import kotlinx.coroutines.launch
 
 class AddGoalViewModel(private val goalsRepository: GoalsRepository) : ViewModel(){
 
+    //TODO might separate checks for time remaining in day to an addScheduledGoal screen therefore this could be reusable
 
     var goalUiState by mutableStateOf(GoalUiState())
         private set

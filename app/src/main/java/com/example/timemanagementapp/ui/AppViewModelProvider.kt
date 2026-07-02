@@ -12,6 +12,7 @@ import com.example.timemanagementapp.ui.currenttask.CurrentTaskViewModel
 import com.example.timemanagementapp.ui.edit.AddGoalViewModel
 import com.example.timemanagementapp.ui.edit.EditGoalViewModel
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
+import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
 
 
 //View model factory for each view model in Timely App
@@ -41,13 +42,20 @@ object AppViewModelProvider{
         initializer {
             CurrentTaskViewModel(
                 timelyApplication().container.userPreferencesRepository,
-                timelyApplication().container.goalsRepository,
+                timelyApplication().container.scheduledGoalsRepository,
                 timelyApplication().container.alarmManagerGoalsRepository
             )
         }
 
         initializer {
             CalendarViewModel()
+        }
+
+        initializer {
+            ScheduledGoalsListViewModel(
+                timelyApplication().container.scheduledGoalsRepository,
+                timelyApplication().container.calendarEventsRepository
+            )
         }
     }
 }

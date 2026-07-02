@@ -1,4 +1,4 @@
-package com.example.timemanagementapp.data
+package com.example.timemanagementapp.data.goal
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -10,7 +10,7 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface GoalDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
     suspend fun insert(goal: Goal)
 
     @Update

@@ -1,8 +1,8 @@
-package com.example.timemanagementapp.data
+package com.example.timemanagementapp.data.goal
 
 import kotlinx.coroutines.flow.Flow
 
-class OfflineGoalsRepository(private val goalDao: GoalDao): GoalsRepository{
+class OfflineGoalsRepository(private val goalDao: GoalDao): GoalsRepository {
     override fun getAllGoalsStream(): Flow<List<Goal>> = goalDao.getAllGoals()
 
     override fun getGoalStream(id: Int): Flow<Goal?> = goalDao.getGoal(id)
@@ -17,7 +17,7 @@ class OfflineGoalsRepository(private val goalDao: GoalDao): GoalsRepository{
 
     override suspend fun updateGoal(goal: Goal) = goalDao.update(goal)
 
-    override suspend fun updateGoalStatus(id: Int, status: GoalStatus) = goalDao.updateGoalStatus(id, status)
+    /*override suspend fun updateGoalStatus(id: Int, status: GoalStatus) = goalDao.updateGoalStatus(id, status)
 
-    override suspend fun updateCompletedMillis(id: Int, millis: Long) = goalDao.updateCompletedMillis(id, millis)
+    override suspend fun updateCompletedMillis(id: Int, millis: Long) = goalDao.updateCompletedMillis(id, millis)*/
 }

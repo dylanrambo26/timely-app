@@ -1,5 +1,6 @@
-package com.example.timemanagementapp.data
+package com.example.timemanagementapp.data.calendar
 
+import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 interface CalendarEventsRepository {
@@ -10,4 +11,6 @@ interface CalendarEventsRepository {
     suspend fun deleteCalendarEvent(event: CalendarEvent)
 
     suspend fun getEventByDate(date: LocalDate): CalendarEvent?
+
+    fun getEventByDateFlow(date: LocalDate): Flow<CalendarEvent?>
 }

@@ -4,7 +4,14 @@ import android.content.Context
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
-
+import com.example.timemanagementapp.data.alarm.AlarmManagerGoalsRepository
+import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
+import com.example.timemanagementapp.data.calendar.OfflineCalendarEventsRepository
+import com.example.timemanagementapp.data.goal.GoalsDatabase
+import com.example.timemanagementapp.data.goal.GoalsRepository
+import com.example.timemanagementapp.data.goal.OfflineGoalsRepository
+import com.example.timemanagementapp.data.scheduledgoal.OfflineScheduledGoalsRepository
+import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 
 
 private const val CURRENT_TASK_PREFERENCE_NAME = "current_task_preferences"
@@ -19,6 +26,8 @@ interface AppContainer{
     val goalsRepository: GoalsRepository
     val userPreferencesRepository: UserPreferencesRepository
     val alarmManagerGoalsRepository: AlarmManagerGoalsRepository
+    val scheduledGoalsRepository: ScheduledGoalsRepository
+    val calendarEventsRepository: CalendarEventsRepository
 }
 
 class AppDataContainer(private val context: Context) : AppContainer {
@@ -32,5 +41,13 @@ class AppDataContainer(private val context: Context) : AppContainer {
 
     override val alarmManagerGoalsRepository: AlarmManagerGoalsRepository by lazy {
         AlarmManagerGoalsRepository(context)
+    }
+
+    override val scheduledGoalsRepository: ScheduledGoalsRepository by lazy {
+        OfflineScheduledGoalsRepository(GoalsDatabase.getDatabase(context).scheduledGoalDao())
+    }
+
+    override val calendarEventsRepository: CalendarEventsRepository by lazy {
+        OfflineCalendarEventsRepository(GoalsDatabase.getDatabase(context).calendarEventDao())
     }
 }

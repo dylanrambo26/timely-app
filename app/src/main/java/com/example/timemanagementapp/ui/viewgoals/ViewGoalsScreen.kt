@@ -33,8 +33,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
-import com.example.timemanagementapp.data.Goal
-import com.example.timemanagementapp.data.GoalStatus
+import com.example.timemanagementapp.data.goal.Goal
+import com.example.timemanagementapp.data.goal.GoalStatus
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.components.GoalList
 import com.example.timemanagementapp.ui.goal.GoalListUiState
@@ -55,12 +55,13 @@ object ViewGoalsDestination : NavigationDest{
 fun ViewGoalsScreen(
     onAddGoalButtonClicked: () -> Unit = {},
     onEditGoalsButtonClicked: () -> Unit = {},
-    viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    //viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    viewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
 ){
-    val goalListUiState by viewModel.goalListUiState.collectAsState()
+    val scheduledGoalsListUiState by viewModel.scheduledGoalsListUiState.collectAsState()
     Scaffold(
         topBar = {
             TimelySmallTopAppBar(stringResource(R.string.edit_todays_goals))
@@ -74,7 +75,7 @@ fun ViewGoalsScreen(
         }
     ) { innerPadding ->
         ViewGoalsBody(
-            goalListUiState = goalListUiState,
+            scheduledGoalsListUiState = scheduledGoalsListUiState,
             onAddGoal = onAddGoalButtonClicked,
             onEditGoalsClicked = onEditGoalsButtonClicked,
             modifier = Modifier.padding(innerPadding)
@@ -84,7 +85,8 @@ fun ViewGoalsScreen(
 
 @Composable
 fun ViewGoalsBody(
-    goalListUiState: GoalListUiState,
+    //goalListUiState: GoalListUiState,
+    scheduledGoalsListUiState: ScheduledGoalsListUiState,
     onAddGoal: () -> Unit,
     onEditGoalsClicked: () -> Unit,
     modifier: Modifier = Modifier
@@ -94,7 +96,7 @@ fun ViewGoalsBody(
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val orderedGoalList = goalListUiState.goalList.completedGoals() + goalListUiState.goalList.incompleteGoals()
+        val orderedGoalList = scheduledGoalsListUiState.scheduledGoalsList.completedGoals() + scheduledGoalsListUiState.scheduledGoalsList.incompleteGoals()
         GoalList(
             goals = orderedGoalList,
             addColors = true,
@@ -186,7 +188,7 @@ fun ViewGoalsBody(
         }
     }
 }
-@Preview(showBackground = true)
+/*@Preview(showBackground = true)
 @Composable
 fun ViewGoalsBodyPreview(){
     TimeManagementAppTheme {
@@ -201,4 +203,4 @@ fun ViewGoalsBodyPreview(){
             modifier = Modifier
         )
     }
-}
+}*/
