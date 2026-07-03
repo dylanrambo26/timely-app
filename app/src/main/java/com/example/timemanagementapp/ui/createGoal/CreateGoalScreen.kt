@@ -1,4 +1,4 @@
-package com.example.timemanagementapp.ui.edit
+package com.example.timemanagementapp.ui.createGoal
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,35 +32,35 @@ import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.ui.AppViewModelProvider
 //import com.example.timemanagementapp.data.TestData
-import com.example.timemanagementapp.ui.goal.GoalListUiState
-import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import androidx.compose.runtime.getValue
-import com.example.timemanagementapp.ui.components.DisplayTime
-import com.example.timemanagementapp.ui.components.GoalList
+import com.example.timemanagementapp.ui.components.ScheduledGoalList
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListUiState
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
 import com.example.timemanagementapp.util.nonActiveGoals
 import kotlinx.coroutines.launch
 
 
-object AddGoalDestination : NavigationDest{
-    override val route = "add_goal"
-    override val titleRes = R.string.top_app_bar_add_goal
+object CreateGoalDestination : NavigationDest{
+    override val route = "create_goal"
+    override val titleRes = R.string.create_a_goal_from_scratch
+
+    const val eventIdArg = "eventId"
+    val routeWithArgs = "$route/{$eventIdArg}"
 }
 
 @Composable
-fun AddGoalScreen(
+fun CreateGoalScreen(
     viewModel: AddGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
     //goalListViewModel: GoalListViewModel,
-    scheduledGoalsListViewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    //scheduledGoalsListViewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val coroutineScope = rememberCoroutineScope()
-    val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
+    //val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
     Scaffold(
         topBar = { TimelySmallTopAppBar(stringResource(R.string.add_goal)) },
         bottomBar = {
@@ -71,10 +71,10 @@ fun AddGoalScreen(
             )
         }
     ) { innerPadding ->
-        AddGoalBody(
+        CreateGoalBody(
             goalUiState = viewModel.goalUiState,
             //goalListUiState = goalListUiState,
-            scheduledGoalsListUiState = scheduledGoalsListUiState,
+            //scheduledGoalsListUiState = scheduledGoalsListUiState,
             onGoalValueChange = viewModel::updateUiState,
             onAddGoalClicked = {
                 coroutineScope.launch {
@@ -88,10 +88,10 @@ fun AddGoalScreen(
 }
 
 @Composable
-fun AddGoalBody(
+fun CreateGoalBody(
     goalUiState: GoalUiState,
     //goalListUiState: GoalListUiState,
-    scheduledGoalsListUiState: ScheduledGoalsListUiState,
+    //scheduledGoalsListUiState: ScheduledGoalsListUiState,
     onGoalValueChange: (GoalDetails) -> Unit,
     onAddGoalClicked: () -> Unit,
     onClearButtonClicked: () -> Unit,
@@ -105,15 +105,15 @@ fun AddGoalBody(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        val filteredGoals = scheduledGoalsListUiState.scheduledGoalsList.nonActiveGoals()
+        //val filteredGoals = scheduledGoalsListUiState.scheduledGoalsList.nonActiveGoals()
 
-        GoalList(
+        /*ScheduledGoalList(
             goals = filteredGoals,
             modifier = Modifier
                 .weight(1f)
                 .padding(dimensionResource(R.dimen.padding_medium))
-        )
-        DisplayTime(duration = goalUiState.remainingMinutesInDay, title = stringResource(R.string.available_time_in_full_day))
+        )*/
+        //DisplayTime(duration = goalUiState.remainingMinutesInDay, title = stringResource(R.string.available_time_in_full_day))
         AddGoalInputForm(
             goalDetails = goalUiState.goalDetails,
             onValueChange = onGoalValueChange,
@@ -221,12 +221,11 @@ fun AddGoalInputForm(
 }
 
 //Preview the AddLogScreen
-/*
 @Preview(showBackground = true)
 @Composable
-fun AddGoalScreenPreview(){
+fun CreateGoalScreenPreview(){
     TimeManagementAppTheme {
-        AddGoalBody(
+        CreateGoalBody(
             goalUiState = GoalUiState(
                 GoalDetails(
                     title = "Title", hours = "1", minutes = "30"
@@ -235,7 +234,9 @@ fun AddGoalScreenPreview(){
             onGoalValueChange = {},
             onAddGoalClicked = {},
             onClearButtonClicked = {},
-            goalListUiState = GoalListUiState(listOf())
+            /*scheduledGoalsListUiState = ScheduledGoalsListUiState(
+                scheduledGoalsList = emptyList()
+            ),*/
         )
     }
-}*/
+}

@@ -41,10 +41,9 @@ import java.time.LocalDate
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.MaterialTheme
-import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
-import com.example.timemanagementapp.data.testGoalsSizeThree
-import com.example.timemanagementapp.ui.components.GoalList
+import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
+import com.example.timemanagementapp.ui.components.ScheduledGoalList
 import com.example.timemanagementapp.ui.theme.selectedDate
 import java.time.YearMonth
 
@@ -133,7 +132,7 @@ fun GoalInformation(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        GoalList(
+        ScheduledGoalList(
             goals = goals,
             addColors = true,
             modifier = Modifier.weight(1f)
@@ -293,7 +292,7 @@ fun CalendarBodyPreview(){
             selectedDate = LocalDate.of(2026, 6, 3),
             onPrevMonth = {},
             onNextMonth = {},
-            goals = testGoalsSizeThree
+            goals = testScheduledGoalsSizeThree
         )
     }
 }
@@ -305,7 +304,7 @@ fun CalendarScreenPreview(){
         CalendarScreen(
             navigateToHome = {},
             navigateToAnalytics = {},
-            goals = testGoalsSizeThree
+            goals = testScheduledGoalsSizeThree
         )
     }
 }
@@ -315,7 +314,7 @@ fun CalendarScreenPreview(){
 fun GoalInformationPreview(){
     TimeManagementAppTheme {
         GoalInformation(
-            goals = testGoalsSizeThree,
+            goals = testScheduledGoalsSizeThree,
             selectedDate = LocalDate.now()
         )
     }

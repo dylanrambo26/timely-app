@@ -9,7 +9,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.timemanagementapp.TimelyApplication
 import com.example.timemanagementapp.ui.calendar.CalendarViewModel
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskViewModel
-import com.example.timemanagementapp.ui.edit.AddGoalViewModel
+import com.example.timemanagementapp.ui.createGoal.AddGoalViewModel
 import com.example.timemanagementapp.ui.edit.EditGoalViewModel
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel

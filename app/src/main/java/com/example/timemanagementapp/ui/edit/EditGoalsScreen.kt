@@ -30,15 +30,12 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
-import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
 //import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.components.DisplayTime
-import com.example.timemanagementapp.ui.components.GoalList
-import com.example.timemanagementapp.ui.goal.GoalListUiState
-import com.example.timemanagementapp.ui.goal.GoalListViewModel
+import com.example.timemanagementapp.ui.components.ScheduledGoalList
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListUiState
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
@@ -100,7 +97,7 @@ fun EditGoalsBody(
     ) {
         val filteredGoals = scheduledGoalsListUiState.scheduledGoalsList.nonActiveGoals()
 
-        GoalList(
+        ScheduledGoalList(
             goals = filteredGoals,
             onDeleteGoal = onDeleteGoal,
             onEditGoal = onEditGoal,

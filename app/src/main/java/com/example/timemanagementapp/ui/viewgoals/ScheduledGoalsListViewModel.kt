@@ -62,6 +62,10 @@ class ScheduledGoalsListViewModel(
             scheduledGoalsRepository.deleteScheduledGoal(scheduledGoal = scheduledGoal)
         }
     }
+
+    fun updateSelectedDate(date: LocalDate){
+        selectedDate.value = date
+    }
 }
 
 data class ScheduledGoalsListUiState(

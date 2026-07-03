@@ -13,14 +13,18 @@ import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
-import com.example.timemanagementapp.ui.edit.AddGoalDestination
 import com.example.timemanagementapp.ui.AppViewModelProvider
+import com.example.timemanagementapp.ui.add.AddExistingGoalDestination
+import com.example.timemanagementapp.ui.add.AddExistingGoalScreen
+import com.example.timemanagementapp.ui.add.AddGoalSelectionDestination
+import com.example.timemanagementapp.ui.add.AddGoalSelectionScreen
 import com.example.timemanagementapp.ui.calendar.CalendarDestination
 import com.example.timemanagementapp.ui.calendar.CalendarScreen
 import com.example.timemanagementapp.ui.calendar.CalendarViewModel
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskDestination
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskScreen
-import com.example.timemanagementapp.ui.edit.AddGoalScreen
+import com.example.timemanagementapp.ui.createGoal.CreateGoalDestination
+import com.example.timemanagementapp.ui.createGoal.CreateGoalScreen
 import com.example.timemanagementapp.ui.edit.EditGoalDestination
 import com.example.timemanagementapp.ui.edit.EditGoalsScreen
 import com.example.timemanagementapp.ui.edit.EditOneGoalScreen
@@ -84,7 +88,7 @@ fun TimelyNavHost(
                     viewModel(parentEntry, factory = AppViewModelProvider.Factory)
 
                 EditGoalsScreen(
-                    onAddGoalButtonClicked = {navController.navigate(AddGoalDestination.route)},
+                    onAddGoalButtonClicked = {navController.navigate(CreateGoalDestination.route)},
                     onEditGoal = { navController.navigate("${EditGoalDestination.route}/${it.scheduledGoal.scheduledGoalId}")},
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
@@ -105,18 +109,18 @@ fun TimelyNavHost(
                     navigateToAnalytics = {/*TODO*/},
                 )
             }
-            composable(route = AddGoalDestination.route){ backStackEntry ->
+            composable(route = CreateGoalDestination.route){ backStackEntry ->
                 val parentEntry = remember(backStackEntry) {
                     navController.getBackStackEntry(GoalListGraph.route)
                 }
-                val sharedViewModel: ScheduledGoalsListViewModel =
-                    viewModel(parentEntry, factory = AppViewModelProvider.Factory)
+                /*val sharedViewModel: ScheduledGoalsListViewModel =
+                    viewModel(parentEntry, factory = AppViewModelProvider.Factory)*/
 
-                AddGoalScreen(
+                CreateGoalScreen(
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToAnalytics = {/*TODO*/},
-                    scheduledGoalsListViewModel = sharedViewModel
+                    //scheduledGoalsListViewModel = sharedViewModel
                 )
             }
             composable(
@@ -147,12 +151,56 @@ fun TimelyNavHost(
                     viewModel(parentEntry, factory = AppViewModelProvider.Factory)
 
                 ViewGoalsScreen(
-                    onAddGoalButtonClicked = {navController.navigate(AddGoalDestination.route)},
+                    onAddGoalButtonClicked = {navController.navigate(CreateGoalDestination.route)},
                     onEditGoalsButtonClicked = {navController.navigate(EditGoalsDestination.route)},
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToAnalytics = {/*TODO*/},
                     viewModel = sharedViewModel
+                )
+            }
+            composable(
+                route = AddGoalSelectionDestination.routeWithArgs,
+                arguments = listOf(
+                    navArgument(AddGoalSelectionDestination.eventIdArg){
+                        type = NavType.IntType
+                    }
+                )
+            ) { backStackEntry ->
+                val eventId = backStackEntry.arguments?.getInt(AddGoalSelectionDestination.eventIdArg)
+
+                AddGoalSelectionScreen(
+                    addExistingGoalButtonClicked = {
+                        navController.navigate("${AddExistingGoalDestination.route}/$eventId")
+                    },
+                    createGoalButtonClicked = {
+                        navController.navigate("${CreateGoalDestination.route}/$eventId")
+                    },
+                    returnToEditGoalsClicked = {
+                        navController.popBackStack()
+                    },
+                    navigateToHome = {navController.navigate(HomeDestination.route)},
+                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
+                    navigateToAnalytics = {/*TODO*/},
+                )
+            }
+            composable(
+                route = AddExistingGoalDestination.routeWithArgs,
+                arguments = listOf(
+                    navArgument(AddExistingGoalDestination.eventIdArg){
+                        type = NavType.IntType
+                    }
+                )
+            ) { backStackEntry ->
+                val viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory)
+
+                AddExistingGoalScreen(
+                    onAddGoalButtonClicked = {navController.popBackStack()},
+                    onCancelButtonClicked = {navController.popBackStack()},
+                    viewModel = viewModel,
+                    navigateToHome = {navController.navigate(HomeDestination.route)},
+                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
+                    navigateToAnalytics = {/*TODO*/},
                 )
             }
         }

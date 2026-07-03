@@ -1,4 +1,4 @@
-package com.example.timemanagementapp.ui.edit
+package com.example.timemanagementapp.ui.createGoal
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
@@ -6,9 +6,6 @@ import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.goal.GoalsRepository
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
-import androidx.lifecycle.viewModelScope
-import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY
-import kotlinx.coroutines.launch
 
 class AddGoalViewModel(private val goalsRepository: GoalsRepository) : ViewModel(){
 
@@ -18,7 +15,7 @@ class AddGoalViewModel(private val goalsRepository: GoalsRepository) : ViewModel
         private set
 
 
-    init {
+    /*init {
         viewModelScope.launch {
             goalsRepository.getTotalMinutesStream().collect { totalMinutes ->
                 goalUiState = goalUiState.copy(
@@ -26,7 +23,7 @@ class AddGoalViewModel(private val goalsRepository: GoalsRepository) : ViewModel
                 )
             }
         }
-    }
+    }*/
 
     fun updateUiState(goalDetails: GoalDetails){
         goalUiState =
@@ -66,12 +63,13 @@ class AddGoalViewModel(private val goalsRepository: GoalsRepository) : ViewModel
             return false
         }
 
-        val newMinutes = h * 60 + m
+        //TODO remainingminutes is moved to addScheduledGoalViewModel
+        /*val newMinutes = h * 60 + m
 
         if(newMinutes > goalUiState.remainingMinutesInDay){
             goalUiState = goalUiState.copy(errorMessage = "The goal's allotted time must be less than the remaining time in the day. Delete or edit the other goals before saving this goal.")
             return false
-        }
+        }*/
         goalUiState = goalUiState.copy(errorMessage = "")
         return true
     }
@@ -87,7 +85,7 @@ class AddGoalViewModel(private val goalsRepository: GoalsRepository) : ViewModel
 data class GoalUiState(
     val goalDetails: GoalDetails = GoalDetails(),
     val isEntryValid: Boolean = false,
-    val remainingMinutesInDay: Int = MINUTES_IN_24_HOUR_DAY,
+    //val remainingMinutesInDay: Int = MINUTES_IN_24_HOUR_DAY,
     val errorMessage: String = ""
 )
 

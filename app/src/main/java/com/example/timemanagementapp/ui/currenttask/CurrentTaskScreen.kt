@@ -21,26 +21,19 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
-import com.example.timemanagementapp.data.goal.Goal
-import com.example.timemanagementapp.data.goal.GoalStatus
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
 import com.example.timemanagementapp.ui.AppViewModelProvider
-import com.example.timemanagementapp.ui.components.GoalList
-import com.example.timemanagementapp.ui.goal.GoalListUiState
-import com.example.timemanagementapp.ui.goal.GoalListViewModel
+import com.example.timemanagementapp.ui.components.ScheduledGoalList
 import com.example.timemanagementapp.ui.navigation.NavigationDest
-import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListUiState
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
 import com.example.timemanagementapp.util.incompleteGoals
-import com.example.timemanagementapp.util.nonActiveGoals
 
 object CurrentTaskDestination : NavigationDest{
     override val route = "current_task"
@@ -109,7 +102,7 @@ fun CurrentTaskBody(
         val filteredGoals = scheduledGoalsListUiState.scheduledGoalsList.incompleteGoals()
 
         //Display a goal list filtered for goals that are paused and not started only
-        GoalList(
+        ScheduledGoalList(
             goals = filteredGoals,
             selectedGoalId = selectedGoalId,
             onGoalClick = {combinedGoal ->

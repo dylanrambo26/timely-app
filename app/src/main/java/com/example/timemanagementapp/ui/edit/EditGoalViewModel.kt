@@ -9,6 +9,10 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.example.timemanagementapp.ui.createGoal.GoalDetails
+import com.example.timemanagementapp.ui.createGoal.GoalUiState
+import com.example.timemanagementapp.ui.createGoal.toGoal
+import com.example.timemanagementapp.ui.createGoal.toGoalDetails
 import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY
 import kotlinx.coroutines.flow.combine
 
@@ -50,12 +54,12 @@ class EditGoalViewModel(
             return false
         }
 
-        val newMinutes = h * 60 + m
+        /*val newMinutes = h * 60 + m
 
         if(newMinutes > goalUiState.remainingMinutesInDay){
             goalUiState = goalUiState.copy(errorMessage = "The goal's allotted time must be less than the remaining time in the day. Delete or edit the other goals before saving this goal.")
             return false
-        }
+        }*/
         goalUiState = goalUiState.copy(errorMessage = "")
         return true
     }
@@ -73,7 +77,7 @@ class EditGoalViewModel(
 
                 GoalUiState(
                     goalDetails = details,
-                    remainingMinutesInDay = remainingExcludingCurrentGoal,
+                    //remainingMinutesInDay = remainingExcludingCurrentGoal,
                     isEntryValid = validateInput(details)
                 )
             }.collect { combinedState ->

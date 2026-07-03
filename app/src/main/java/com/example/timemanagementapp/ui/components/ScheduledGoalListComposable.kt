@@ -2,7 +2,6 @@ package com.example.timemanagementapp.ui.components
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -38,7 +37,7 @@ import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.ui.theme.completedGoal
 
 @Composable
-fun GoalList(
+fun ScheduledGoalList(
     modifier: Modifier = Modifier,
     goals: List<ScheduledGoalWithGoal>,
     selectedGoalId: Int? = null,
@@ -168,9 +167,9 @@ fun rememberPreviousLazyColumn(value: Int): Int? {
 
 @Preview(showBackground = true)
 @Composable
-fun GoalListPreview(){
+fun ScheduledGoalListPreview(){
     TimeManagementAppTheme {
-        GoalList(
+        ScheduledGoalList(
             goals = listOf(
                 ScheduledGoalWithGoal(
                     scheduledGoal = ScheduledGoal(

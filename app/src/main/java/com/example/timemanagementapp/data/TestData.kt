@@ -5,7 +5,7 @@ import com.example.timemanagementapp.data.goal.GoalStatus
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
 
-val testGoalsSizeThree: List<ScheduledGoalWithGoal>
+val testScheduledGoalsSizeThree: List<ScheduledGoalWithGoal>
     get() = listOf(
         ScheduledGoalWithGoal(
             scheduledGoal = ScheduledGoal(
@@ -54,6 +54,28 @@ val testGoalsSizeThree: List<ScheduledGoalWithGoal>
                 hours = 1,
                 minutes = 30,
             )
+        ),
+    )
+
+val testGoalsSizeThree: List<Goal>
+    get() = listOf(
+        Goal(
+            goalID = 1,
+            goalTitle = "Study",
+            hours = 1,
+            minutes = 30,
+        ),
+        Goal(
+            goalID = 2,
+            goalTitle = "work",
+            hours = 1,
+            minutes = 30,
+        ),
+        Goal(
+            goalID = 3,
+            goalTitle = "test",
+            hours = 1,
+            minutes = 30,
         ),
     )
 
