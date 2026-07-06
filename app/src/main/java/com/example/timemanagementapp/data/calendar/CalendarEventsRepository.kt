@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 interface CalendarEventsRepository {
-    suspend fun insertCalendarEvent(event: CalendarEvent)
+    suspend fun insertCalendarEvent(event: CalendarEvent): Int
 
     suspend fun updateCalendarEvent(event: CalendarEvent)
 
@@ -13,4 +13,6 @@ interface CalendarEventsRepository {
     suspend fun getEventByDate(date: LocalDate): CalendarEvent?
 
     fun getEventByDateFlow(date: LocalDate): Flow<CalendarEvent?>
+
+    suspend fun getEventById(eventId: Int): CalendarEvent?
 }

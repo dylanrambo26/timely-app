@@ -48,11 +48,14 @@ object AppViewModelProvider{
         }
 
         initializer {
-            CalendarViewModel()
+            CalendarViewModel(
+                timelyApplication().container.calendarEventsRepository
+            )
         }
 
         initializer {
             ScheduledGoalsListViewModel(
+                this.createSavedStateHandle(),
                 timelyApplication().container.scheduledGoalsRepository,
                 timelyApplication().container.calendarEventsRepository
             )

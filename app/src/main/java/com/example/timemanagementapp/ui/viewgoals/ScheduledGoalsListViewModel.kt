@@ -1,5 +1,6 @@
 package com.example.timemanagementapp.ui.viewgoals
 
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.timemanagementapp.data.calendar.CalendarEvent
@@ -7,6 +8,7 @@ import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
+import com.example.timemanagementapp.ui.components.ScheduledGoalList
 import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -19,6 +21,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 class ScheduledGoalsListViewModel(
+    savedStateHandle: SavedStateHandle,
     private val scheduledGoalsRepository: ScheduledGoalsRepository,
     private val calendarEventsRepository: CalendarEventsRepository
 ): ViewModel() {
@@ -27,34 +30,34 @@ class ScheduledGoalsListViewModel(
         private const val TIMEOUT_MILLIS = 5_000L
     }
 
-    private val selectedDate = MutableStateFlow(LocalDate.now())
+    private val calendarEventId: Int = checkNotNull(savedStateHandle[ViewGoalsDestination.eventIdArg])
+    private val _date = MutableStateFlow<LocalDate?>(null)
+
+    init{
+        viewModelScope.launch {
+            _date.value = calendarEventsRepository.getEventById(calendarEventId)?.date
+        }
+    }
 
     val scheduledGoalsListUiState: StateFlow<ScheduledGoalsListUiState> =
-        selectedDate
-            .flatMapLatest { date: LocalDate ->
-                calendarEventsRepository.getEventByDateFlow(date)
-                    .flatMapLatest { event: CalendarEvent? ->
-                        if (event == null) {
-                            flowOf(emptyList())
-                        } else {
-                            scheduledGoalsRepository.getScheduledGoalsWithGoal(
-                                event.eventId
-                            )
-                        }
-                    }
-            }
-            .map { scheduledGoals: List<ScheduledGoalWithGoal> ->
+        scheduledGoalsRepository.getScheduledGoalsWithGoal(calendarEventId)
+            .map{ scheduledGoals ->
+                val totalMinutes = scheduledGoals.sumOf {
+                    it.goal.hours * 60 + it.goal.minutes
+                }
+
                 ScheduledGoalsListUiState(
                     scheduledGoalsList = scheduledGoals,
-                    totalMinutes = scheduledGoals.sumOf {
-                        it.goal.hours * 60 + it.goal.minutes
-                    }
+                    calendarEventId = calendarEventId,
+                    date = _date.value,
+                    totalMinutes = totalMinutes,
+                    remainingMinutesInDay = MINUTES_IN_24_HOUR_DAY - totalMinutes
                 )
             }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-                initialValue = ScheduledGoalsListUiState()
+                initialValue = ScheduledGoalsListUiState(calendarEventId = calendarEventId)
             )
 
     fun deleteScheduledGoal(scheduledGoal: ScheduledGoal){
@@ -62,14 +65,12 @@ class ScheduledGoalsListViewModel(
             scheduledGoalsRepository.deleteScheduledGoal(scheduledGoal = scheduledGoal)
         }
     }
-
-    fun updateSelectedDate(date: LocalDate){
-        selectedDate.value = date
-    }
 }
 
 data class ScheduledGoalsListUiState(
     val scheduledGoalsList: List<ScheduledGoalWithGoal> = emptyList(),
+    val calendarEventId: Int? = null,
+    val date: LocalDate? = null,
     val totalMinutes: Int = 0,
     val remainingMinutesInDay: Int = MINUTES_IN_24_HOUR_DAY - totalMinutes
 )

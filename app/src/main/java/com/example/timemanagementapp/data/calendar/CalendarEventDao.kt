@@ -13,7 +13,7 @@ import java.time.LocalDate
 interface CalendarEventDao {
 
     @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
-    suspend fun insert(event: CalendarEvent)
+    suspend fun insert(event: CalendarEvent): Long
 
     @Update
     suspend fun update(event: CalendarEvent)
@@ -34,4 +34,11 @@ interface CalendarEventDao {
         """
     )
     fun getEventByDateFlow(date: LocalDate): Flow<CalendarEvent?>
+
+    @Query(
+        """
+            SELECT * FROM calendar_events WHERE eventId = :eventId
+        """
+    )
+    suspend fun getEventById(eventId: Int): CalendarEvent?
 }

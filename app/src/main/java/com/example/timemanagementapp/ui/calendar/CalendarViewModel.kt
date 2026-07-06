@@ -6,9 +6,15 @@ import java.time.LocalDate
 import java.time.YearMonth
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.viewModelScope
+import com.example.timemanagementapp.data.calendar.CalendarEvent
+import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
 import com.example.timemanagementapp.util.CALENDARGRIDSIZE
+import kotlinx.coroutines.launch
 
-class CalendarViewModel : ViewModel() {
+class CalendarViewModel(
+    val calendarEventsRepository: CalendarEventsRepository
+) : ViewModel() {
     var displayedMonth by mutableStateOf(YearMonth.now())
         private set
 
@@ -56,5 +62,24 @@ class CalendarViewModel : ViewModel() {
         }
 
         return cells
+    }
+
+    fun viewGoalsForSelectedDate(onNavigate: (Int?) -> Unit){
+        viewModelScope.launch {
+            val existingEvent = calendarEventsRepository.getEventByDate(selectedDate)
+
+            val eventId = if(existingEvent?.eventId != null){
+                existingEvent.eventId
+            } else {
+                //Will return eventId
+                calendarEventsRepository.insertCalendarEvent(
+                    CalendarEvent(
+                        date = selectedDate
+                    )
+                )
+            }
+
+            onNavigate(eventId)
+        }
     }
 }

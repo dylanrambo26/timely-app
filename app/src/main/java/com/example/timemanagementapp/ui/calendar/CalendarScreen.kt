@@ -39,12 +39,13 @@ import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import java.time.LocalDate
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material3.MaterialTheme
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
 import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
 import com.example.timemanagementapp.ui.components.ScheduledGoalList
 import com.example.timemanagementapp.ui.theme.selectedDate
+import com.example.timemanagementapp.util.generateCalendarCellsPreview
 import java.time.YearMonth
 
 object CalendarDestination : NavigationDest {
@@ -56,6 +57,7 @@ object CalendarDestination : NavigationDest {
 fun CalendarScreen(
     navigateToHome: () -> Unit,
     navigateToAnalytics: () -> Unit, //TODO
+    onViewGoalsClicked: (Int?) -> Unit = {},
     viewModel: CalendarViewModel = viewModel(factory = AppViewModelProvider.Factory),
     goals: List<ScheduledGoalWithGoal> = emptyList(), //TODO delete
 ){
@@ -80,6 +82,11 @@ fun CalendarScreen(
             goals = goals,
             onNextMonth = viewModel::nextMonth,
             onDateSelected = viewModel::selectDate,
+            onViewGoalsClicked = {
+                viewModel.viewGoalsForSelectedDate { eventId ->
+                    onViewGoalsClicked(eventId)
+                }
+            },
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -94,6 +101,7 @@ fun CalendarBody(
     goals: List<ScheduledGoalWithGoal> = emptyList(), //TODO delete
     onDateSelected: (LocalDate) -> Unit = {},
     displayedMonth: YearMonth = YearMonth.now(),
+    onViewGoalsClicked: () -> Unit = {},
     modifier: Modifier = Modifier
 ){
     Column(
@@ -114,7 +122,8 @@ fun CalendarBody(
         )
         GoalInformation(
             goals = goals,
-            selectedDate = selectedDate
+            selectedDate = selectedDate,
+            onViewGoalsClicked = onViewGoalsClicked
         )
     }
 }
@@ -124,7 +133,7 @@ fun CalendarBody(
 fun GoalInformation(
     goals: List<ScheduledGoalWithGoal> = emptyList(),
     selectedDate: LocalDate,
-    onEditGoalsClicked: () -> Unit = {},
+    onViewGoalsClicked: () -> Unit = {},
 ){
     Row(
         horizontalArrangement = Arrangement.Center,
@@ -142,20 +151,24 @@ fun GoalInformation(
             modifier = Modifier
                 .weight(1f)
         ) {
+            val dateString = selectedDate.monthValue.toString() + "/" + selectedDate.dayOfMonth.toString()
             IconButton(
-                onClick = onEditGoalsClicked,
+                onClick = {
+                    onViewGoalsClicked()
+                },
                 modifier = Modifier.size(100.dp)
             ) {
+
                 Icon(
-                    imageVector = Icons.Default.Edit,
-                    contentDescription = "Edit today's goals",
+                    imageVector = Icons.AutoMirrored.Filled.List,
+                    contentDescription = "View $dateString goals",
                     modifier = Modifier
                         .size(100.dp)
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = "Edit ${selectedDate.monthValue}/${selectedDate.dayOfMonth} Goals",
+                text = "View $dateString Goals",
                 textAlign = TextAlign.Center
             )
         }
@@ -286,10 +299,9 @@ fun CalendarHeader(
 @Composable
 fun CalendarBodyPreview(){
     TimeManagementAppTheme {
-        val viewModel = CalendarViewModel()
         CalendarBody(
-            calendarCells = viewModel.generateCalendarCells(YearMonth.now()),
-            selectedDate = LocalDate.of(2026, 6, 3),
+            calendarCells = generateCalendarCellsPreview(month = YearMonth.now()),
+            selectedDate = LocalDate.of(2026, 7, 6),
             onPrevMonth = {},
             onNextMonth = {},
             goals = testScheduledGoalsSizeThree

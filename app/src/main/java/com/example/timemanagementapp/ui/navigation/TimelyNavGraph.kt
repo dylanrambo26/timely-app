@@ -73,10 +73,12 @@ fun TimelyNavHost(
                     viewModelStoreOwner = backStackEntry,
                     factory = AppViewModelProvider.Factory
                 )
-
+                
                 CalendarScreen(
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToAnalytics = {/*TODO*/},
+                    onViewGoalsClicked = {eventId ->
+                        navController.navigate("${ViewGoalsDestination.route}/$eventId")},
                     viewModel = viewModel
                 )
             }
@@ -142,7 +144,12 @@ fun TimelyNavHost(
                 )
             }
             composable(
-                route = ViewGoalsDestination.route
+                route = ViewGoalsDestination.routeWithArgs,
+                arguments = listOf(
+                    navArgument(ViewGoalsDestination.eventIdArg){
+                        type = NavType.IntType
+                    }
+                )
             ){ backstackEntry ->
                 val parentEntry = remember(backstackEntry){
                     navController.getBackStackEntry(GoalListGraph.route)

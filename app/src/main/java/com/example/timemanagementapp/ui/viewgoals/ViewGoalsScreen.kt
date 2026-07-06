@@ -42,10 +42,13 @@ import com.example.timemanagementapp.util.completedGoals
 import com.example.timemanagementapp.util.incompleteGoals
 import androidx.compose.foundation.layout.Box
 import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
+import java.time.LocalDate
 
 object ViewGoalsDestination : NavigationDest{
     override val route = "view_goals"
     override val titleRes = R.string.view_todays_goals
+    const val eventIdArg = "eventId"
+    val routeWithArgs = "$route/{$eventIdArg}"
 }
 
 @Composable
@@ -59,9 +62,16 @@ fun ViewGoalsScreen(
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val scheduledGoalsListUiState by viewModel.scheduledGoalsListUiState.collectAsState()
+    val formattedDate = scheduledGoalsListUiState.date?.monthValue.toString() +
+            "/" + scheduledGoalsListUiState.date?.dayOfMonth.toString()
     Scaffold(
         topBar = {
-            TimelySmallTopAppBar(stringResource(R.string.edit_todays_goals))
+            TimelySmallTopAppBar(
+                stringResource(
+                    R.string.view_goals_for_date,
+                    formattedDate
+                )
+            )
         },
         bottomBar = {
             TimelyBottomAppBar(
@@ -75,7 +85,8 @@ fun ViewGoalsScreen(
             scheduledGoalsListUiState = scheduledGoalsListUiState,
             onAddGoal = onAddGoalButtonClicked,
             onEditGoalsClicked = onEditGoalsButtonClicked,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            formattedDate = formattedDate
         )
     }
 }
@@ -86,7 +97,8 @@ fun ViewGoalsBody(
     scheduledGoalsListUiState: ScheduledGoalsListUiState,
     onAddGoal: () -> Unit,
     onEditGoalsClicked: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    formattedDate: String = ""
 ){
     Column(
         modifier = modifier
@@ -155,7 +167,10 @@ fun ViewGoalsBody(
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
-                    text = stringResource(R.string.edit_todays_goals),
+                    text = stringResource(
+                        R.string.edit_goals_for_date,
+                        formattedDate
+                    ),
                     textAlign = TextAlign.Center
                 )
             }
@@ -185,16 +200,33 @@ fun ViewGoalsBody(
         }
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun ViewGoalsTobBarPreview(){
+    TimeManagementAppTheme {
+        TimelySmallTopAppBar(
+            stringResource(
+                R.string.view_goals_for_date,
+                "7/6"
+            )
+        )
+    }
+}
+
+
 @Preview(showBackground = true)
 @Composable
 fun ViewGoalsBodyPreview(){
     TimeManagementAppTheme {
         ViewGoalsBody(
             scheduledGoalsListUiState = ScheduledGoalsListUiState(
-                scheduledGoalsList = testScheduledGoalsSizeThree
+                scheduledGoalsList = testScheduledGoalsSizeThree,
+                date = LocalDate.now()
             ),
             onAddGoal = {},
             onEditGoalsClicked = {},
+            formattedDate = "7/6",
             modifier = Modifier
         )
     }

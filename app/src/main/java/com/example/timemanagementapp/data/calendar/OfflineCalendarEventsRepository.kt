@@ -5,7 +5,9 @@ import java.time.LocalDate
 
 class OfflineCalendarEventsRepository(private val calendarEventDao: CalendarEventDao):
     CalendarEventsRepository {
-    override suspend fun insertCalendarEvent(event: CalendarEvent) = calendarEventDao.insert(event)
+    override suspend fun insertCalendarEvent(event: CalendarEvent): Int {
+        return calendarEventDao.insert(event).toInt()
+    }
 
     override suspend fun updateCalendarEvent(event: CalendarEvent) = calendarEventDao.update(event)
 
@@ -14,4 +16,6 @@ class OfflineCalendarEventsRepository(private val calendarEventDao: CalendarEven
     override suspend fun getEventByDate(date: LocalDate): CalendarEvent? = calendarEventDao.getEventByDate(date)
 
     override fun getEventByDateFlow(date: LocalDate): Flow<CalendarEvent?> = calendarEventDao.getEventByDateFlow(date)
+
+    override suspend fun getEventById(eventId: Int): CalendarEvent? = calendarEventDao.getEventById(eventId)
 }
