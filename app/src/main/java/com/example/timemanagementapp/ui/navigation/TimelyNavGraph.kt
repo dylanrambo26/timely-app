@@ -111,7 +111,9 @@ fun TimelyNavHost(
                     navigateToAnalytics = {/*TODO*/},
                 )
             }
-            composable(route = CreateGoalDestination.route){ backStackEntry ->
+            composable(
+                route = CreateGoalDestination.route
+            ){ backStackEntry ->
                 val parentEntry = remember(backStackEntry) {
                     navController.getBackStackEntry(GoalListGraph.route)
                 }
@@ -150,20 +152,21 @@ fun TimelyNavHost(
                         type = NavType.IntType
                     }
                 )
-            ){ backstackEntry ->
-                val parentEntry = remember(backstackEntry){
-                    navController.getBackStackEntry(GoalListGraph.route)
-                }
-                val sharedViewModel: ScheduledGoalsListViewModel =
-                    viewModel(parentEntry, factory = AppViewModelProvider.Factory)
+            ){
+                val viewModel: ScheduledGoalsListViewModel =
+                    viewModel(factory = AppViewModelProvider.Factory)
 
                 ViewGoalsScreen(
-                    onAddGoalButtonClicked = {navController.navigate(CreateGoalDestination.route)},
-                    onEditGoalsButtonClicked = {navController.navigate(EditGoalsDestination.route)},
+                    onAddGoalButtonClicked = { eventId ->
+                        navController.navigate("${AddGoalSelectionDestination.route}/$eventId")
+                    },
+                    onEditGoalsButtonClicked = { eventId ->
+                        navController.navigate("${EditGoalsDestination.route}/$eventId")
+                    },
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToAnalytics = {/*TODO*/},
-                    viewModel = sharedViewModel
+                    viewModel = viewModel
                 )
             }
             composable(
@@ -174,7 +177,9 @@ fun TimelyNavHost(
                     }
                 )
             ) { backStackEntry ->
-                val eventId = backStackEntry.arguments?.getInt(AddGoalSelectionDestination.eventIdArg)
+                val eventId = checkNotNull(
+                    backStackEntry.arguments?.getInt(AddGoalSelectionDestination.eventIdArg)
+                )
 
                 AddGoalSelectionScreen(
                     addExistingGoalButtonClicked = {
@@ -198,7 +203,7 @@ fun TimelyNavHost(
                         type = NavType.IntType
                     }
                 )
-            ) { backStackEntry ->
+            ) {
                 val viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory)
 
                 AddExistingGoalScreen(
@@ -208,6 +213,7 @@ fun TimelyNavHost(
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToAnalytics = {/*TODO*/},
+                    onCreateGoal = {navController.navigate(CreateGoalDestination.route)}
                 )
             }
         }

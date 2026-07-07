@@ -53,8 +53,8 @@ object ViewGoalsDestination : NavigationDest{
 
 @Composable
 fun ViewGoalsScreen(
-    onAddGoalButtonClicked: () -> Unit = {},
-    onEditGoalsButtonClicked: () -> Unit = {},
+    onAddGoalButtonClicked: (Int) -> Unit = {},
+    onEditGoalsButtonClicked: (Int) -> Unit = {},
     //viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     viewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToHome: () -> Unit,
@@ -83,8 +83,12 @@ fun ViewGoalsScreen(
     ) { innerPadding ->
         ViewGoalsBody(
             scheduledGoalsListUiState = scheduledGoalsListUiState,
-            onAddGoal = onAddGoalButtonClicked,
-            onEditGoalsClicked = onEditGoalsButtonClicked,
+            onAddGoal = {
+                scheduledGoalsListUiState.calendarEventId?.let(onAddGoalButtonClicked)
+            },
+            onEditGoalsClicked = {
+                scheduledGoalsListUiState.calendarEventId?.let(onEditGoalsButtonClicked)
+            },
             modifier = Modifier.padding(innerPadding),
             formattedDate = formattedDate
         )

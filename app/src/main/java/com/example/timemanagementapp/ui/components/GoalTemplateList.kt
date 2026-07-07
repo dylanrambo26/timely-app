@@ -43,26 +43,15 @@ fun GoalTemplateList(
         verticalArrangement = Arrangement.spacedBy(12.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        if (goals.isEmpty()){
-            item{
-                Text(
-                    text = stringResource(R.string.no_generic_goals_exist_create_one),
-                    modifier = Modifier
-                        .padding(dimensionResource(R.dimen.padding_medium))
-                )
-            }
-        }
-        else{
-            items(
-                goals
-            ) { goal ->
-                val isSelected = goal.goalID == selectedGoalId
-                GoalTemplateCard(
-                    goal = goal,
-                    isSelected = isSelected,
-                    onGoalClick = onGoalClick,
-                )
-            }
+        items(
+            goals
+        ) { goal ->
+            val isSelected = goal.goalID == selectedGoalId
+            GoalTemplateCard(
+                goal = goal,
+                isSelected = isSelected,
+                onGoalClick = onGoalClick,
+            )
         }
     }
 }

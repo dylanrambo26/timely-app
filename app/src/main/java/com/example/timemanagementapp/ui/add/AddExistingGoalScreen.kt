@@ -47,6 +47,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import com.example.timemanagementapp.data.testGoalsSizeThree
+import com.example.timemanagementapp.ui.components.AddGoalButton
 import com.example.timemanagementapp.ui.goal.GoalListUiState
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.components.GoalTemplateList
@@ -55,13 +56,14 @@ object AddExistingGoalDestination : NavigationDest{
     override val route = "add_existing_goals"
     override val titleRes = R.string.add_an_existing_goal
     const val eventIdArg = "eventId"
-    val routeWithArgs = "${AddGoalSelectionDestination.route}/{$eventIdArg}"
+    val routeWithArgs = "$route/{$eventIdArg}"
 }
 
 @Composable
 fun AddExistingGoalScreen(
     onAddGoalButtonClicked: () -> Unit = {},
     onCancelButtonClicked: () -> Unit = {},
+    onCreateGoal: () -> Unit,
     viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     //viewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToHome: () -> Unit,
@@ -86,7 +88,8 @@ fun AddExistingGoalScreen(
             goalListUiState = goalListUiState,
             onAddGoal = onAddGoalButtonClicked,
             onCancelClicked = onCancelButtonClicked,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            onCreateGoal = onCreateGoal
         )
     }
 }
@@ -96,6 +99,7 @@ fun AddExistingGoalBody(
     goalListUiState: GoalListUiState,
     //goalsListUiState: ScheduledGoalsListUiState,
     onAddGoal: () -> Unit,
+    onCreateGoal: () -> Unit,
     onCancelClicked: () -> Unit,
     modifier: Modifier = Modifier
 ){
@@ -106,16 +110,37 @@ fun AddExistingGoalBody(
     ) {
         var selectedGoalId by rememberSaveable { mutableStateOf<Int?>(null) }
 
-        GoalTemplateList(
-            goals = goalListUiState.goalList,
-            onGoalClick = {goal ->
-                selectedGoalId = goal.goalID
-            },
-            selectedGoalId = selectedGoalId,
-            modifier = Modifier
-                .weight(1f)
-                .padding(dimensionResource(R.dimen.padding_medium))
-        )
+        if (goalListUiState.goalList.isEmpty()){
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+                modifier = Modifier
+                    .weight(1f)
+            ){
+                Text(
+                    text = stringResource(R.string.no_generic_goals_exist_create_one),
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier
+                        .padding(dimensionResource(R.dimen.padding_medium))
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                AddGoalButton(
+                    onAddGoal = onCreateGoal,
+                    text = stringResource(R.string.create_a_goal_from_scratch)
+                )
+            }
+        } else {
+            GoalTemplateList(
+                goals = goalListUiState.goalList,
+                onGoalClick = {goal ->
+                    selectedGoalId = goal.goalID
+                },
+                selectedGoalId = selectedGoalId,
+                modifier = Modifier
+                    .weight(1f)
+                    .padding(dimensionResource(R.dimen.padding_medium))
+            )
+        }
         HorizontalDivider(
             modifier = Modifier
                 .fillMaxWidth()
@@ -187,11 +212,12 @@ fun AddExistingGoalBodyPreview(){
     TimeManagementAppTheme {
         AddExistingGoalBody(
             goalListUiState = GoalListUiState(
-                goalList = testGoalsSizeThree
+                goalList = listOf()
             ),
             onAddGoal = {},
             onCancelClicked = {},
-            modifier = Modifier
+            modifier = Modifier,
+            onCreateGoal = {}
         )
     }
 }
