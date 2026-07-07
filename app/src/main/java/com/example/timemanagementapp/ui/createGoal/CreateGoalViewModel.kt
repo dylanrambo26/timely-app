@@ -7,7 +7,7 @@ import com.example.timemanagementapp.data.goal.GoalsRepository
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
 
-class AddGoalViewModel(private val goalsRepository: GoalsRepository) : ViewModel(){
+class CreateGoalViewModel(private val goalsRepository: GoalsRepository) : ViewModel(){
 
     //TODO might separate checks for time remaining in day to an addScheduledGoal screen therefore this could be reusable
 

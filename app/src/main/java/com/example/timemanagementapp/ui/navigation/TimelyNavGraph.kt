@@ -25,6 +25,7 @@ import com.example.timemanagementapp.ui.currenttask.CurrentTaskDestination
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskScreen
 import com.example.timemanagementapp.ui.createGoal.CreateGoalDestination
 import com.example.timemanagementapp.ui.createGoal.CreateGoalScreen
+import com.example.timemanagementapp.ui.createGoal.CreateGoalViewModel
 import com.example.timemanagementapp.ui.edit.EditGoalDestination
 import com.example.timemanagementapp.ui.edit.EditGoalsScreen
 import com.example.timemanagementapp.ui.edit.EditOneGoalScreen
@@ -112,19 +113,23 @@ fun TimelyNavHost(
                 )
             }
             composable(
-                route = CreateGoalDestination.route
-            ){ backStackEntry ->
-                val parentEntry = remember(backStackEntry) {
-                    navController.getBackStackEntry(GoalListGraph.route)
-                }
-                /*val sharedViewModel: ScheduledGoalsListViewModel =
-                    viewModel(parentEntry, factory = AppViewModelProvider.Factory)*/
+                route = CreateGoalDestination.routeWithArgs,
+                arguments = listOf(
+                    navArgument(ViewGoalsDestination.eventIdArg){
+                        type = NavType.IntType
+                    }
+                )
+            ){
 
+                val createGoalViewModel: CreateGoalViewModel = viewModel(factory = AppViewModelProvider.Factory)
+                val goalListViewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory)
                 CreateGoalScreen(
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToAnalytics = {/*TODO*/},
-                    //scheduledGoalsListViewModel = sharedViewModel
+                    createGoalViewModel = createGoalViewModel,
+                    goalListViewModel = goalListViewModel,
+                    navigateBack = {navController.popBackStack()}
                 )
             }
             composable(

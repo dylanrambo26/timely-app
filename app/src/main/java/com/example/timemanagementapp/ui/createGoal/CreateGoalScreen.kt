@@ -7,7 +7,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -19,7 +22,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -35,10 +37,10 @@ import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import androidx.compose.runtime.getValue
-import com.example.timemanagementapp.ui.components.ScheduledGoalList
-import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListUiState
-import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
-import com.example.timemanagementapp.util.nonActiveGoals
+import com.example.timemanagementapp.data.testGoalsSizeThree
+import com.example.timemanagementapp.ui.components.GoalTemplateList
+import com.example.timemanagementapp.ui.goal.GoalListUiState
+import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import kotlinx.coroutines.launch
 
 
@@ -52,17 +54,18 @@ object CreateGoalDestination : NavigationDest{
 
 @Composable
 fun CreateGoalScreen(
-    viewModel: AddGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    //goalListViewModel: GoalListViewModel,
+    createGoalViewModel: CreateGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    goalListViewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     //scheduledGoalsListViewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    navigateBack: () -> Unit,
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val coroutineScope = rememberCoroutineScope()
-    //val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
+    val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
     Scaffold(
-        topBar = { TimelySmallTopAppBar(stringResource(R.string.add_goal)) },
+        topBar = { TimelySmallTopAppBar(stringResource(R.string.create_a_goal_from_scratch)) },
         bottomBar = {
             TimelyBottomAppBar(
                 onCalendarClick = navigateToCalendar,
@@ -72,16 +75,16 @@ fun CreateGoalScreen(
         }
     ) { innerPadding ->
         CreateGoalBody(
-            goalUiState = viewModel.goalUiState,
-            //goalListUiState = goalListUiState,
+            goalUiState = createGoalViewModel.goalUiState,
+            goalListUiState = goalListUiState,
             //scheduledGoalsListUiState = scheduledGoalsListUiState,
-            onGoalValueChange = viewModel::updateUiState,
+            onGoalValueChange = createGoalViewModel::updateUiState,
             onAddGoalClicked = {
                 coroutineScope.launch {
-                    viewModel.saveGoal()
+                    createGoalViewModel.saveGoal()
                 }
             },
-            onClearButtonClicked = { viewModel.clearUiState() },
+            onCancelButtonClicked = navigateBack,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -90,11 +93,11 @@ fun CreateGoalScreen(
 @Composable
 fun CreateGoalBody(
     goalUiState: GoalUiState,
-    //goalListUiState: GoalListUiState,
+    goalListUiState: GoalListUiState,
     //scheduledGoalsListUiState: ScheduledGoalsListUiState,
     onGoalValueChange: (GoalDetails) -> Unit,
     onAddGoalClicked: () -> Unit,
-    onClearButtonClicked: () -> Unit,
+    onCancelButtonClicked: () -> Unit,
     modifier: Modifier = Modifier
 ){
     Column(
@@ -102,61 +105,107 @@ fun CreateGoalBody(
             .fillMaxSize()
             .padding(dimensionResource(R.dimen.padding_medium))
             .navigationBarsPadding(),
+
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Top
     ) {
-        //val filteredGoals = scheduledGoalsListUiState.scheduledGoalsList.nonActiveGoals()
-
-        /*ScheduledGoalList(
-            goals = filteredGoals,
-            modifier = Modifier
-                .weight(1f)
-                .padding(dimensionResource(R.dimen.padding_medium))
-        )*/
-        //DisplayTime(duration = goalUiState.remainingMinutesInDay, title = stringResource(R.string.available_time_in_full_day))
-        AddGoalInputForm(
-            goalDetails = goalUiState.goalDetails,
-            onValueChange = onGoalValueChange,
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Row(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            //Clear Fields Button
-            OutlinedButton(
-                onClick = onClearButtonClicked,
+        Column(
+            modifier = Modifier.weight(1.5f),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ){
+            AddGoalInputForm(
+                goalDetails = goalUiState.goalDetails,
+                onValueChange = onGoalValueChange,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f)
-            ) {
+            )
+            AddGoalButtons(
+                onAddGoalClicked = onAddGoalClicked,
+                onCancelButtonClicked = onCancelButtonClicked,
+                goalUiState = goalUiState,
+            )
+            if(goalUiState.errorMessage.isNotBlank()){
                 Text(
-                    text = stringResource(R.string.clear_fields),
-                    fontSize = 16.sp,
-                )
-            }
-
-            //Add Goal Button
-            OutlinedButton(
-                onClick = onAddGoalClicked,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-                //enabled = goalUiState.isEntryValid
-            ) {
-                Text(
-                    text = stringResource(R.string.add_goal),
-                    fontSize = 16.sp,
-                    color = Color.White
+                    text = goalUiState.errorMessage,
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(8.dp)
                 )
             }
         }
-        if(goalUiState.errorMessage.isNotBlank()){
+        HorizontalDivider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = dimensionResource(R.dimen.padding_medium_large)),
+            thickness = 1.dp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+        )
+        Column(
+            modifier = Modifier
+                .weight(1f),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Text(
-                text = goalUiState.errorMessage,
-                color = MaterialTheme.colorScheme.error,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(8.dp)
+                text = stringResource(R.string.existing_goals),
+                style = MaterialTheme.typography.headlineMedium
+            )
+
+            GoalTemplateList(
+                goals = goalListUiState.goalList,
+                modifier = Modifier
+                    .weight(1f)
+            )
+        }
+    }
+}
+
+@Composable
+fun AddGoalButtons(
+    onAddGoalClicked: () -> Unit,
+    onCancelButtonClicked: () -> Unit,
+    goalUiState: GoalUiState,
+){
+    Column(
+        modifier = Modifier
+            .width(200.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ){
+        //Save Goal and Add to Date Button
+        FilledTonalButton(
+            onClick = onAddGoalClicked,
+            enabled = goalUiState.isEntryValid,
+            modifier = Modifier
+                .fillMaxWidth(),
+        ) {
+            Text(
+                text = stringResource(R.string.save_goal_and_add_to_date),
+                fontSize = 16.sp,
+            )
+        }
+        //Save Goal Button
+        OutlinedButton(
+            onClick = onAddGoalClicked,
+            enabled = goalUiState.isEntryValid,
+            modifier = Modifier
+                .fillMaxWidth(),
+        ) {
+            Text(
+                text = stringResource(R.string.save_goal),
+                fontSize = 16.sp,
+            )
+        }
+        //Cancel Button
+        OutlinedButton(
+            onClick = onCancelButtonClicked,
+            modifier = Modifier
+                .fillMaxWidth(),
+        ) {
+            Text(
+                text = stringResource(R.string.cancel),
+                fontSize = 16.sp,
+                color = MaterialTheme.colorScheme.secondary
             )
         }
     }
@@ -168,6 +217,21 @@ fun AddGoalInputForm(
     modifier: Modifier = Modifier,
     onValueChange: (GoalDetails) -> Unit = {}
 ){
+    //Goal Title Text Field
+    OutlinedTextField(
+        value = goalDetails.title,
+        onValueChange = { onValueChange(goalDetails.copy(title = it)) },
+        singleLine = true,
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(dimensionResource(R.dimen.padding_medium)),
+        colors = OutlinedTextFieldDefaults.colors(),
+        label = {
+            Text("Goal Title")
+        }
+    )
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -203,21 +267,6 @@ fun AddGoalInputForm(
             }
         )
     }
-
-    //Goal Title Text Field
-    OutlinedTextField(
-        value = goalDetails.title,
-        onValueChange = { onValueChange(goalDetails.copy(title = it)) },
-        singleLine = true,
-        shape = RoundedCornerShape(16.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(dimensionResource(R.dimen.padding_medium)),
-        colors = OutlinedTextFieldDefaults.colors(),
-        label = {
-            Text("Goal Title")
-        }
-    )
 }
 
 //Preview the AddLogScreen
@@ -229,14 +278,15 @@ fun CreateGoalScreenPreview(){
             goalUiState = GoalUiState(
                 GoalDetails(
                     title = "Title", hours = "1", minutes = "30"
-                )
+                ),
+                isEntryValid = true,
             ),
             onGoalValueChange = {},
             onAddGoalClicked = {},
-            onClearButtonClicked = {},
-            /*scheduledGoalsListUiState = ScheduledGoalsListUiState(
-                scheduledGoalsList = emptyList()
-            ),*/
+            onCancelButtonClicked = {},
+            goalListUiState = GoalListUiState(
+                goalList = testGoalsSizeThree,
+            )
         )
     }
 }

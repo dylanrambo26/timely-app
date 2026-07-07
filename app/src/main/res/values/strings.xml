@@ -38,4 +38,8 @@
     <string name="return_to_edit_goals">Return to Edit Goals</string>
     <string name="view_goals_for_date">View %1$s Goals</string>
     <string name="edit_goals_for_date">Edit %1$s Goals</string>
+    <string name="cancel">Cancel</string>
+    <string name="save_goal">Save Goal</string>
+    <string name="save_goal_and_add_to_date">Save &amp; Add to %1$s</string>
+    <string name="existing_goals">Existing Goals</string>"
 </resources>

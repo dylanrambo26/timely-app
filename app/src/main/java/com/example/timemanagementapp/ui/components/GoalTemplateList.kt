@@ -29,7 +29,7 @@ import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 @Composable
 fun GoalTemplateList(
     goals: List<Goal>,
-    onGoalClick: (Goal) -> Unit,
+    onGoalClick: (Goal) -> Unit = {},
 
     modifier: Modifier = Modifier,
     selectedGoalId: Int? = null,
