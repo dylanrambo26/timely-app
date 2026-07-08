@@ -11,7 +11,9 @@ class OfflineGoalsRepository(private val goalDao: GoalDao): GoalsRepository {
 
     override fun getTotalMinutesStream(): Flow<Int> = goalDao.getSumOfTotalMinutes()
 
-    override suspend fun insertGoal(goal: Goal) = goalDao.insert(goal)
+    override suspend fun insertGoal(goal: Goal): Int{
+        return goalDao.insert(goal).toInt()
+    }
 
     override suspend fun deleteGoal(goal: Goal) = goalDao.delete(goal)
 

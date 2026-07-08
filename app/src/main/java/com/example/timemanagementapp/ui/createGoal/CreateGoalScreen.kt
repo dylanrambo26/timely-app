@@ -41,7 +41,9 @@ import com.example.timemanagementapp.data.testGoalsSizeThree
 import com.example.timemanagementapp.ui.components.GoalTemplateList
 import com.example.timemanagementapp.ui.goal.GoalListUiState
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
+import com.example.timemanagementapp.util.formatLocalDateToString
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 
 object CreateGoalDestination : NavigationDest{
@@ -56,14 +58,15 @@ object CreateGoalDestination : NavigationDest{
 fun CreateGoalScreen(
     createGoalViewModel: CreateGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
     goalListViewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    //scheduledGoalsListViewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateBack: () -> Unit,
+    navigateToViewGoals: (Int) -> Unit,
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val coroutineScope = rememberCoroutineScope()
     val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
+    val selectedDate by createGoalViewModel.date.collectAsState()
     Scaffold(
         topBar = { TimelySmallTopAppBar(stringResource(R.string.create_a_goal_from_scratch)) },
         bottomBar = {
@@ -77,15 +80,21 @@ fun CreateGoalScreen(
         CreateGoalBody(
             goalUiState = createGoalViewModel.goalUiState,
             goalListUiState = goalListUiState,
-            //scheduledGoalsListUiState = scheduledGoalsListUiState,
             onGoalValueChange = createGoalViewModel::updateUiState,
-            onAddGoalClicked = {
+            onSaveGoalClicked = {
                 coroutineScope.launch {
                     createGoalViewModel.saveGoal()
                 }
             },
+            onSaveGoalAndAddToDateClicked = {
+                coroutineScope.launch {
+                    createGoalViewModel.saveGoalAndAddToDate()
+                    navigateToViewGoals(createGoalViewModel.calendarEventId)
+                }
+            },
             onCancelButtonClicked = navigateBack,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            selectedDate = selectedDate
         )
     }
 }
@@ -94,11 +103,12 @@ fun CreateGoalScreen(
 fun CreateGoalBody(
     goalUiState: GoalUiState,
     goalListUiState: GoalListUiState,
-    //scheduledGoalsListUiState: ScheduledGoalsListUiState,
     onGoalValueChange: (GoalDetails) -> Unit,
-    onAddGoalClicked: () -> Unit,
+    onSaveGoalClicked: () -> Unit,
+    onSaveGoalAndAddToDateClicked: () -> Unit,
     onCancelButtonClicked: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    selectedDate: LocalDate? = null
 ){
     Column(
         modifier = modifier
@@ -110,20 +120,23 @@ fun CreateGoalBody(
         verticalArrangement = Arrangement.Top
     ) {
         Column(
-            modifier = Modifier.weight(1.5f),
-            verticalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .weight(2f)
+                .fillMaxWidth(),
+            verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ){
             AddGoalInputForm(
                 goalDetails = goalUiState.goalDetails,
                 onValueChange = onGoalValueChange,
-                modifier = Modifier
-                    .fillMaxWidth()
+                modifier = Modifier.fillMaxWidth()
             )
             AddGoalButtons(
-                onAddGoalClicked = onAddGoalClicked,
+                onSaveGoalClicked = onSaveGoalClicked,
+                onSaveGoalAndAddToDateClicked = onSaveGoalAndAddToDateClicked,
                 onCancelButtonClicked = onCancelButtonClicked,
                 goalUiState = goalUiState,
+                selectedDate = selectedDate
             )
             if(goalUiState.errorMessage.isNotBlank()){
                 Text(
@@ -162,8 +175,10 @@ fun CreateGoalBody(
 
 @Composable
 fun AddGoalButtons(
-    onAddGoalClicked: () -> Unit,
+    onSaveGoalClicked: () -> Unit,
+    onSaveGoalAndAddToDateClicked: () -> Unit,
     onCancelButtonClicked: () -> Unit,
+    selectedDate: LocalDate? = null,
     goalUiState: GoalUiState,
 ){
     Column(
@@ -174,19 +189,22 @@ fun AddGoalButtons(
     ){
         //Save Goal and Add to Date Button
         FilledTonalButton(
-            onClick = onAddGoalClicked,
+            onClick = onSaveGoalAndAddToDateClicked,
             enabled = goalUiState.isEntryValid,
             modifier = Modifier
                 .fillMaxWidth(),
         ) {
             Text(
-                text = stringResource(R.string.save_goal_and_add_to_date),
+                text = stringResource(
+                    R.string.save_goal_and_add_to_date,
+                    formatLocalDateToString(selectedDate)
+                ),
                 fontSize = 16.sp,
             )
         }
         //Save Goal Button
         OutlinedButton(
-            onClick = onAddGoalClicked,
+            onClick = onSaveGoalClicked,
             enabled = goalUiState.isEntryValid,
             modifier = Modifier
                 .fillMaxWidth(),
@@ -217,55 +235,57 @@ fun AddGoalInputForm(
     modifier: Modifier = Modifier,
     onValueChange: (GoalDetails) -> Unit = {}
 ){
-    //Goal Title Text Field
-    OutlinedTextField(
-        value = goalDetails.title,
-        onValueChange = { onValueChange(goalDetails.copy(title = it)) },
-        singleLine = true,
-        shape = RoundedCornerShape(16.dp),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(dimensionResource(R.dimen.padding_medium)),
-        colors = OutlinedTextFieldDefaults.colors(),
-        label = {
-            Text("Goal Title")
-        }
-    )
+    Column(
+        modifier = modifier,
+    ) {
+        //Goal Title Text Field
+        OutlinedTextField(
+            value = goalDetails.title,
+            onValueChange = { onValueChange(goalDetails.copy(title = it)) },
+            singleLine = true,
+            shape = RoundedCornerShape(16.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(dimensionResource(R.dimen.padding_medium)),
+            colors = OutlinedTextFieldDefaults.colors(),
+            label = {
+                Text("Goal Title")
+            }
+        )
 
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
-    ){
-        //Hours Text Field
-        OutlinedTextField(
-            value = goalDetails.hours,
-            onValueChange = {onValueChange(goalDetails.copy(hours = it))},
-            singleLine = true,
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(dimensionResource(R.dimen.padding_medium))
-                .weight(1f),
-            colors = OutlinedTextFieldDefaults.colors(),
-            label = {
-                Text("Hours")
-            }
-        )
-        // Minutes Text Field
-        OutlinedTextField(
-            value = goalDetails.minutes,
-            onValueChange = {onValueChange(goalDetails.copy(minutes = it))},
-            singleLine = true,
-            shape = RoundedCornerShape(16.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(dimensionResource(R.dimen.padding_medium))
-                .weight(1f),
-            colors = OutlinedTextFieldDefaults.colors(),
-            label = {
-                Text("Minutes")
-            }
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            //Hours Text Field
+            OutlinedTextField(
+                value = goalDetails.hours,
+                onValueChange = { onValueChange(goalDetails.copy(hours = it)) },
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .padding(dimensionResource(R.dimen.padding_medium))
+                    .weight(1f),
+                colors = OutlinedTextFieldDefaults.colors(),
+                label = {
+                    Text("Hours")
+                }
+            )
+            // Minutes Text Field
+            OutlinedTextField(
+                value = goalDetails.minutes,
+                onValueChange = { onValueChange(goalDetails.copy(minutes = it)) },
+                singleLine = true,
+                shape = RoundedCornerShape(16.dp),
+                modifier = Modifier
+                    .padding(dimensionResource(R.dimen.padding_medium))
+                    .weight(1f),
+                colors = OutlinedTextFieldDefaults.colors(),
+                label = {
+                    Text("Minutes")
+                }
+            )
+        }
     }
 }
 
@@ -282,11 +302,13 @@ fun CreateGoalScreenPreview(){
                 isEntryValid = true,
             ),
             onGoalValueChange = {},
-            onAddGoalClicked = {},
+            onSaveGoalClicked = {},
             onCancelButtonClicked = {},
+            onSaveGoalAndAddToDateClicked = {},
             goalListUiState = GoalListUiState(
                 goalList = testGoalsSizeThree,
-            )
+            ),
+            selectedDate = LocalDate.now()
         )
     }
 }

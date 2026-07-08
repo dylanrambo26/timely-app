@@ -42,6 +42,7 @@ import com.example.timemanagementapp.util.completedGoals
 import com.example.timemanagementapp.util.incompleteGoals
 import androidx.compose.foundation.layout.Box
 import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
+import com.example.timemanagementapp.util.formatLocalDateToString
 import java.time.LocalDate
 
 object ViewGoalsDestination : NavigationDest{
@@ -62,8 +63,7 @@ fun ViewGoalsScreen(
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val scheduledGoalsListUiState by viewModel.scheduledGoalsListUiState.collectAsState()
-    val formattedDate = scheduledGoalsListUiState.date?.monthValue.toString() +
-            "/" + scheduledGoalsListUiState.date?.dayOfMonth.toString()
+    val formattedDate = formatLocalDateToString(scheduledGoalsListUiState.date)
     Scaffold(
         topBar = {
             TimelySmallTopAppBar(

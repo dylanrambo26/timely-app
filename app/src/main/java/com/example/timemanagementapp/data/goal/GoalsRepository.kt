@@ -12,7 +12,7 @@ interface GoalsRepository {
 
     fun getTotalMinutesStream(): Flow<Int>
 
-    suspend fun insertGoal(goal: Goal)
+    suspend fun insertGoal(goal: Goal): Int
 
     suspend fun deleteGoal(goal: Goal)
 

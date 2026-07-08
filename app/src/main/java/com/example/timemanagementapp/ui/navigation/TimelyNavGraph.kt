@@ -115,7 +115,7 @@ fun TimelyNavHost(
             composable(
                 route = CreateGoalDestination.routeWithArgs,
                 arguments = listOf(
-                    navArgument(ViewGoalsDestination.eventIdArg){
+                    navArgument(CreateGoalDestination.eventIdArg){
                         type = NavType.IntType
                     }
                 )
@@ -129,6 +129,8 @@ fun TimelyNavHost(
                     navigateToAnalytics = {/*TODO*/},
                     createGoalViewModel = createGoalViewModel,
                     goalListViewModel = goalListViewModel,
+                    navigateToViewGoals = {eventId ->
+                        navController.navigate("${ViewGoalsDestination.route}/$eventId")},
                     navigateBack = {navController.popBackStack()}
                 )
             }

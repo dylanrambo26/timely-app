@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface GoalDao {
     @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
-    suspend fun insert(goal: Goal)
+    suspend fun insert(goal: Goal): Long
 
     @Update
     suspend fun update(goal: Goal)
