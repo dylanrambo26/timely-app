@@ -20,7 +20,7 @@ class OfflineScheduledGoalsRepository(private val scheduledGoalDao: ScheduledGoa
 
     override suspend fun updateCompletedMillis(id: Int, millis: Long) = scheduledGoalDao.updateCompletedMillis(id, millis)*/
 
-    override fun getScheduledGoalsWithGoal(id: Int): Flow<List<ScheduledGoalWithGoal>> = scheduledGoalDao.getScheduledGoalsWithGoals(id)
+    override fun getScheduledGoalsWithGoal(eventId: Int): Flow<List<ScheduledGoalWithGoal>> = scheduledGoalDao.getScheduledGoalsWithGoals(eventId)
 
     override fun getScheduledGoalWithGoal(id: Int): Flow<ScheduledGoalWithGoal> = scheduledGoalDao.getScheduledGoalWithGoal(id)
 }

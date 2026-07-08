@@ -216,11 +216,16 @@ fun TimelyNavHost(
                 AddExistingGoalScreen(
                     onAddGoalButtonClicked = {navController.popBackStack()},
                     onCancelButtonClicked = {navController.popBackStack()},
-                    viewModel = viewModel,
+                    goalListViewModel = viewModel,
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToAnalytics = {/*TODO*/},
-                    onCreateGoal = {navController.navigate(CreateGoalDestination.route)}
+                    navigateToViewGoals = { eventId->
+                        navController.navigate("${ViewGoalsDestination.route}/$eventId")
+                    },
+                    navigateToCreateGoal = { eventId ->
+                        navController.navigate("${CreateGoalDestination.route}/$eventId")
+                    }
                 )
             }
         }

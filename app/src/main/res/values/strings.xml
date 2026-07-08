@@ -35,7 +35,7 @@
     <string name="create_a_goal_from_scratch">Create a Goal from Scratch</string>
     <string name="no_generic_goals_exist_create_one">No generic goals exist. Create one to get started.</string>
     <string name="Cancel">Cancel</string>"
-    <string name="return_to_edit_goals">Return to Edit Goals</string>
+    <string name="return_to_view_goals">Return to View Goals</string>
     <string name="view_goals_for_date">View %1$s Goals</string>
     <string name="edit_goals_for_date">Edit %1$s Goals</string>
     <string name="cancel">Cancel</string>

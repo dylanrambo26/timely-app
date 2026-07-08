@@ -20,7 +20,7 @@ interface ScheduledGoalsRepository{
 
     suspend fun updateCompletedMillis(id: Int, millis: Long)*/
 
-    fun getScheduledGoalsWithGoal(id: Int): Flow<List<ScheduledGoalWithGoal>>
+    fun getScheduledGoalsWithGoal(eventId: Int): Flow<List<ScheduledGoalWithGoal>>
 
     fun getScheduledGoalWithGoal(id: Int): Flow<ScheduledGoalWithGoal>
 }

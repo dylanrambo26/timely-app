@@ -228,7 +228,7 @@ fun HomeBody(
                     .weight(1f)
             ) {
                 IconButton(
-                    onClick = onViewButtonClicked,
+                    onClick = {/* TODO onViewButtonClicked*/},
                     modifier = Modifier.size(100.dp)
                 ) {
                     Icon(

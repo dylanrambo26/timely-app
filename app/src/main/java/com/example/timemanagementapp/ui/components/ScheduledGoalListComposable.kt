@@ -73,7 +73,8 @@ fun ScheduledGoalList(
         }
         else{
             items(
-                goals
+                goals,
+                key = {it.scheduledGoal.scheduledGoalId}
             ) { combinedGoal ->
                 val isSelected = combinedGoal.scheduledGoal.scheduledGoalId == selectedGoalId
                 GoalCard(

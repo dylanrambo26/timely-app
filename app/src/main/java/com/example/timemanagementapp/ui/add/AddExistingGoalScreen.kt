@@ -1,6 +1,5 @@
 package com.example.timemanagementapp.ui.add
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,14 +8,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -37,20 +30,21 @@ import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
-import com.example.timemanagementapp.ui.theme.completedGoal
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import com.example.timemanagementapp.data.testGoalsSizeThree
 import com.example.timemanagementapp.ui.components.AddGoalButton
 import com.example.timemanagementapp.ui.goal.GoalListUiState
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.components.GoalTemplateList
+import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 
 object AddExistingGoalDestination : NavigationDest{
     override val route = "add_existing_goals"
@@ -63,15 +57,17 @@ object AddExistingGoalDestination : NavigationDest{
 fun AddExistingGoalScreen(
     onAddGoalButtonClicked: () -> Unit = {},
     onCancelButtonClicked: () -> Unit = {},
-    onCreateGoal: () -> Unit,
-    viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    //viewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    navigateToCreateGoal: (Int) -> Unit,
+    navigateToViewGoals: (Int) -> Unit,
+    goalListViewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    scheduledGoalsViewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
 ){
     //val scheduledGoalsListUiState by viewModel.scheduledGoalsListUiState.collectAsState()
-    val goalListUiState by viewModel.goalListUiState.collectAsState()
+    val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
+    val coroutineScope = rememberCoroutineScope()
     Scaffold(
         topBar = {
             TimelySmallTopAppBar(stringResource(R.string.add_an_existing_goal))
@@ -86,10 +82,17 @@ fun AddExistingGoalScreen(
     ) { innerPadding ->
         AddExistingGoalBody(
             goalListUiState = goalListUiState,
-            onAddGoal = onAddGoalButtonClicked,
+            onAddGoalPressed = { goalId ->
+                coroutineScope.launch {
+                    scheduledGoalsViewModel.addScheduledGoalFromExistingGoal(goalId)
+                    navigateToViewGoals(scheduledGoalsViewModel.calendarEventId)
+                }
+            },
             onCancelClicked = onCancelButtonClicked,
             modifier = Modifier.padding(innerPadding),
-            onCreateGoal = onCreateGoal
+            onCreateGoalPressed = {
+                navigateToCreateGoal(scheduledGoalsViewModel.calendarEventId)
+            }
         )
     }
 }
@@ -98,8 +101,8 @@ fun AddExistingGoalScreen(
 fun AddExistingGoalBody(
     goalListUiState: GoalListUiState,
     //goalsListUiState: ScheduledGoalsListUiState,
-    onAddGoal: () -> Unit,
-    onCreateGoal: () -> Unit,
+    onAddGoalPressed: (Int) -> Unit,
+    onCreateGoalPressed: () -> Unit,
     onCancelClicked: () -> Unit,
     modifier: Modifier = Modifier
 ){
@@ -125,7 +128,7 @@ fun AddExistingGoalBody(
                 )
                 Spacer(modifier = Modifier.height(16.dp))
                 AddGoalButton(
-                    onAddGoal = onCreateGoal,
+                    onAddGoal = onCreateGoalPressed,
                     text = stringResource(R.string.create_a_goal_from_scratch)
                 )
             }
@@ -147,8 +150,7 @@ fun AddExistingGoalBody(
                 .padding(vertical = dimensionResource(R.dimen.padding_medium_large)),
             thickness = 1.dp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-
-            )
+        )
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
@@ -185,7 +187,7 @@ fun AddExistingGoalBody(
                 modifier = Modifier
                     .weight(1f)
                     .clickable {
-                        onAddGoal()
+                        selectedGoalId?.let { onAddGoalPressed(it) }
                     }
                     .padding(12.dp)
                     .width(200.dp)
@@ -214,10 +216,10 @@ fun AddExistingGoalBodyPreview(){
             goalListUiState = GoalListUiState(
                 goalList = listOf()
             ),
-            onAddGoal = {},
+            onAddGoalPressed = {},
             onCancelClicked = {},
             modifier = Modifier,
-            onCreateGoal = {}
+            onCreateGoalPressed = {}
         )
     }
 }

@@ -70,10 +70,10 @@ interface ScheduledGoalDao {
     @Query(
         """
             SELECT * FROM scheduled_goals
-            WHERE scheduledGoalId = :id
+            WHERE eventId = :eventId
         """
     )
-    fun getScheduledGoalsWithGoals(id: Int): Flow<List<ScheduledGoalWithGoal>>
+    fun getScheduledGoalsWithGoals(eventId: Int): Flow<List<ScheduledGoalWithGoal>>
 
     @Transaction
     @Query(

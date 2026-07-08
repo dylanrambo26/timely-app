@@ -87,7 +87,7 @@ fun AddGoalSelectionBody(
         )
         SelectionButton(
             action = navigateBack,
-            text = stringResource(R.string.return_to_edit_goals)
+            text = stringResource(R.string.return_to_view_goals)
         )
     }
 }

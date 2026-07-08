@@ -221,8 +221,8 @@ fun AddGoalButtons(
                 .fillMaxWidth(),
         ) {
             Text(
-                text = stringResource(R.string.cancel),
-                fontSize = 16.sp,
+                text = stringResource(R.string.return_to_view_goals),
+                fontSize = 15.sp,
                 color = MaterialTheme.colorScheme.secondary
             )
         }

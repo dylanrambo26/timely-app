@@ -30,7 +30,7 @@ class ScheduledGoalsListViewModel(
         private const val TIMEOUT_MILLIS = 5_000L
     }
 
-    private val calendarEventId: Int = checkNotNull(savedStateHandle[ViewGoalsDestination.eventIdArg])
+    val calendarEventId: Int = checkNotNull(savedStateHandle[ViewGoalsDestination.eventIdArg])
     private val _date = MutableStateFlow<LocalDate?>(null)
 
     init{
@@ -64,6 +64,15 @@ class ScheduledGoalsListViewModel(
         viewModelScope.launch {
             scheduledGoalsRepository.deleteScheduledGoal(scheduledGoal = scheduledGoal)
         }
+    }
+
+    suspend fun addScheduledGoalFromExistingGoal(goalId: Int){
+        scheduledGoalsRepository.insertScheduledGoal(
+            ScheduledGoal(
+                goalId = goalId,
+                eventId = calendarEventId
+            )
+        )
     }
 }
 
