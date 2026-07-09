@@ -10,13 +10,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import com.example.timemanagementapp.R
-import com.example.timemanagementapp.data.Goal
+import com.example.timemanagementapp.data.goal.Goal
+import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
 import com.example.timemanagementapp.util.calculateRemainingTime
 import com.example.timemanagementapp.util.millisUntilNextMinute
 import kotlinx.coroutines.delay
 
 @Composable
-fun RemainingTaskTime(goal: Goal){
+fun RemainingTaskTime(scheduledGoalWithGoal: ScheduledGoalWithGoal){
     var remainingMinutes by remember {
         mutableIntStateOf(0)
     }
@@ -25,15 +26,15 @@ fun RemainingTaskTime(goal: Goal){
 
     //Need keyed LaunchedEffect when a new goal is selected for current task to recompose with new coroutine
     //also recompose when startTime and completedMillis are changed during pause
-    LaunchedEffect(goal.goalID, goal.startTimeMillis, goal.completedMillis) {
+    LaunchedEffect(scheduledGoalWithGoal.goal.goalID, scheduledGoalWithGoal.scheduledGoal.startTimeMillis, scheduledGoalWithGoal.scheduledGoal.completedMillis) {
         Log.d("Remaining Task Time: ", "Relaunch")
         while(true){
             val remainingTimeState = calculateRemainingTime(
-                startTimeMillis = goal.startTimeMillis,
-                hours = goal.hours,
-                minutes = goal.minutes,
+                startTimeMillis = scheduledGoalWithGoal.scheduledGoal.startTimeMillis,
+                hours = scheduledGoalWithGoal.goal.hours,
+                minutes = scheduledGoalWithGoal.goal.minutes,
                 currentTimeMillis = System.currentTimeMillis(),
-                completedMillis = goal.completedMillis
+                completedMillis = scheduledGoalWithGoal.scheduledGoal.completedMillis
             )
             remainingMinutes = remainingTimeState.remainingMinutes
             isDone = remainingTimeState.isDone

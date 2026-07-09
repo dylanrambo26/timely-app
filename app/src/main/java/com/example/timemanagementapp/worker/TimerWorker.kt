@@ -9,9 +9,6 @@ import androidx.core.app.NotificationManagerCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.timemanagementapp.R
-import com.example.timemanagementapp.data.GoalDao
-import com.example.timemanagementapp.data.GoalsDatabase
-import com.example.timemanagementapp.data.GoalsRepository
 
 private const val TAG = "TimerWorker"
 

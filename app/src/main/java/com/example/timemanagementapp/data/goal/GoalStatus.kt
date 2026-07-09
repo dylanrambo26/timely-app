@@ -1,4 +1,4 @@
-package com.example.timemanagementapp.data
+package com.example.timemanagementapp.data.goal
 
 enum class GoalStatus {
     NOT_STARTED,

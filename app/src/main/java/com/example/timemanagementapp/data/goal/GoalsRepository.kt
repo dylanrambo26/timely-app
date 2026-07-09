@@ -1,4 +1,4 @@
-package com.example.timemanagementapp.data
+package com.example.timemanagementapp.data.goal
 
 import kotlinx.coroutines.flow.Flow
 
@@ -12,13 +12,13 @@ interface GoalsRepository {
 
     fun getTotalMinutesStream(): Flow<Int>
 
-    suspend fun insertGoal(goal: Goal)
+    suspend fun insertGoal(goal: Goal): Int
 
     suspend fun deleteGoal(goal: Goal)
 
     suspend fun updateGoal(goal: Goal)
 
-    suspend fun updateGoalStatus(id: Int, status: GoalStatus)
+    /*suspend fun updateGoalStatus(id: Int, status: GoalStatus)
 
-    suspend fun updateCompletedMillis(id: Int, millis: Long)
+    suspend fun updateCompletedMillis(id: Int, millis: Long)*/
 }

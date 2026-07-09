@@ -33,37 +33,45 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
-import com.example.timemanagementapp.data.Goal
-import com.example.timemanagementapp.data.GoalStatus
 import com.example.timemanagementapp.ui.AppViewModelProvider
-import com.example.timemanagementapp.ui.components.GoalList
-import com.example.timemanagementapp.ui.goal.GoalListUiState
-import com.example.timemanagementapp.ui.goal.GoalListViewModel
+import com.example.timemanagementapp.ui.components.ScheduledGoalList
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.ui.theme.completedGoal
 import com.example.timemanagementapp.util.completedGoals
 import com.example.timemanagementapp.util.incompleteGoals
 import androidx.compose.foundation.layout.Box
+import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
+import com.example.timemanagementapp.util.formatLocalDateToString
+import java.time.LocalDate
 
 object ViewGoalsDestination : NavigationDest{
     override val route = "view_goals"
-    override val titleRes = R.string.view_todays_goals
+    override val titleRes = R.string.view_goals_for_date
+    const val eventIdArg = "eventId"
+    val routeWithArgs = "$route/{$eventIdArg}"
 }
 
 @Composable
 fun ViewGoalsScreen(
-    onAddGoalButtonClicked: () -> Unit = {},
-    onEditGoalsButtonClicked: () -> Unit = {},
-    viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    onAddGoalButtonClicked: (Int) -> Unit = {},
+    onEditGoalsButtonClicked: (Int) -> Unit = {},
+    //viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    viewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
 ){
-    val goalListUiState by viewModel.goalListUiState.collectAsState()
+    val scheduledGoalsListUiState by viewModel.scheduledGoalsListUiState.collectAsState()
+    val formattedDate = formatLocalDateToString(scheduledGoalsListUiState.date)
     Scaffold(
         topBar = {
-            TimelySmallTopAppBar(stringResource(R.string.edit_todays_goals))
+            TimelySmallTopAppBar(
+                stringResource(
+                    R.string.view_goals_for_date,
+                    formattedDate
+                )
+            )
         },
         bottomBar = {
             TimelyBottomAppBar(
@@ -74,28 +82,35 @@ fun ViewGoalsScreen(
         }
     ) { innerPadding ->
         ViewGoalsBody(
-            goalListUiState = goalListUiState,
-            onAddGoal = onAddGoalButtonClicked,
-            onEditGoalsClicked = onEditGoalsButtonClicked,
-            modifier = Modifier.padding(innerPadding)
+            scheduledGoalsListUiState = scheduledGoalsListUiState,
+            onAddGoal = {
+                scheduledGoalsListUiState.calendarEventId?.let(onAddGoalButtonClicked)
+            },
+            onEditGoalsClicked = {
+                scheduledGoalsListUiState.calendarEventId?.let(onEditGoalsButtonClicked)
+            },
+            modifier = Modifier.padding(innerPadding),
+            formattedDate = formattedDate
         )
     }
 }
 
 @Composable
 fun ViewGoalsBody(
-    goalListUiState: GoalListUiState,
+    //goalListUiState: GoalListUiState,
+    scheduledGoalsListUiState: ScheduledGoalsListUiState,
     onAddGoal: () -> Unit,
     onEditGoalsClicked: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    formattedDate: String = ""
 ){
     Column(
         modifier = modifier
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val orderedGoalList = goalListUiState.goalList.completedGoals() + goalListUiState.goalList.incompleteGoals()
-        GoalList(
+        val orderedGoalList = scheduledGoalsListUiState.scheduledGoalsList.completedGoals() + scheduledGoalsListUiState.scheduledGoalsList.incompleteGoals()
+        ScheduledGoalList(
             goals = orderedGoalList,
             addColors = true,
             modifier = Modifier
@@ -149,14 +164,17 @@ fun ViewGoalsBody(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit today's goals",
+                        contentDescription = stringResource(R.string.edit_goals_for_date, formattedDate),
                         modifier = Modifier
                             .size(100.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(
-                    text = stringResource(R.string.edit_todays_goals),
+                    text = stringResource(
+                        R.string.edit_goals_for_date,
+                        formattedDate
+                    ),
                     textAlign = TextAlign.Center
                 )
             }
@@ -186,18 +204,33 @@ fun ViewGoalsBody(
         }
     }
 }
+
+@Preview(showBackground = true)
+@Composable
+fun ViewGoalsTobBarPreview(){
+    TimeManagementAppTheme {
+        TimelySmallTopAppBar(
+            stringResource(
+                R.string.view_goals_for_date,
+                "7/6"
+            )
+        )
+    }
+}
+
+
 @Preview(showBackground = true)
 @Composable
 fun ViewGoalsBodyPreview(){
     TimeManagementAppTheme {
         ViewGoalsBody(
-            goalListUiState = GoalListUiState(listOf(
-                Goal(0,1,0, "study", GoalStatus.COMPLETED),
-                Goal(1,1,0, "sleep", GoalStatus.NOT_STARTED),
-                Goal(2,3,0, "video games", GoalStatus.COMPLETED)
-            )),
+            scheduledGoalsListUiState = ScheduledGoalsListUiState(
+                scheduledGoalsList = testScheduledGoalsSizeThree,
+                date = LocalDate.now()
+            ),
             onAddGoal = {},
             onEditGoalsClicked = {},
+            formattedDate = formatLocalDateToString(LocalDate.of(2026, 7,26)),
             modifier = Modifier
         )
     }

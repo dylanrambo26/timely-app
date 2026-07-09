@@ -7,17 +7,19 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.timemanagementapp.TimelyApplication
+import com.example.timemanagementapp.ui.calendar.CalendarViewModel
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskViewModel
-import com.example.timemanagementapp.ui.edit.AddGoalViewModel
+import com.example.timemanagementapp.ui.createGoal.CreateGoalViewModel
 import com.example.timemanagementapp.ui.edit.EditGoalViewModel
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
+import com.example.timemanagementapp.ui.home.HomeViewModel
+import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
 
 
 //View model factory for each view model in Timely App
 object AppViewModelProvider{
     val Factory = viewModelFactory {
 
-        //Initializer for Home View Model
         initializer {
             GoalListViewModel(
                 timelyApplication().container.goalsRepository,
@@ -25,23 +27,46 @@ object AppViewModelProvider{
         }
 
         initializer {
-            AddGoalViewModel(
-                timelyApplication().container.goalsRepository
+            CreateGoalViewModel(
+                this.createSavedStateHandle(),
+                timelyApplication().container.goalsRepository,
+                timelyApplication().container.scheduledGoalsRepository,
+                timelyApplication().container.calendarEventsRepository
             )
         }
 
         initializer {
             EditGoalViewModel(
                 this.createSavedStateHandle(),
-                timelyApplication().container.goalsRepository
+                timelyApplication().container.scheduledGoalsRepository
             )
         }
 
         initializer {
             CurrentTaskViewModel(
                 timelyApplication().container.userPreferencesRepository,
-                timelyApplication().container.goalsRepository,
+                timelyApplication().container.scheduledGoalsRepository,
                 timelyApplication().container.alarmManagerGoalsRepository
+            )
+        }
+
+        initializer {
+            CalendarViewModel(
+                timelyApplication().container.calendarEventsRepository
+            )
+        }
+
+        initializer {
+            ScheduledGoalsListViewModel(
+                this.createSavedStateHandle(),
+                timelyApplication().container.scheduledGoalsRepository,
+                timelyApplication().container.calendarEventsRepository
+            )
+        }
+
+        initializer {
+            HomeViewModel(
+                timelyApplication().container.calendarEventsRepository
             )
         }
     }

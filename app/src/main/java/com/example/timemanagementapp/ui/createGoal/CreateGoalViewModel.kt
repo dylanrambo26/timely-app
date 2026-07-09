@@ -1,23 +1,45 @@
-package com.example.timemanagementapp.ui.edit
+package com.example.timemanagementapp.ui.createGoal
 
 import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
-import com.example.timemanagementapp.data.Goal
-import com.example.timemanagementapp.data.GoalsRepository
+import com.example.timemanagementapp.data.goal.Goal
+import com.example.timemanagementapp.data.goal.GoalsRepository
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
-import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY
+import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
+import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
+import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
+import com.example.timemanagementapp.ui.viewgoals.ViewGoalsDestination
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
-class AddGoalViewModel(private val goalsRepository: GoalsRepository) : ViewModel(){
+class CreateGoalViewModel(
+    savedStateHandle: SavedStateHandle,
+    private val goalsRepository: GoalsRepository,
+    private val scheduledGoalsRepository: ScheduledGoalsRepository,
+    private val calendarEventsRepository: CalendarEventsRepository
+) : ViewModel(){
 
+    //TODO might separate checks for time remaining in day to an addScheduledGoal screen therefore this could be reusable
 
     var goalUiState by mutableStateOf(GoalUiState())
         private set
 
+    val calendarEventId: Int = checkNotNull(savedStateHandle[ViewGoalsDestination.eventIdArg])
+    private val _date = MutableStateFlow<LocalDate?>(null)
+    val date: StateFlow<LocalDate?> = _date.asStateFlow()
 
-    init {
+    init{
+        viewModelScope.launch {
+            _date.value = calendarEventsRepository.getEventById(calendarEventId)?.date
+        }
+    }
+    /*init {
         viewModelScope.launch {
             goalsRepository.getTotalMinutesStream().collect { totalMinutes ->
                 goalUiState = goalUiState.copy(
@@ -25,7 +47,7 @@ class AddGoalViewModel(private val goalsRepository: GoalsRepository) : ViewModel
                 )
             }
         }
-    }
+    }*/
 
     fun updateUiState(goalDetails: GoalDetails){
         goalUiState =
@@ -65,12 +87,13 @@ class AddGoalViewModel(private val goalsRepository: GoalsRepository) : ViewModel
             return false
         }
 
-        val newMinutes = h * 60 + m
+        //TODO remainingminutes is moved to addScheduledGoalViewModel
+        /*val newMinutes = h * 60 + m
 
         if(newMinutes > goalUiState.remainingMinutesInDay){
             goalUiState = goalUiState.copy(errorMessage = "The goal's allotted time must be less than the remaining time in the day. Delete or edit the other goals before saving this goal.")
             return false
-        }
+        }*/
         goalUiState = goalUiState.copy(errorMessage = "")
         return true
     }
@@ -80,13 +103,25 @@ class AddGoalViewModel(private val goalsRepository: GoalsRepository) : ViewModel
             goalsRepository.insertGoal(goalUiState.goalDetails.toGoal())
         }
     }
+
+    suspend fun saveGoalAndAddToDate(){
+        if(validateInput()){
+            val goalId = goalsRepository.insertGoal(goalUiState.goalDetails.toGoal())
+            scheduledGoalsRepository.insertScheduledGoal(
+                ScheduledGoal(
+                    goalId = goalId,
+                    eventId = calendarEventId,
+                )
+            )
+        }
+    }
 }
 
 
 data class GoalUiState(
     val goalDetails: GoalDetails = GoalDetails(),
     val isEntryValid: Boolean = false,
-    val remainingMinutesInDay: Int = MINUTES_IN_24_HOUR_DAY,
+    //val remainingMinutesInDay: Int = MINUTES_IN_24_HOUR_DAY,
     val errorMessage: String = ""
 )
 

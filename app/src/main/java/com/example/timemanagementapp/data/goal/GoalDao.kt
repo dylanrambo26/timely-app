@@ -1,4 +1,4 @@
-package com.example.timemanagementapp.data
+package com.example.timemanagementapp.data.goal
 
 import androidx.room.Dao
 import androidx.room.Delete
@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface GoalDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insert(goal: Goal)
+    @Insert(onConflict = OnConflictStrategy.Companion.IGNORE)
+    suspend fun insert(goal: Goal): Long
 
     @Update
     suspend fun update(goal: Goal)
@@ -33,7 +33,7 @@ interface GoalDao {
     @Query("SELECT COALESCE(SUM(hours * 60 + minutes), 0) FROM goals")
     fun getSumOfTotalMinutes(): Flow<Int>
 
-    @Query(
+    /*@Query(
         """
             UPDATE goals
             SET status = :status
@@ -43,9 +43,9 @@ interface GoalDao {
     suspend fun updateGoalStatus(
         id: Int,
         status: GoalStatus
-    )
+    )*/
 
-    @Query(
+    /*@Query(
         """
             UPDATE goals
             SET completedMillis = :millis
@@ -55,5 +55,5 @@ interface GoalDao {
     suspend fun updateCompletedMillis(
         id: Int,
         millis: Long
-    )
+    )*/
 }

@@ -1,4 +1,4 @@
-package com.example.timemanagementapp.data
+package com.example.timemanagementapp.data.alarm
 
 import android.app.AlarmManager
 import android.app.PendingIntent
@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
+import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
 import com.example.timemanagementapp.receiver.TimerReceiver
 
 //Used by CurrentTaskViewModel to schedule alarm notifications when the task is done
@@ -20,8 +21,11 @@ class AlarmManagerGoalsRepository(
         Context.ALARM_SERVICE
     ) as AlarmManager
 
-    override fun scheduleTimer(goal: Goal) {
-        val durationMillis = ((goal.hours * 60L + goal.minutes) * 60_000L) - goal.completedMillis
+    override fun scheduleTimer(scheduledGoalWithGoal: ScheduledGoalWithGoal) {
+        val goal = scheduledGoalWithGoal.goal
+        val scheduledGoal = scheduledGoalWithGoal.scheduledGoal
+
+        val durationMillis = ((goal.hours * 60L + goal.minutes) * 60_000L) - scheduledGoal.completedMillis
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
             if (!alarmManager.canScheduleExactAlarms()){
@@ -36,14 +40,14 @@ class AlarmManagerGoalsRepository(
             context,
             TimerReceiver::class.java
         ).apply{
-            putExtra("goalId", goal.goalID)
+            putExtra("scheduledGoalId", scheduledGoal.scheduledGoalId)
             putExtra("goalTitle", goal.goalTitle)
         }
 
         val pendingIntent =
             PendingIntent.getBroadcast(
                 context,
-                goal.goalID,
+                scheduledGoal.scheduledGoalId,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
@@ -60,7 +64,7 @@ class AlarmManagerGoalsRepository(
     }
 
     //Cancel the alarm broadcast
-    override fun cancelTimer(goalId: Int){
+    override fun cancelTimer(scheduledGoalId: Int){
         val alarmManager = context.getSystemService(
             Context.ALARM_SERVICE
         ) as AlarmManager
@@ -73,7 +77,7 @@ class AlarmManagerGoalsRepository(
         val pendingIntent =
             PendingIntent.getBroadcast(
                 context,
-                goalId,
+                scheduledGoalId,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
