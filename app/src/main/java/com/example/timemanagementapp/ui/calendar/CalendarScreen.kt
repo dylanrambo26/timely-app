@@ -45,6 +45,7 @@ import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
 import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
 import com.example.timemanagementapp.ui.components.ScheduledGoalList
 import com.example.timemanagementapp.ui.theme.selectedDate
+import com.example.timemanagementapp.util.formatLocalDateToString
 import com.example.timemanagementapp.util.generateCalendarCellsPreview
 import java.time.YearMonth
 
@@ -151,7 +152,7 @@ fun GoalInformation(
             modifier = Modifier
                 .weight(1f)
         ) {
-            val dateString = selectedDate.monthValue.toString() + "/" + selectedDate.dayOfMonth.toString()
+            val formattedDate = formatLocalDateToString(selectedDate)
             IconButton(
                 onClick = {
                     onViewGoalsClicked()
@@ -161,14 +162,14 @@ fun GoalInformation(
 
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.List,
-                    contentDescription = "View $dateString goals",
+                    contentDescription = "View $formattedDate goals",
                     modifier = Modifier
                         .size(100.dp)
                 )
             }
             Spacer(modifier = Modifier.width(16.dp))
             Text(
-                text = "View $dateString Goals",
+                text = "View $formattedDate Goals",
                 textAlign = TextAlign.Center
             )
         }
@@ -309,7 +310,7 @@ fun CalendarBodyPreview(){
     }
 }
 
-@Preview(showBackground = true, showSystemUi = false)
+/*@Preview(showBackground = true, showSystemUi = false)
 @Composable
 fun CalendarScreenPreview(){
     TimeManagementAppTheme {
@@ -319,7 +320,7 @@ fun CalendarScreenPreview(){
             goals = testScheduledGoalsSizeThree
         )
     }
-}
+}*/
 
 @Preview(showBackground = true)
 @Composable

@@ -67,14 +67,14 @@ object HomeDestination : NavigationDest {
 fun HomeScreen(
 
     //TODO add navigation and screens for Calendar, Analytics, and Settings
-    navigateToViewGoals: () -> Unit,
+    navigateToViewGoals: (Int) -> Unit,
     navigateToCalendar: () -> Unit,
     navigateToAnalytics: () -> Unit,
     navigateToSettings: () -> Unit,
     navigateToChangeCurrentTask: () -> Unit,
     modifier: Modifier = Modifier,
-    goalListViewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    currentTaskViewModel: CurrentTaskViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    currentTaskViewModel: CurrentTaskViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    homeViewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ){
     val currentTaskUiState by currentTaskViewModel.currentTaskUiState.collectAsState()
     Scaffold(
@@ -120,7 +120,11 @@ fun HomeScreen(
             modifier = modifier.padding(innerPadding),
             onPauseButtonClicked = { currentTaskViewModel.pauseTask() },
             onResumeButtonClicked = { currentTaskUiState.currentTask?.let { currentTaskViewModel.startTaskTimer(it) } },
-            onViewButtonClicked = navigateToViewGoals,
+            onViewButtonClicked = {
+                homeViewModel.viewGoalsForToday{ eventId ->
+                    navigateToViewGoals(eventId)
+                }
+            },
             onCurrentTaskClicked = navigateToChangeCurrentTask,
         )
 }}
@@ -228,7 +232,7 @@ fun HomeBody(
                     .weight(1f)
             ) {
                 IconButton(
-                    onClick = {/* TODO onViewButtonClicked*/},
+                    onClick = onViewButtonClicked,
                     modifier = Modifier.size(100.dp)
                 ) {
                     Icon(

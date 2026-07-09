@@ -64,21 +64,10 @@ class CalendarViewModel(
         return cells
     }
 
-    fun viewGoalsForSelectedDate(onNavigate: (Int?) -> Unit){
+    fun viewGoalsForSelectedDate(onNavigate: (Int) -> Unit){
         viewModelScope.launch {
-            val existingEvent = calendarEventsRepository.getEventByDate(selectedDate)
 
-            val eventId = if(existingEvent?.eventId != null){
-                existingEvent.eventId
-            } else {
-                //Will return eventId
-                calendarEventsRepository.insertCalendarEvent(
-                    CalendarEvent(
-                        date = selectedDate
-                    )
-                )
-            }
-
+            val eventId = calendarEventsRepository.getOrCreateEventIdForDate(selectedDate)
             onNavigate(eventId)
         }
     }

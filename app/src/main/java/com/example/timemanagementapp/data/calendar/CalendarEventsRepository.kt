@@ -15,4 +15,5 @@ interface CalendarEventsRepository {
     fun getEventByDateFlow(date: LocalDate): Flow<CalendarEvent?>
 
     suspend fun getEventById(eventId: Int): CalendarEvent?
+    suspend fun getOrCreateEventIdForDate(date: LocalDate): Int
 }

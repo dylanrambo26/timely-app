@@ -18,4 +18,14 @@ class OfflineCalendarEventsRepository(private val calendarEventDao: CalendarEven
     override fun getEventByDateFlow(date: LocalDate): Flow<CalendarEvent?> = calendarEventDao.getEventByDateFlow(date)
 
     override suspend fun getEventById(eventId: Int): CalendarEvent? = calendarEventDao.getEventById(eventId)
+
+    override suspend fun getOrCreateEventIdForDate(date: LocalDate): Int {
+        val existingEvent = getEventByDate(date)
+
+        return existingEvent?.eventId ?: insertCalendarEvent(
+            CalendarEvent(
+                date = date
+            )
+        )
+    }
 }

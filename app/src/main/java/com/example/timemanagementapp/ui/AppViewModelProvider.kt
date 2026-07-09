@@ -12,6 +12,7 @@ import com.example.timemanagementapp.ui.currenttask.CurrentTaskViewModel
 import com.example.timemanagementapp.ui.createGoal.CreateGoalViewModel
 import com.example.timemanagementapp.ui.edit.EditGoalViewModel
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
+import com.example.timemanagementapp.ui.home.HomeViewModel
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
 
 
@@ -19,7 +20,6 @@ import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
 object AppViewModelProvider{
     val Factory = viewModelFactory {
 
-        //Initializer for Home View Model
         initializer {
             GoalListViewModel(
                 timelyApplication().container.goalsRepository,
@@ -60,6 +60,12 @@ object AppViewModelProvider{
             ScheduledGoalsListViewModel(
                 this.createSavedStateHandle(),
                 timelyApplication().container.scheduledGoalsRepository,
+                timelyApplication().container.calendarEventsRepository
+            )
+        }
+
+        initializer {
+            HomeViewModel(
                 timelyApplication().container.calendarEventsRepository
             )
         }

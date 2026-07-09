@@ -26,10 +26,12 @@ import com.example.timemanagementapp.ui.currenttask.CurrentTaskScreen
 import com.example.timemanagementapp.ui.createGoal.CreateGoalDestination
 import com.example.timemanagementapp.ui.createGoal.CreateGoalScreen
 import com.example.timemanagementapp.ui.createGoal.CreateGoalViewModel
+import com.example.timemanagementapp.ui.currenttask.CurrentTaskViewModel
 import com.example.timemanagementapp.ui.edit.EditScheduledGoalDestination
 import com.example.timemanagementapp.ui.edit.EditScheduledGoalsScreen
 import com.example.timemanagementapp.ui.edit.EditScheduledGoalScreen
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
+import com.example.timemanagementapp.ui.home.HomeViewModel
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
 import com.example.timemanagementapp.ui.viewgoals.ViewGoalsDestination
 import com.example.timemanagementapp.ui.viewgoals.ViewGoalsScreen
@@ -53,20 +55,21 @@ fun TimelyNavHost(
             route = GoalListGraph.route,
             startDestination = HomeDestination.route
         ){
-            composable(route = HomeDestination.route){ backStackEntry ->
-                val parentEntry = remember(backStackEntry){
-                    navController.getBackStackEntry(GoalListGraph.route)
-                }
-                val sharedViewModel: GoalListViewModel =
-                    viewModel(parentEntry, factory = AppViewModelProvider.Factory)
+            composable(route = HomeDestination.route)
+            { backStackEntry ->
+                val currentTaskViewModel: CurrentTaskViewModel = viewModel(factory = AppViewModelProvider.Factory)
+                val homeViewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory)
 
                 HomeScreen(
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToSettings = {/*TODO*/},
                     navigateToAnalytics = {/*TODO*/},
-                    navigateToViewGoals = {navController.navigate(ViewGoalsDestination.route)},
+                    navigateToViewGoals = {eventId ->
+                        navController.navigate("${ViewGoalsDestination.route}/$eventId")
+                    },
                     navigateToChangeCurrentTask = {navController.navigate(CurrentTaskDestination.route)},
-                    goalListViewModel = sharedViewModel
+                    homeViewModel = homeViewModel,
+                    currentTaskViewModel = currentTaskViewModel
                 )
             }
             composable(route = CalendarDestination.route){ backStackEntry ->
