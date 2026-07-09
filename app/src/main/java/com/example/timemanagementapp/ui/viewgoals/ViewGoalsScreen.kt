@@ -47,7 +47,7 @@ import java.time.LocalDate
 
 object ViewGoalsDestination : NavigationDest{
     override val route = "view_goals"
-    override val titleRes = R.string.view_todays_goals
+    override val titleRes = R.string.view_goals_for_date
     const val eventIdArg = "eventId"
     val routeWithArgs = "$route/{$eventIdArg}"
 }
@@ -164,7 +164,7 @@ fun ViewGoalsBody(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Edit,
-                        contentDescription = "Edit today's goals",
+                        contentDescription = stringResource(R.string.edit_goals_for_date, formattedDate),
                         modifier = Modifier
                             .size(100.dp)
                     )
@@ -230,7 +230,7 @@ fun ViewGoalsBodyPreview(){
             ),
             onAddGoal = {},
             onEditGoalsClicked = {},
-            formattedDate = "7/6",
+            formattedDate = formatLocalDateToString(LocalDate.of(2026, 7,26)),
             modifier = Modifier
         )
     }

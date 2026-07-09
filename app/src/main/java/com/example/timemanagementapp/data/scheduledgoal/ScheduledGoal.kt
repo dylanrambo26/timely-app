@@ -37,5 +37,10 @@ data class ScheduledGoal(
 
     val status: GoalStatus = GoalStatus.NOT_STARTED,
     val startTimeMillis: Long = 0L,
-    val completedMillis: Long = 0L
+    val completedMillis: Long = 0L,
+
+    //Optional overrides for user when editing scheduled goal for a specific day
+    val customTitle: String? = null,
+    val customHours: Int? = null,
+    val customMinutes: Int? = null
 )

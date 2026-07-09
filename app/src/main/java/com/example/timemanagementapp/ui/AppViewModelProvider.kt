@@ -38,7 +38,7 @@ object AppViewModelProvider{
         initializer {
             EditGoalViewModel(
                 this.createSavedStateHandle(),
-                timelyApplication().container.goalsRepository
+                timelyApplication().container.scheduledGoalsRepository
             )
         }
 

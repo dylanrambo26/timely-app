@@ -9,6 +9,8 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
+import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 import com.example.timemanagementapp.ui.createGoal.GoalDetails
 import com.example.timemanagementapp.ui.createGoal.GoalUiState
 import com.example.timemanagementapp.ui.createGoal.toGoal
@@ -18,13 +20,17 @@ import kotlinx.coroutines.flow.combine
 
 class EditGoalViewModel(
     savedStateHandle: SavedStateHandle,
-    private val goalsRepository: GoalsRepository
+    private val scheduledGoalsRepository: ScheduledGoalsRepository
 ) : ViewModel(){
 
     var goalUiState by mutableStateOf(GoalUiState())
         private set
 
-    private val goalId: Int = checkNotNull(savedStateHandle[EditGoalDestination.goalIdArg])
+    private val scheduledGoalId: Int = checkNotNull(savedStateHandle[EditScheduledGoalDestination.scheduledGoalIdArg])
+
+    private var currentScheduledGoal: ScheduledGoal? = null
+
+
 
     private fun validateInput(uiState: GoalDetails = goalUiState.goalDetails): Boolean {
         val h = uiState.hours.toIntOrNull()
@@ -66,35 +72,47 @@ class EditGoalViewModel(
 
     init {
         viewModelScope.launch {
-            combine(
-                goalsRepository.getGoalStream(goalId).filterNotNull(),
-                goalsRepository.getTotalMinutesStream()
-            ){goal, totalMinutes ->
-                val details = goal.toGoalDetails()
+            scheduledGoalsRepository
+                .getScheduledGoalWithGoal(scheduledGoalId)
+                .filterNotNull()
+                .collect { combinedGoal ->
+                    val scheduledGoal = combinedGoal.scheduledGoal
+                    currentScheduledGoal = scheduledGoal
+                    val goal = combinedGoal.goal
 
-                val currentGoalMinutes = goal.hours * 60 + goal.minutes
-                val remainingExcludingCurrentGoal = MINUTES_IN_24_HOUR_DAY - (totalMinutes - currentGoalMinutes)
+                    val details = GoalDetails(
+                        id = scheduledGoal.scheduledGoalId,
+                        title = scheduledGoal.customTitle ?: goal.goalTitle,
+                        hours = (scheduledGoal.customHours ?: goal.hours).toString(),
+                        minutes = (scheduledGoal.customMinutes ?: goal.minutes).toString()
+                    )
 
-                GoalUiState(
-                    goalDetails = details,
-                    //remainingMinutesInDay = remainingExcludingCurrentGoal,
-                    isEntryValid = validateInput(details)
-                )
-            }.collect { combinedState ->
-                goalUiState = combinedState
-            }
-
+                    goalUiState = GoalUiState(
+                        goalDetails = details,
+                        isEntryValid = validateInput(details)
+                    )
+                }
         }
     }
-
-    fun updateUiState(goalDetails: GoalDetails){
+    fun updateUiState(goalDetails: GoalDetails) {
         goalUiState =
-            goalUiState.copy(goalDetails = goalDetails, isEntryValid = validateInput(goalDetails))
+            goalUiState.copy(
+                goalDetails = goalDetails,
+                isEntryValid = validateInput(goalDetails)
+            )
     }
 
-    suspend fun updateGoal(): Boolean{
-        if(!validateInput(goalUiState.goalDetails)) return false
-        goalsRepository.updateGoal(goalUiState.goalDetails.toGoal())
+    suspend fun updateScheduledGoal(): Boolean {
+        if (!validateInput(goalUiState.goalDetails)) return false
+        val existingScheduledGoal = currentScheduledGoal ?: return false
+
+        scheduledGoalsRepository.updateScheduledGoal(
+            existingScheduledGoal.copy(
+                customTitle = goalUiState.goalDetails.title,
+                customHours = goalUiState.goalDetails.hours.toIntOrNull(),
+                customMinutes = goalUiState.goalDetails.minutes.toIntOrNull()
+            )
+        )
         return true
     }
 }

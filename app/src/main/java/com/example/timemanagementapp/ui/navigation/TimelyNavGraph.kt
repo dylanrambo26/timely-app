@@ -5,7 +5,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.composable
-import com.example.timemanagementapp.ui.edit.EditGoalsDestination
+import com.example.timemanagementapp.ui.edit.EditScheduledGoalsDestination
 import com.example.timemanagementapp.ui.home.HomeDestination
 import com.example.timemanagementapp.ui.home.HomeScreen
 import androidx.navigation.compose.NavHost
@@ -26,9 +26,9 @@ import com.example.timemanagementapp.ui.currenttask.CurrentTaskScreen
 import com.example.timemanagementapp.ui.createGoal.CreateGoalDestination
 import com.example.timemanagementapp.ui.createGoal.CreateGoalScreen
 import com.example.timemanagementapp.ui.createGoal.CreateGoalViewModel
-import com.example.timemanagementapp.ui.edit.EditGoalDestination
-import com.example.timemanagementapp.ui.edit.EditGoalsScreen
-import com.example.timemanagementapp.ui.edit.EditOneGoalScreen
+import com.example.timemanagementapp.ui.edit.EditScheduledGoalDestination
+import com.example.timemanagementapp.ui.edit.EditScheduledGoalsScreen
+import com.example.timemanagementapp.ui.edit.EditScheduledGoalScreen
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
 import com.example.timemanagementapp.ui.viewgoals.ViewGoalsDestination
@@ -83,29 +83,33 @@ fun TimelyNavHost(
                     viewModel = viewModel
                 )
             }
-            composable(route = EditGoalsDestination.route){ backStackEntry ->
-                val parentEntry = remember(backStackEntry){
-                    navController.getBackStackEntry(GoalListGraph.route)
-                }
-                val sharedViewModel: ScheduledGoalsListViewModel =
-                    viewModel(parentEntry, factory = AppViewModelProvider.Factory)
-
-                EditGoalsScreen(
-                    onAddGoalButtonClicked = {navController.navigate(CreateGoalDestination.route)},
-                    onEditGoal = { navController.navigate("${EditGoalDestination.route}/${it.scheduledGoal.scheduledGoalId}")},
+            composable(
+                route = EditScheduledGoalsDestination.routeWithArgs,
+                arguments = listOf(
+                    navArgument(EditScheduledGoalsDestination.eventIdArg){
+                        type = NavType.IntType
+                    }
+                )
+            ){ backStackEntry ->
+                val viewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory)
+                EditScheduledGoalsScreen(
+                    onAddGoalButtonClicked = { eventId ->
+                        navController.navigate("${AddGoalSelectionDestination.route}/$eventId")
+                    },
+                    onEditGoal = { navController.navigate("${EditScheduledGoalDestination.route}/${it.scheduledGoal.scheduledGoalId}")},
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToAnalytics = {/*TODO*/},
-                    viewModel = sharedViewModel
+                    viewModel = viewModel
                 )
             }
             composable(
-                route = EditGoalDestination.routeWithArgs,
-                arguments = listOf(navArgument(EditGoalDestination.goalIdArg) {
+                route = EditScheduledGoalDestination.routeWithArgs,
+                arguments = listOf(navArgument(EditScheduledGoalDestination.scheduledGoalIdArg) {
                     type = NavType.IntType
                 })
             ) {
-                EditOneGoalScreen(
+                EditScheduledGoalScreen(
                     navigateBack = {navController.popBackStack()},
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {/*TODO*/},
@@ -168,7 +172,7 @@ fun TimelyNavHost(
                         navController.navigate("${AddGoalSelectionDestination.route}/$eventId")
                     },
                     onEditGoalsButtonClicked = { eventId ->
-                        navController.navigate("${EditGoalsDestination.route}/$eventId")
+                        navController.navigate("${EditScheduledGoalsDestination.route}/$eventId")
                     },
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},

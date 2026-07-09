@@ -13,6 +13,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -27,22 +28,24 @@ import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.ui.AppViewModelProvider
-import com.example.timemanagementapp.ui.components.DisplayTime
+import com.example.timemanagementapp.ui.components.GoalCard
+import com.example.timemanagementapp.ui.components.GoalTemplateCard
 import com.example.timemanagementapp.ui.createGoal.GoalDetails
 import com.example.timemanagementapp.ui.createGoal.GoalUiState
+import com.example.timemanagementapp.ui.createGoal.toGoal
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import kotlinx.coroutines.launch
 
-object EditGoalDestination : NavigationDest {
+object EditScheduledGoalDestination : NavigationDest {
     override val route = "edit_goal"
     override val titleRes = R.string.edit_one_goal
-    const val goalIdArg = "goalId"
-    val routeWithArgs = "$route/{$goalIdArg}"
+    const val scheduledGoalIdArg = "scheduledGoalId"
+    val routeWithArgs = "$route/{$scheduledGoalIdArg}"
 }
 
 @Composable
-fun EditOneGoalScreen(
+fun EditScheduledGoalScreen(
     modifier: Modifier = Modifier,
     viewModel: EditGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateBack: () -> Unit,
@@ -60,12 +63,12 @@ fun EditOneGoalScreen(
                 onAnalyticsClick = navigateToAnalytics
             )}
     ) { innerPadding ->
-        EditOneGoalBody(
+        EditScheduledGoalBody(
             goalUiState = viewModel.goalUiState,
             onGoalValueChange = viewModel::updateUiState,
             onSaveGoalClick = {
                 coroutineScope.launch {
-                    val saved = viewModel.updateGoal()
+                    val saved = viewModel.updateScheduledGoal()
                     if(saved) navigateBack()
                 }
             },
@@ -77,7 +80,7 @@ fun EditOneGoalScreen(
 }
 
 @Composable
-fun EditOneGoalBody(
+fun EditScheduledGoalBody(
     goalUiState: GoalUiState,
     onGoalValueChange: (GoalDetails) -> Unit,
     onSaveGoalClick: () -> Unit,
@@ -92,6 +95,20 @@ fun EditOneGoalBody(
     ) {
         //TimeRemaining(remaining = goalUiState.remainingMinutesInDay)
         //DisplayTime(duration = goalUiState.remainingMinutesInDay, title = stringResource(R.string.available_time_in_full_day))
+
+        val oldGoalDetails = remember(goalUiState.goalDetails.id){
+            goalUiState.goalDetails
+        }
+        Text(stringResource(R.string.old_goal))
+        GoalTemplateCard(
+            goal = oldGoalDetails.toGoal(),
+        )
+        Text(stringResource(R.string.new_goal))
+        GoalTemplateCard(
+            goal = goalUiState.goalDetails.toGoal(),
+        )
+
+
         EditGoalInputForm(
             goalDetails = goalUiState.goalDetails,
             onValueChange = onGoalValueChange,
@@ -197,9 +214,9 @@ fun EditGoalInputForm(
 
 @Preview(showBackground = true)
 @Composable
-fun EditOneGoalScreenPreview(){
+fun EditScheduledGoalScreenPreview(){
     TimeManagementAppTheme {
-        EditOneGoalBody(
+        EditScheduledGoalBody(
            goalUiState = GoalUiState(
                GoalDetails(
                    title = "Title", hours = "1", minutes = "30"

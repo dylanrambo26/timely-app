@@ -41,5 +41,7 @@
     <string name="cancel">Cancel</string>
     <string name="save_goal">Save Goal</string>
     <string name="save_goal_and_add_to_date">Save &amp; Add to %1$s</string>
-    <string name="existing_goals">Existing Goals</string>"
+    <string name="existing_goals">Existing Goals</string>
+    <string name="old_goal">Old Goal:</string>
+    <string name="new_goal">New Goal:</string>
 </resources>

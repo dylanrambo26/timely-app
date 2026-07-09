@@ -127,11 +127,16 @@ fun GoalCard(
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
             Row {
+
+                val displayTitle = combinedGoal.scheduledGoal.customTitle ?: combinedGoal.goal.goalTitle
+                val displayHours = combinedGoal.scheduledGoal.customHours ?: combinedGoal.goal.hours
+                val displayMinutes = combinedGoal.scheduledGoal.customMinutes ?: combinedGoal.goal.minutes
+
                 Text(text = combinedGoal.scheduledGoal.scheduledGoalId.toString()) //TODO delete later
                 Spacer(modifier = Modifier.width(8.dp))
-                Text(text = combinedGoal.goal.goalTitle)
+                Text(text = displayTitle)
                 Spacer(modifier = Modifier.width(12.dp))
-                Text(text = "${combinedGoal.goal.hours}h ${combinedGoal.goal.minutes}m")
+                Text(text = "${displayHours}h ${displayMinutes}m")
             }
 
             Spacer(modifier = Modifier.weight(1f))
@@ -179,7 +184,10 @@ fun ScheduledGoalListPreview(){
                         scheduledGoalId = 1,
                         status = GoalStatus.COMPLETED,
                         startTimeMillis = 123456789L,
-                        completedMillis = 600000L
+                        completedMillis = 600000L,
+                        customTitle = null,
+                        customMinutes = null,
+                        customHours = null
                     ),
                     goal = Goal(
                         goalID = 1,

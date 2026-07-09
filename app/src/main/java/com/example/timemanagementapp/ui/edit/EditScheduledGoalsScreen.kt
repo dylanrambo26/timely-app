@@ -25,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
@@ -32,23 +33,28 @@ import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
+import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
 //import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.components.DisplayTime
 import com.example.timemanagementapp.ui.components.ScheduledGoalList
 import com.example.timemanagementapp.ui.navigation.NavigationDest
+import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListUiState
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
+import com.example.timemanagementapp.ui.viewgoals.ViewGoalsDestination
 import com.example.timemanagementapp.util.nonActiveGoals
 
-object EditGoalsDestination : NavigationDest{
-    override val route = "edit_goals"
-    override val titleRes = R.string.edit_todays_goals
+object EditScheduledGoalsDestination : NavigationDest{
+    override val route = "edit_scheduled_goals"
+    override val titleRes = R.string.edit_goals_for_date
+    const val eventIdArg = "eventId"
+    val routeWithArgs = "$route/{$eventIdArg}"
 }
 
 @Composable
-fun EditGoalsScreen(
-    onAddGoalButtonClicked: () -> Unit = {},
+fun EditScheduledGoalsScreen(
+    onAddGoalButtonClicked: (Int) -> Unit = {},
     onEditGoal: (ScheduledGoalWithGoal) -> Unit,
     //viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     viewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
@@ -70,19 +76,21 @@ fun EditGoalsScreen(
             )
         }
     ) { innerPadding ->
-        EditGoalsBody(
+        EditScheduledGoalsBody(
             //goalListUiState = goalListUiState,
             scheduledGoalsListUiState = scheduledGoalsListUiState,
             onDeleteGoal = {scheduledGoal -> viewModel.deleteScheduledGoal(scheduledGoal)},
             onEditGoal = onEditGoal,
-            onAddGoal = onAddGoalButtonClicked,
+            onAddGoal = {
+                scheduledGoalsListUiState.calendarEventId?.let(onAddGoalButtonClicked)
+            },
             modifier = Modifier.padding(innerPadding)
         )
     }
 }
 
 @Composable
-fun EditGoalsBody(
+fun EditScheduledGoalsBody(
     //goalListUiState: GoalListUiState,
     scheduledGoalsListUiState: ScheduledGoalsListUiState,
     onDeleteGoal: (ScheduledGoal) -> Unit,
@@ -136,7 +144,7 @@ fun EditGoalsBody(
             }
             Spacer(modifier = Modifier.width(30.dp))
             Text(
-                text = stringResource(R.string.top_app_bar_add_goal),
+                text = stringResource(R.string.add_goal),
                 modifier = Modifier
                     .align(Alignment.CenterVertically)
             )
@@ -145,17 +153,17 @@ fun EditGoalsBody(
     }
 
 }
-/*
-@Preview(showBackground = true)
+/*@Preview(showBackground = true)
 @Composable
 fun EditGoalsScreenPreview(){
     TimeManagementAppTheme {
         EditGoalsScreen(
             //currentGoals = TestData.goals,
-            onDeleteGoal = {},
             onEditGoal = {},
             onAddGoalButtonClicked = {},
-            //remaining = 870
+            navigateToHome = {},
+            navigateToCalendar = {},
+            navigateToAnalytics = {}
         )
     }
 }
@@ -167,10 +175,26 @@ fun EditGoalsEmptyListScreenPreview(){
     TimeManagementAppTheme {
         EditGoalsScreen(
             //currentGoals = emptyGoals,
-            onDeleteGoal = {},
             onEditGoal = {},
             onAddGoalButtonClicked = {},
-            //remaining = 1440
+            navigateToHome = {},
+            navigateToCalendar = {},
+            navigateToAnalytics = {}
         )
     }
 }*/
+
+@Preview(showBackground = true)
+@Composable
+fun EditScheduledGoalsBodyPreview(){
+    TimeManagementAppTheme {
+        EditScheduledGoalsBody(
+            scheduledGoalsListUiState = ScheduledGoalsListUiState(
+                scheduledGoalsList = testScheduledGoalsSizeThree
+            ),
+            onDeleteGoal = {},
+            onEditGoal = {},
+            onAddGoal = {},
+        )
+    }
+}

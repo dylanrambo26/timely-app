@@ -17,7 +17,7 @@ import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalDao
         CalendarEvent::class,
         ScheduledGoal::class
     ],
-    version = 8,
+    version = 9,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

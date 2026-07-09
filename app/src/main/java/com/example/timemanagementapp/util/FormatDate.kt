@@ -4,7 +4,7 @@ import java.time.LocalDate
 
 fun formatLocalDateToString(date: LocalDate?): String {
     if(date == LocalDate.now()){
-        return "Today"
+        return "Today's"
     }
 
     return date?.monthValue.toString() +
