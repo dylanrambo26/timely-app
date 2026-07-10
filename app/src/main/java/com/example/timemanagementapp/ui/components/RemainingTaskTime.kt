@@ -26,7 +26,7 @@ fun RemainingTaskTime(scheduledGoalWithGoal: ScheduledGoalWithGoal){
 
     //Need keyed LaunchedEffect when a new goal is selected for current task to recompose with new coroutine
     //also recompose when startTime and completedMillis are changed during pause
-    LaunchedEffect(scheduledGoalWithGoal.goal.goalID, scheduledGoalWithGoal.scheduledGoal.startTimeMillis, scheduledGoalWithGoal.scheduledGoal.completedMillis) {
+    LaunchedEffect(scheduledGoalWithGoal.scheduledGoal.scheduledGoalId, scheduledGoalWithGoal.scheduledGoal.startTimeMillis, scheduledGoalWithGoal.scheduledGoal.completedMillis) {
         Log.d("Remaining Task Time: ", "Relaunch")
         while(true){
             val remainingTimeState = calculateRemainingTime(
@@ -39,7 +39,7 @@ fun RemainingTaskTime(scheduledGoalWithGoal: ScheduledGoalWithGoal){
             remainingMinutes = remainingTimeState.remainingMinutes
             isDone = remainingTimeState.isDone
 
-            delay(millisUntilNextMinute())
+            delay(1000L)
         }
     }
 
