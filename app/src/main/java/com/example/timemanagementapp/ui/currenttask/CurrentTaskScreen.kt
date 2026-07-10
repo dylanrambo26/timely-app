@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -28,11 +29,14 @@ import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
+import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.components.ScheduledGoalList
 import com.example.timemanagementapp.ui.navigation.NavigationDest
+import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListUiState
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
+import com.example.timemanagementapp.ui.viewgoals.ViewGoalsDestination
 import com.example.timemanagementapp.util.incompleteGoals
 
 object CurrentTaskDestination : NavigationDest{
@@ -67,7 +71,7 @@ fun CurrentTaskScreen(
         CurrentTaskBody(
             //goalListUiState = goalListUiState,
             scheduledGoalsListUiState = scheduledGoalsListUiState,
-            currentTaskUiState = currentTaskUiState,
+            //currentTaskUiState = currentTaskUiState,
             onSaveCurrentTaskPressed = {scheduledGoalWithGoal ->
                 currentTaskViewModel.startTaskTimer(scheduledGoalWithGoal)
             },
@@ -82,7 +86,7 @@ fun CurrentTaskScreen(
 fun CurrentTaskBody(
     //goalListUiState: GoalListUiState,
     scheduledGoalsListUiState: ScheduledGoalsListUiState,
-    currentTaskUiState: CurrentTaskUiState,
+    //currentTaskUiState: CurrentTaskUiState,
     onSaveCurrentTaskPressed: (ScheduledGoalWithGoal) -> Unit,
     navigateToHome: () -> Unit,
     navigateBack: () -> Unit,
@@ -161,17 +165,15 @@ fun CurrentTaskBody(
     }
 
 }
-/*@Preview(showBackground = true)
+@Preview(showBackground = true)
 @Composable
 fun CurrentTaskBodyPreview(){
     TimeManagementAppTheme {
         CurrentTaskBody(
-            goalListUiState = GoalListUiState(listOf(
-                Goal(0,1,0, "study", GoalStatus.NOT_STARTED),
-                Goal(1,1,0, "sleep", GoalStatus.NOT_STARTED),
-                Goal(2,3,0, "video games", GoalStatus.NOT_STARTED)
-            )),
-            currentTaskUiState = CurrentTaskUiState(Goal(0,1,0, "study", GoalStatus.NOT_STARTED)),
+            scheduledGoalsListUiState = ScheduledGoalsListUiState(
+                scheduledGoalsList = testScheduledGoalsSizeThree
+            ),
+            //currentTaskUiState = CurrentTaskUiState(testScheduledGoalsSizeThree[0]),
             onSaveCurrentTaskPressed = {},
             modifier = Modifier
                 .fillMaxSize()
@@ -180,4 +182,4 @@ fun CurrentTaskBodyPreview(){
             navigateBack = {}
         )
     }
-}*/
+}
