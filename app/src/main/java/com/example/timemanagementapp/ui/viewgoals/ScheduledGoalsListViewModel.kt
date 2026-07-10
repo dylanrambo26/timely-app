@@ -13,6 +13,7 @@ import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -30,34 +31,44 @@ class ScheduledGoalsListViewModel(
         private const val TIMEOUT_MILLIS = 5_000L
     }
 
-    val calendarEventId: Int = checkNotNull(savedStateHandle[ViewGoalsDestination.eventIdArg])
+    private val eventIdFromRoute: Int? = savedStateHandle[ViewGoalsDestination.eventIdArg]
+    var calendarEventId: Int = 0
+        private set
+    private val _calendarEventId = MutableStateFlow<Int?>(null)
     private val _date = MutableStateFlow<LocalDate?>(null)
 
     init{
         viewModelScope.launch {
+            calendarEventId = eventIdFromRoute ?: calendarEventsRepository.getOrCreateEventIdForDate(LocalDate.now())
+
+            _calendarEventId.value = calendarEventId
             _date.value = calendarEventsRepository.getEventById(calendarEventId)?.date
         }
     }
 
-    val scheduledGoalsListUiState: StateFlow<ScheduledGoalsListUiState> =
-        scheduledGoalsRepository.getScheduledGoalsWithGoal(calendarEventId)
-            .map{ scheduledGoals ->
-                val totalMinutes = scheduledGoals.sumOf {
-                    it.goal.hours * 60 + it.goal.minutes
-                }
+    val scheduledGoalsListUiState =
+        _calendarEventId
+            .filterNotNull()
+            .flatMapLatest { eventId ->
+                scheduledGoalsRepository.getScheduledGoalsWithGoal(eventId)
+                .map{ scheduledGoals ->
+                    val totalMinutes = scheduledGoals.sumOf {
+                        it.goal.hours * 60 + it.goal.minutes
+                    }
 
-                ScheduledGoalsListUiState(
-                    scheduledGoalsList = scheduledGoals,
-                    calendarEventId = calendarEventId,
-                    date = _date.value,
-                    totalMinutes = totalMinutes,
-                    remainingMinutesInDay = MINUTES_IN_24_HOUR_DAY - totalMinutes
-                )
+                    ScheduledGoalsListUiState(
+                        scheduledGoalsList = scheduledGoals,
+                        calendarEventId = eventId,
+                        date = _date.value,
+                        totalMinutes = totalMinutes,
+                        remainingMinutesInDay = MINUTES_IN_24_HOUR_DAY - totalMinutes
+                    )
+                }
             }
             .stateIn(
                 scope = viewModelScope,
                 started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-                initialValue = ScheduledGoalsListUiState(calendarEventId = calendarEventId)
+                initialValue = ScheduledGoalsListUiState()
             )
 
     fun deleteScheduledGoal(scheduledGoal: ScheduledGoal){

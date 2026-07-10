@@ -143,16 +143,12 @@ fun TimelyNavHost(
             }
             composable(
                 route = CurrentTaskDestination.route
-            ){ backStackEntry ->
-                val parentEntry = remember(backStackEntry){
-                    navController.getBackStackEntry(GoalListGraph.route)
-                }
-                val sharedViewModel: ScheduledGoalsListViewModel =
-                    viewModel(parentEntry, factory = AppViewModelProvider.Factory)
+            ){
+                val scheduledGoalsListViewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory)
 
                 //possibly share currentTaskViewmodel between this screen and home for consistency
                 CurrentTaskScreen(
-                    scheduledGoalsListViewModel = sharedViewModel,
+                    scheduledGoalsListViewModel = scheduledGoalsListViewModel,
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToAnalytics = {/*TODO*/},
