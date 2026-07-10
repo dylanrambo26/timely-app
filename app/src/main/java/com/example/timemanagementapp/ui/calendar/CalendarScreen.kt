@@ -41,9 +41,6 @@ import java.time.LocalDate
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material3.MaterialTheme
-import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
-import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
-import com.example.timemanagementapp.ui.components.ScheduledGoalList
 import com.example.timemanagementapp.ui.theme.selectedDate
 import com.example.timemanagementapp.util.formatLocalDateToString
 import com.example.timemanagementapp.util.generateCalendarCellsPreview
@@ -59,8 +56,7 @@ fun CalendarScreen(
     navigateToHome: () -> Unit,
     navigateToAnalytics: () -> Unit, //TODO
     onViewGoalsClicked: (Int?) -> Unit = {},
-    viewModel: CalendarViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    goals: List<ScheduledGoalWithGoal> = emptyList(), //TODO delete
+    calendarViewModel: CalendarViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ){
     Scaffold(
         topBar = {
@@ -76,15 +72,14 @@ fun CalendarScreen(
     ) {
         innerPadding ->
         CalendarBody(
-            displayedMonth = viewModel.displayedMonth,
-            calendarCells = viewModel.calendarCells,
-            selectedDate = viewModel.selectedDate,
-            onPrevMonth = viewModel::previousMonth,
-            goals = goals,
-            onNextMonth = viewModel::nextMonth,
-            onDateSelected = viewModel::selectDate,
+            displayedMonth = calendarViewModel.displayedMonth,
+            calendarCells = calendarViewModel.calendarCells,
+            selectedDate = calendarViewModel.selectedDate,
+            onPrevMonth = calendarViewModel::previousMonth,
+            onNextMonth = calendarViewModel::nextMonth,
+            onDateSelected = calendarViewModel::selectDate,
             onViewGoalsClicked = {
-                viewModel.viewGoalsForSelectedDate { eventId ->
+                calendarViewModel.viewGoalsForSelectedDate { eventId ->
                     onViewGoalsClicked(eventId)
                 }
             },
@@ -99,7 +94,6 @@ fun CalendarBody(
     selectedDate: LocalDate = LocalDate.now(),
     onPrevMonth: () -> Unit,
     onNextMonth: () -> Unit,
-    goals: List<ScheduledGoalWithGoal> = emptyList(), //TODO delete
     onDateSelected: (LocalDate) -> Unit = {},
     displayedMonth: YearMonth = YearMonth.now(),
     onViewGoalsClicked: () -> Unit = {},
@@ -122,7 +116,6 @@ fun CalendarBody(
             onDateSelected = onDateSelected,
         )
         GoalInformation(
-            goals = goals,
             selectedDate = selectedDate,
             onViewGoalsClicked = onViewGoalsClicked
         )
@@ -132,7 +125,6 @@ fun CalendarBody(
 //TODO Edit strings to have selected date values
 @Composable
 fun GoalInformation(
-    goals: List<ScheduledGoalWithGoal> = emptyList(),
     selectedDate: LocalDate,
     onViewGoalsClicked: () -> Unit = {},
 ){
@@ -142,11 +134,6 @@ fun GoalInformation(
         modifier = Modifier
             .fillMaxSize()
     ) {
-        ScheduledGoalList(
-            goals = goals,
-            addColors = true,
-            modifier = Modifier.weight(1f)
-        )
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
@@ -305,30 +292,6 @@ fun CalendarBodyPreview(){
             selectedDate = LocalDate.of(2026, 7, 6),
             onPrevMonth = {},
             onNextMonth = {},
-            goals = testScheduledGoalsSizeThree
-        )
-    }
-}
-
-/*@Preview(showBackground = true, showSystemUi = false)
-@Composable
-fun CalendarScreenPreview(){
-    TimeManagementAppTheme {
-        CalendarScreen(
-            navigateToHome = {},
-            navigateToAnalytics = {},
-            goals = testScheduledGoalsSizeThree
-        )
-    }
-}*/
-
-@Preview(showBackground = true)
-@Composable
-fun GoalInformationPreview(){
-    TimeManagementAppTheme {
-        GoalInformation(
-            goals = testScheduledGoalsSizeThree,
-            selectedDate = LocalDate.now()
         )
     }
 }

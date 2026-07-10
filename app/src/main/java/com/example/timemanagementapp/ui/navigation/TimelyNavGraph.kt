@@ -1,7 +1,6 @@
 package com.example.timemanagementapp.ui.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.composable
@@ -83,7 +82,7 @@ fun TimelyNavHost(
                     navigateToAnalytics = {/*TODO*/},
                     onViewGoalsClicked = {eventId ->
                         navController.navigate("${ViewGoalsDestination.route}/$eventId")},
-                    viewModel = viewModel
+                    calendarViewModel = viewModel
                 )
             }
             composable(
