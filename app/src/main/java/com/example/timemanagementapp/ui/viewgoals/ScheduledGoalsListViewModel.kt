@@ -85,6 +85,10 @@ class ScheduledGoalsListViewModel(
             )
         )
     }
+
+    fun isPastDate(): Boolean{
+        return _date.value?.isBefore(LocalDate.now()) ?: false
+    }
 }
 
 data class ScheduledGoalsListUiState(

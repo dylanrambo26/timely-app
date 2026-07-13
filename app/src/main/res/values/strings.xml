@@ -44,4 +44,6 @@
     <string name="existing_goals">Existing Goals</string>
     <string name="old_goal">Old Goal:</string>
     <string name="new_goal">New Goal:</string>
+    <string name="past_date">Goals are View-Only for past dates.</string>
+    <string name = "return_to_calendar">Return to Calendar</string>
 </resources>

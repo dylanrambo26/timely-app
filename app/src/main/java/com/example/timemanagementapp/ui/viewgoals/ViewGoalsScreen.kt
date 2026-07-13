@@ -41,6 +41,7 @@ import com.example.timemanagementapp.ui.theme.completedGoal
 import com.example.timemanagementapp.util.completedGoals
 import com.example.timemanagementapp.util.incompleteGoals
 import androidx.compose.foundation.layout.Box
+import androidx.compose.material3.FilledTonalButton
 import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
 import com.example.timemanagementapp.util.formatLocalDateToString
 import java.time.LocalDate
@@ -83,12 +84,14 @@ fun ViewGoalsScreen(
     ) { innerPadding ->
         ViewGoalsBody(
             scheduledGoalsListUiState = scheduledGoalsListUiState,
+            isPastDate = { viewModel.isPastDate() },
             onAddGoal = {
                 scheduledGoalsListUiState.calendarEventId?.let(onAddGoalButtonClicked)
             },
             onEditGoalsClicked = {
                 scheduledGoalsListUiState.calendarEventId?.let(onEditGoalsButtonClicked)
             },
+            navigateToCalendar = navigateToCalendar,
             modifier = Modifier.padding(innerPadding),
             formattedDate = formattedDate
         )
@@ -99,7 +102,9 @@ fun ViewGoalsScreen(
 fun ViewGoalsBody(
     //goalListUiState: GoalListUiState,
     scheduledGoalsListUiState: ScheduledGoalsListUiState,
+    isPastDate: () -> Boolean,
     onAddGoal: () -> Unit,
+    navigateToCalendar: () -> Unit,
     onEditGoalsClicked: () -> Unit,
     modifier: Modifier = Modifier,
     formattedDate: String = ""
@@ -145,62 +150,88 @@ fun ViewGoalsBody(
             )
             Text(text = " = Incomplete")
         }
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(0.33f)
-        ) {
-            //Edit Log Button
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
+        if (!isPastDate()){
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
-                    .weight(1f)
+                    .fillMaxWidth()
+                    .weight(0.33f)
             ) {
-                IconButton(
-                    onClick = onEditGoalsClicked,
-                    modifier = Modifier.size(100.dp)
+                //Edit Log Button
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .weight(1f)
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Edit,
-                        contentDescription = stringResource(R.string.edit_goals_for_date, formattedDate),
-                        modifier = Modifier
-                            .size(100.dp)
+                    IconButton(
+                        onClick = onEditGoalsClicked,
+                        modifier = Modifier.size(100.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Edit,
+                            contentDescription = stringResource(R.string.edit_goals_for_date, formattedDate),
+                            modifier = Modifier
+                                .size(100.dp)
+                        )
+                    }
+                    Spacer(modifier = Modifier.width(16.dp))
+                    Text(
+                        text = stringResource(
+                            R.string.edit_goals_for_date,
+                            formattedDate
+                        ),
+                        textAlign = TextAlign.Center
                     )
                 }
-                Spacer(modifier = Modifier.width(16.dp))
+
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .weight(1f)
+                ) {
+                    IconButton(
+                        onClick = onAddGoal,
+                        modifier = Modifier
+                            .size(100.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AddCircle,
+                            contentDescription = stringResource(R.string.add_goal),
+                            modifier = Modifier
+                                .size(100.dp)
+                        )
+                    }
+                    Text(
+                        text = stringResource(R.string.add_goal),
+                        textAlign = TextAlign.Center
+                    )
+                }
+            }
+        }
+        else{
+            Column(
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(0.33f)
+            ){
                 Text(
-                    text = stringResource(
-                        R.string.edit_goals_for_date,
-                        formattedDate
-                    ),
-                    textAlign = TextAlign.Center
+                    text = stringResource(R.string.past_date)
                 )
+                FilledTonalButton(
+                    onClick = navigateToCalendar,
+                    modifier = Modifier
+                        .padding(dimensionResource(R.dimen.padding_medium))
+                ) {
+                    Text(
+                        text = stringResource(R.string.return_to_calendar),
+                        fontSize = MaterialTheme.typography.headlineSmall.fontSize
+                    )
+                }
             }
 
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier
-                    .weight(1f)
-            ) {
-                IconButton(
-                    onClick = onAddGoal,
-                    modifier = Modifier
-                        .size(100.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.AddCircle,
-                        contentDescription = stringResource(R.string.add_goal),
-                        modifier = Modifier
-                            .size(100.dp)
-                    )
-                }
-                Text(
-                    text = stringResource(R.string.add_goal),
-                    textAlign = TextAlign.Center
-                )
-            }
         }
     }
 }
@@ -223,14 +254,17 @@ fun ViewGoalsTobBarPreview(){
 @Composable
 fun ViewGoalsBodyPreview(){
     TimeManagementAppTheme {
+        val selectedDate = LocalDate.of(2026, 7,6)
         ViewGoalsBody(
+            isPastDate = {true},
             scheduledGoalsListUiState = ScheduledGoalsListUiState(
                 scheduledGoalsList = testScheduledGoalsSizeThree,
-                date = LocalDate.now()
+                date = selectedDate
             ),
             onAddGoal = {},
             onEditGoalsClicked = {},
-            formattedDate = formatLocalDateToString(LocalDate.of(2026, 7,26)),
+            formattedDate = formatLocalDateToString(selectedDate),
+            navigateToCalendar = {},
             modifier = Modifier
         )
     }
