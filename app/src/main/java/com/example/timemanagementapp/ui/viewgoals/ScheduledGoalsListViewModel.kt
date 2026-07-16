@@ -89,6 +89,30 @@ class ScheduledGoalsListViewModel(
     fun isPastDate(): Boolean{
         return _date.value?.isBefore(LocalDate.now()) ?: false
     }
+
+    fun viewPreviousDay(onNavigate: (Int) -> Unit){
+        viewModelScope.launch {
+            val currentDate = scheduledGoalsListUiState.value.date ?: return@launch
+
+            val previousDate = currentDate.minusDays(1)
+
+            val previousEventId = calendarEventsRepository.getOrCreateEventIdForDate(previousDate)
+
+            onNavigate(previousEventId)
+        }
+    }
+
+    fun viewNextDay(onNavigate: (Int) -> Unit){
+        viewModelScope.launch {
+            val currentDate = scheduledGoalsListUiState.value.date ?: return@launch
+
+            val nextDate = currentDate.plusDays(1)
+
+            val previousEventId = calendarEventsRepository.getOrCreateEventIdForDate(nextDate)
+
+            onNavigate(previousEventId)
+        }
+    }
 }
 
 data class ScheduledGoalsListUiState(

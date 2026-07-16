@@ -41,9 +41,12 @@ import com.example.timemanagementapp.ui.theme.completedGoal
 import com.example.timemanagementapp.util.completedGoals
 import com.example.timemanagementapp.util.incompleteGoals
 import androidx.compose.foundation.layout.Box
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.FilledTonalButton
 import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
-import com.example.timemanagementapp.util.formatLocalDateToString
+import com.example.timemanagementapp.util.formatLocalDateToCalendarDate
+import com.example.timemanagementapp.util.formatLocalDateToShorthandDate
 import java.time.LocalDate
 
 object ViewGoalsDestination : NavigationDest{
@@ -57,14 +60,17 @@ object ViewGoalsDestination : NavigationDest{
 fun ViewGoalsScreen(
     onAddGoalButtonClicked: (Int) -> Unit = {},
     onEditGoalsButtonClicked: (Int) -> Unit = {},
+    //nextDayClicked: () -> Unit,
+    //previousDayClicked: () -> Unit,
     //viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    viewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    scheduledGoalsListViewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    navigateToViewGoals: (Int) -> Unit = {},
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
 ){
-    val scheduledGoalsListUiState by viewModel.scheduledGoalsListUiState.collectAsState()
-    val formattedDate = formatLocalDateToString(scheduledGoalsListUiState.date)
+    val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
+    val formattedDate = formatLocalDateToShorthandDate(scheduledGoalsListUiState.date)
     Scaffold(
         topBar = {
             TimelySmallTopAppBar(
@@ -84,7 +90,7 @@ fun ViewGoalsScreen(
     ) { innerPadding ->
         ViewGoalsBody(
             scheduledGoalsListUiState = scheduledGoalsListUiState,
-            isPastDate = { viewModel.isPastDate() },
+            isPastDate = { scheduledGoalsListViewModel.isPastDate() },
             onAddGoal = {
                 scheduledGoalsListUiState.calendarEventId?.let(onAddGoalButtonClicked)
             },
@@ -93,6 +99,16 @@ fun ViewGoalsScreen(
             },
             navigateToCalendar = navigateToCalendar,
             modifier = Modifier.padding(innerPadding),
+            nextDayClicked = {
+                scheduledGoalsListViewModel.viewNextDay { eventId ->
+                    navigateToViewGoals(eventId)
+                }
+            },
+            previousDayClicked = {
+                scheduledGoalsListViewModel.viewPreviousDay { eventId ->
+                    navigateToViewGoals(eventId)
+                }
+            },
             formattedDate = formattedDate
         )
     }
@@ -105,6 +121,8 @@ fun ViewGoalsBody(
     isPastDate: () -> Boolean,
     onAddGoal: () -> Unit,
     navigateToCalendar: () -> Unit,
+    nextDayClicked: () -> Unit,
+    previousDayClicked: () -> Unit,
     onEditGoalsClicked: () -> Unit,
     modifier: Modifier = Modifier,
     formattedDate: String = ""
@@ -114,6 +132,11 @@ fun ViewGoalsBody(
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        ViewGoalsHeader(
+            displayedDay = scheduledGoalsListUiState.date,
+            nextDayClicked = nextDayClicked,
+            previousDayClicked = previousDayClicked
+        )
         val orderedGoalList = scheduledGoalsListUiState.scheduledGoalsList.completedGoals() + scheduledGoalsListUiState.scheduledGoalsList.incompleteGoals()
         ScheduledGoalList(
             goals = orderedGoalList,
@@ -236,6 +259,45 @@ fun ViewGoalsBody(
     }
 }
 
+@Composable
+fun ViewGoalsHeader(
+    previousDayClicked: () -> Unit = {},
+    nextDayClicked: () -> Unit = {},
+    displayedDay: LocalDate?,
+    modifier: Modifier = Modifier
+){
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(16.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        IconButton(
+            onClick = previousDayClicked
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowLeft,
+                contentDescription = stringResource(R.string.previous_day)
+            )
+        }
+
+        Text(
+            text = formatLocalDateToCalendarDate(displayedDay),
+            textAlign = TextAlign.Center
+        )
+
+        IconButton(
+            onClick = nextDayClicked
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = stringResource(R.string.next_day)
+            )
+        }
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 fun ViewGoalsTobBarPreview(){
@@ -256,15 +318,17 @@ fun ViewGoalsBodyPreview(){
     TimeManagementAppTheme {
         val selectedDate = LocalDate.of(2026, 7,6)
         ViewGoalsBody(
-            isPastDate = {true},
+            isPastDate = {false},
             scheduledGoalsListUiState = ScheduledGoalsListUiState(
                 scheduledGoalsList = testScheduledGoalsSizeThree,
                 date = selectedDate
             ),
             onAddGoal = {},
             onEditGoalsClicked = {},
-            formattedDate = formatLocalDateToString(selectedDate),
+            formattedDate = formatLocalDateToShorthandDate(selectedDate),
             navigateToCalendar = {},
+            nextDayClicked = {},
+            previousDayClicked = {},
             modifier = Modifier
         )
     }

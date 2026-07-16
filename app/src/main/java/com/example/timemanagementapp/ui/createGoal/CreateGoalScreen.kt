@@ -41,7 +41,7 @@ import com.example.timemanagementapp.data.testGoalsSizeThree
 import com.example.timemanagementapp.ui.components.GoalTemplateList
 import com.example.timemanagementapp.ui.goal.GoalListUiState
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
-import com.example.timemanagementapp.util.formatLocalDateToString
+import com.example.timemanagementapp.util.formatLocalDateToShorthandDate
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -197,7 +197,7 @@ fun AddGoalButtons(
             Text(
                 text = stringResource(
                     R.string.save_goal_and_add_to_date,
-                    formatLocalDateToString(selectedDate)
+                    formatLocalDateToShorthandDate(selectedDate)
                 ),
                 fontSize = 16.sp,
             )
