@@ -23,9 +23,6 @@ import com.example.timemanagementapp.data.goal.GoalStatus
             onDelete = ForeignKey.Companion.CASCADE
         )
     ],
-    indices = [
-        Index(value = ["eventId", "goalId"], unique = true)
-    ],
     tableName = "scheduled_goals"
 )
 data class ScheduledGoal(

@@ -175,7 +175,14 @@ fun TimelyNavHost(
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToAnalytics = {/*TODO*/},
-                    viewModel = viewModel
+                    navigateToViewGoals = { eventId ->
+                        navController.navigate("${ViewGoalsDestination.route}/$eventId"){
+                            popUpTo(ViewGoalsDestination.route){
+                                inclusive = true
+                            }
+                        }
+                    },
+                    scheduledGoalsListViewModel = viewModel
                 )
             }
             composable(

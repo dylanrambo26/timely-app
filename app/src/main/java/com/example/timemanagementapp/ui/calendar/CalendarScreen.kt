@@ -42,7 +42,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material3.MaterialTheme
 import com.example.timemanagementapp.ui.theme.selectedDate
-import com.example.timemanagementapp.util.formatLocalDateToString
+import com.example.timemanagementapp.util.formatLocalDateToShorthandDate
+import com.example.timemanagementapp.util.formatYearMonthToMonthYearString
 import com.example.timemanagementapp.util.generateCalendarCellsPreview
 import java.time.YearMonth
 
@@ -139,7 +140,7 @@ fun GoalInformation(
             modifier = Modifier
                 .weight(1f)
         ) {
-            val formattedDate = formatLocalDateToString(selectedDate)
+            val formattedDate = formatLocalDateToShorthandDate(selectedDate)
             IconButton(
                 onClick = {
                     onViewGoalsClicked()
@@ -268,7 +269,7 @@ fun CalendarHeader(
         }
 
         Text(
-            text = displayedMonth.month.toString().lowercase().replaceFirstChar {it.uppercase()} + " " + displayedMonth.year.toString(),
+            text = formatYearMonthToMonthYearString(displayedMonth),
             textAlign = TextAlign.Center
         )
 
