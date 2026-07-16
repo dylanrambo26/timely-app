@@ -49,4 +49,10 @@
     <string name="previous_day">Previous Day</string>
     <string name="next_day">Next Day</string>
     <string name="selected_goal_exceeds_remaining_time">Selected Goal Exceeds Remaining Time: Day is filled out or not enough time remaining.</string>
+    <string name="invalid_hours">Hours must be a valid number.</string>
+    <string name="invalid_minutes">Minutes must be a valid number.</string>
+    <string name="invalid_title">Title cannot be empty.</string>
+    <string name="invalid_negative_hours">Hours cannot be a negative number.</string>
+    <string name="invalid_minutes_0_59">Minutes must be between 0 and 59.</string>
+    <string name="invalid_hours_0_23">Hours must be between 0 and 23</string>
 </resources>

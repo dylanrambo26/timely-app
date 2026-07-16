@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import com.example.timemanagementapp.R
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 import com.example.timemanagementapp.ui.createGoal.GoalDetails
@@ -35,38 +36,32 @@ class EditGoalViewModel(
     private fun validateInput(uiState: GoalDetails = goalUiState.goalDetails): Boolean {
         val h = uiState.hours.toIntOrNull()
         if (h == null){
-            goalUiState = goalUiState.copy(errorMessage = "Hours must be a valid number.")
+            goalUiState = goalUiState.copy(errorMessage = R.string.invalid_hours)
             return false
         }
 
         val m = uiState.minutes.toIntOrNull()
         if (m == null){
-            goalUiState = goalUiState.copy(errorMessage = "Minutes must be a valid number.")
+            goalUiState = goalUiState.copy(errorMessage = R.string.invalid_minutes)
             return false
         }
 
         if(uiState.title.isBlank()){
-            goalUiState = goalUiState.copy(errorMessage = "Title cannot be empty.")
+            goalUiState = goalUiState.copy(errorMessage = R.string.invalid_title)
             return false
         }
 
-        if(h < 0){
-            goalUiState = goalUiState.copy(errorMessage = "Hours cannot be a negative number.")
+        if(h !in 0..23){
+            goalUiState = goalUiState.copy(errorMessage = R.string.invalid_hours_0_23)
             return false
         }
 
         if(m !in 0..59){
-            goalUiState = goalUiState.copy(errorMessage = "Minutes must be between 0 and 59.")
+            goalUiState = goalUiState.copy(errorMessage = R.string.invalid_minutes_0_59)
             return false
         }
 
-        /*val newMinutes = h * 60 + m
-
-        if(newMinutes > goalUiState.remainingMinutesInDay){
-            goalUiState = goalUiState.copy(errorMessage = "The goal's allotted time must be less than the remaining time in the day. Delete or edit the other goals before saving this goal.")
-            return false
-        }*/
-        goalUiState = goalUiState.copy(errorMessage = "")
+        goalUiState = goalUiState.copy(errorMessage = null)
         return true
     }
 

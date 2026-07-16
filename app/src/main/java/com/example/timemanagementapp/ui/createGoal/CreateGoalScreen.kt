@@ -88,8 +88,9 @@ fun CreateGoalScreen(
             },
             onSaveGoalAndAddToDateClicked = {
                 coroutineScope.launch {
-                    createGoalViewModel.saveGoalAndAddToDate()
-                    navigateToViewGoals(createGoalViewModel.calendarEventId)
+                    createGoalViewModel.saveGoalAndAddToDate(
+                        onNavigate = {navigateToViewGoals(createGoalViewModel.calendarEventId)}
+                    )
                 }
             },
             onCancelButtonClicked = navigateBack,
@@ -121,9 +122,9 @@ fun CreateGoalBody(
     ) {
         Column(
             modifier = Modifier
-                .weight(2f)
+                //.weight(2f)
                 .fillMaxWidth(),
-            verticalArrangement = Arrangement.Top,
+            verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ){
             AddGoalInputForm(
@@ -131,6 +132,14 @@ fun CreateGoalBody(
                 onValueChange = onGoalValueChange,
                 modifier = Modifier.fillMaxWidth()
             )
+            if(goalUiState.errorMessage != null){
+                Text(
+                    text = stringResource(goalUiState.errorMessage),
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
             AddGoalButtons(
                 onSaveGoalClicked = onSaveGoalClicked,
                 onSaveGoalAndAddToDateClicked = onSaveGoalAndAddToDateClicked,
@@ -138,14 +147,6 @@ fun CreateGoalBody(
                 goalUiState = goalUiState,
                 selectedDate = selectedDate
             )
-            if(goalUiState.errorMessage.isNotBlank()){
-                Text(
-                    text = goalUiState.errorMessage,
-                    color = MaterialTheme.colorScheme.error,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
         }
         HorizontalDivider(
             modifier = Modifier
@@ -299,7 +300,8 @@ fun CreateGoalScreenPreview(){
                 GoalDetails(
                     title = "Title", hours = "1", minutes = "30"
                 ),
-                isEntryValid = true,
+                isEntryValid = false,
+                errorMessage = R.string.invalid_title
             ),
             onGoalValueChange = {},
             onSaveGoalClicked = {},

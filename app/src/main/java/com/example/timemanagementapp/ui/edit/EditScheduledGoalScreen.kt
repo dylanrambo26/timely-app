@@ -146,9 +146,9 @@ fun EditScheduledGoalBody(
                 )
             }
         }
-        if(goalUiState.errorMessage.isNotBlank()){
+        if(goalUiState.errorMessage != null){
             Text(
-                text = goalUiState.errorMessage,
+                text = stringResource(goalUiState.errorMessage),
                 color = MaterialTheme.colorScheme.error,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(8.dp)

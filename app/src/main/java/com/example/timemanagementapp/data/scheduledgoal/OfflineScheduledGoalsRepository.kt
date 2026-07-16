@@ -23,6 +23,7 @@ class OfflineScheduledGoalsRepository(
 
     override suspend fun getScheduledGoalsWithGoalsOnce(eventId: Int): List<ScheduledGoalWithGoal> = scheduledGoalDao.getScheduledGoalsWithGoalsOnce(eventId)
 
+    //Used to validate existing goals against remaining time
     override suspend fun validInsertScheduledGoal(goalId: Int, eventId: Int): Boolean {
         val goal = goalDao.getGoalOnce(goalId)
 
@@ -42,6 +43,19 @@ class OfflineScheduledGoalsRepository(
                 eventId = eventId
             )
         )
+
+        return true
+    }
+
+    //Used to validate new goals against remaining time
+    override suspend fun isValidDurationForDate(goalTotalMinutes: Int, eventId: Int): Boolean {
+        val scheduledGoals = getScheduledGoalsWithGoalsOnce(eventId)
+        val usedMinutes = scheduledGoals.sumOf { it.goal.hours * 60 + it.goal.minutes }
+        val remainingMinutes = MINUTES_IN_24_HOUR_DAY - usedMinutes
+
+        if (goalTotalMinutes > remainingMinutes){
+            return false
+        }
 
         return true
     }
