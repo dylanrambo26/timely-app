@@ -44,7 +44,8 @@ class AppDataContainer(private val context: Context) : AppContainer {
     }
 
     override val scheduledGoalsRepository: ScheduledGoalsRepository by lazy {
-        OfflineScheduledGoalsRepository(GoalsDatabase.getDatabase(context).scheduledGoalDao())
+        OfflineScheduledGoalsRepository(GoalsDatabase.getDatabase(context).scheduledGoalDao(),
+            GoalsDatabase.getDatabase(context).goalDao())
     }
 
     override val calendarEventsRepository: CalendarEventsRepository by lazy {

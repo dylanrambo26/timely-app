@@ -26,45 +26,6 @@ interface ScheduledGoalDao {
 
     @Query("SELECT * from scheduled_goals WHERE scheduledGoalId = :id")
     suspend fun getScheduledGoalOnce(id: Int): ScheduledGoal
-    /*@Query(
-        """
-            SELECT * FROM scheduled_goals WHERE eventId = :eventId
-        """
-    )
-    suspend fun getScheduledGoalsByEvent(
-        eventId: Int
-    ): Flow<List<ScheduledGoal>>
-
-    @Query("""
-        SELECT * FROM scheduled_goals WHERE goalId = :goalId
-    """)
-    suspend fun getScheduledGoalById(
-        goalId: Int
-    ): ScheduledGoal?
-
-    @Query(
-        """
-            UPDATE scheduled_goals
-            SET status = :status
-            WHERE scheduledGoalId = :id
-        """
-    )
-    suspend fun updateScheduledGoalStatus(
-        id: Int,
-        status: GoalStatus
-    )
-
-    @Query(
-        """
-            UPDATE scheduled_goals
-            SET completedMillis = :millis
-            WHERE scheduledGoalId = :id
-        """
-    )
-    suspend fun updateCompletedMillis(
-        id: Int,
-        millis: Long
-    )*/
 
     @Transaction
     @Query(
@@ -83,4 +44,14 @@ interface ScheduledGoalDao {
         """
     )
     fun getScheduledGoalWithGoal(id: Int): Flow<ScheduledGoalWithGoal>
+
+    @Transaction
+    @Query(
+        """
+            SELECT * FROM scheduled_goals
+            WHERE eventId = :eventId
+        """
+    )
+    suspend fun getScheduledGoalsWithGoalsOnce(eventId: Int): List<ScheduledGoalWithGoal>
+
 }
