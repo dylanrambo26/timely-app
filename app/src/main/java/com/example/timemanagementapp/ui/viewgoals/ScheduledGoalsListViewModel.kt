@@ -56,7 +56,10 @@ class ScheduledGoalsListViewModel(
                 scheduledGoalsRepository.getScheduledGoalsWithGoal(eventId)
                 .map{ scheduledGoals ->
                     val totalMinutes = scheduledGoals.sumOf {
-                        it.goal.hours * 60 + it.goal.minutes
+                        val hours = it.scheduledGoal.customHours ?: it.goal.hours
+                        val minutes = it.scheduledGoal.customMinutes ?: it.goal.minutes
+
+                        hours * 60 + minutes
                     }
 
                     ScheduledGoalsListUiState(

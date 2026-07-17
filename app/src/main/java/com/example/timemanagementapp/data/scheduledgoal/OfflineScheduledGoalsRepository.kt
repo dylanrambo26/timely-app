@@ -47,16 +47,22 @@ class OfflineScheduledGoalsRepository(
         return true
     }
 
-    //Used to validate new goals against remaining time
-    override suspend fun isValidDurationForDate(goalTotalMinutes: Int, eventId: Int): Boolean {
+    //Used to validate new/edited goals against remaining time
+    override suspend fun isValidDurationForDate(
+        goalTotalMinutes: Int,
+        eventId: Int,
+        excludedScheduledGoalId: Int? //to exclude existing scheduled goal total when editing a scheduled goal
+    ): Boolean {
         val scheduledGoals = getScheduledGoalsWithGoalsOnce(eventId)
-        val usedMinutes = scheduledGoals.sumOf { it.goal.hours * 60 + it.goal.minutes }
-        val remainingMinutes = MINUTES_IN_24_HOUR_DAY - usedMinutes
+        val usedMinutes = scheduledGoals
+            .filter {it.scheduledGoal.scheduledGoalId != excludedScheduledGoalId}
+            .sumOf {
+                val hours = it.scheduledGoal.customHours ?: it.goal.hours
+                val minutes = it.scheduledGoal.customMinutes ?: it.goal.minutes
 
-        if (goalTotalMinutes > remainingMinutes){
-            return false
-        }
+                hours * 60 + minutes
+            }
 
-        return true
+        return usedMinutes + goalTotalMinutes <= MINUTES_IN_24_HOUR_DAY
     }
 }

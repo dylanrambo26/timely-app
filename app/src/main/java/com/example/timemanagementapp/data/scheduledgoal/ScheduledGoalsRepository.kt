@@ -28,5 +28,5 @@ interface ScheduledGoalsRepository{
 
     suspend fun validInsertScheduledGoal(goalId: Int, eventId: Int): Boolean
 
-    suspend fun isValidDurationForDate(goalTotalMinutes: Int, eventId: Int): Boolean
+    suspend fun isValidDurationForDate(goalTotalMinutes: Int, eventId: Int, excludedScheduledGoalId: Int?): Boolean
 }

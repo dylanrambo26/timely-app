@@ -112,7 +112,9 @@ fun TimelyNavHost(
                 })
             ) {
                 EditScheduledGoalScreen(
-                    navigateBack = {navController.popBackStack()},
+                    navigateToEditScheduledGoals = {eventId ->
+                        navController.navigate("${EditScheduledGoalsDestination.route}/$eventId")
+                    },
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {/*TODO*/},
                     navigateToAnalytics = {/*TODO*/},

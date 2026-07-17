@@ -4,7 +4,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.timemanagementapp.data.goal.GoalsRepository
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import androidx.compose.runtime.getValue
@@ -15,11 +14,11 @@ import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 import com.example.timemanagementapp.ui.createGoal.GoalDetails
 import com.example.timemanagementapp.ui.createGoal.GoalUiState
 import com.example.timemanagementapp.ui.createGoal.toGoal
-import com.example.timemanagementapp.ui.createGoal.toGoalDetails
-import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
-class EditGoalViewModel(
+class EditScheduledGoalViewModel(
     savedStateHandle: SavedStateHandle,
     private val scheduledGoalsRepository: ScheduledGoalsRepository
 ) : ViewModel(){
@@ -31,38 +30,18 @@ class EditGoalViewModel(
 
     private var currentScheduledGoal: ScheduledGoal? = null
 
+    private val _calendarEventId = MutableStateFlow<Int?>(null)
+    val calendarEventId: StateFlow<Int?> = _calendarEventId.asStateFlow()
 
+    private fun validateInput(uiState: GoalDetails): Int? {
+        val h = uiState.hours.toIntOrNull() ?: return R.string.invalid_hours
+        val m = uiState.minutes.toIntOrNull() ?: return R.string.invalid_minutes
 
-    private fun validateInput(uiState: GoalDetails = goalUiState.goalDetails): Boolean {
-        val h = uiState.hours.toIntOrNull()
-        if (h == null){
-            goalUiState = goalUiState.copy(errorMessage = R.string.invalid_hours)
-            return false
-        }
+        if (uiState.title.isBlank()) return R.string.invalid_title
+        if (h !in 0..23) return R.string.invalid_hours_0_23
+        if (m !in 0..59) return R.string.invalid_minutes_0_59
 
-        val m = uiState.minutes.toIntOrNull()
-        if (m == null){
-            goalUiState = goalUiState.copy(errorMessage = R.string.invalid_minutes)
-            return false
-        }
-
-        if(uiState.title.isBlank()){
-            goalUiState = goalUiState.copy(errorMessage = R.string.invalid_title)
-            return false
-        }
-
-        if(h !in 0..23){
-            goalUiState = goalUiState.copy(errorMessage = R.string.invalid_hours_0_23)
-            return false
-        }
-
-        if(m !in 0..59){
-            goalUiState = goalUiState.copy(errorMessage = R.string.invalid_minutes_0_59)
-            return false
-        }
-
-        goalUiState = goalUiState.copy(errorMessage = null)
-        return true
+        return null
     }
 
     init {
@@ -73,7 +52,9 @@ class EditGoalViewModel(
                 .collect { combinedGoal ->
                     val scheduledGoal = combinedGoal.scheduledGoal
                     currentScheduledGoal = scheduledGoal
+
                     val goal = combinedGoal.goal
+                    _calendarEventId.value = scheduledGoal.eventId
 
                     val details = GoalDetails(
                         id = scheduledGoal.scheduledGoalId,
@@ -84,22 +65,47 @@ class EditGoalViewModel(
 
                     goalUiState = GoalUiState(
                         goalDetails = details,
-                        isEntryValid = validateInput(details)
+                        isEntryValid = validateInput(details) == null
                     )
                 }
         }
     }
     fun updateUiState(goalDetails: GoalDetails) {
+        val error = validateInput(goalDetails)
         goalUiState =
-            goalUiState.copy(
-                goalDetails = goalDetails,
-                isEntryValid = validateInput(goalDetails)
-            )
+            goalUiState.copy(goalDetails = goalDetails, isEntryValid = error == null, errorMessage = error)
     }
 
-    suspend fun updateScheduledGoal(): Boolean {
-        if (!validateInput(goalUiState.goalDetails)) return false
-        val existingScheduledGoal = currentScheduledGoal ?: return false
+    suspend fun updateScheduledGoal(onNavigate: (Int) -> Unit = {}) {
+        val error = validateInput(goalUiState.goalDetails)
+        if(error != null){
+            goalUiState = goalUiState.copy(
+                errorMessage = error,
+                isEntryValid = false
+            )
+            return
+        }
+
+        val existingScheduledGoal = currentScheduledGoal ?: return
+
+        val goal = goalUiState.goalDetails.toGoal()
+
+        val goalTotalMinutes = goal.hours * 60 + goal.minutes
+
+        val eventId = existingScheduledGoal.eventId
+        val isValidDuration = scheduledGoalsRepository.isValidDurationForDate(
+            goalTotalMinutes = goalTotalMinutes,
+            eventId = eventId,
+            excludedScheduledGoalId = existingScheduledGoal.scheduledGoalId
+        )
+
+        if(!isValidDuration){
+            goalUiState = goalUiState.copy(
+                errorMessage = R.string.selected_goal_exceeds_remaining_time,
+                isEntryValid = false
+            )
+            return
+        }
 
         scheduledGoalsRepository.updateScheduledGoal(
             existingScheduledGoal.copy(
@@ -108,7 +114,8 @@ class EditGoalViewModel(
                 customMinutes = goalUiState.goalDetails.minutes.toIntOrNull()
             )
         )
-        return true
+
+        onNavigate(existingScheduledGoal.eventId)
     }
 }
 

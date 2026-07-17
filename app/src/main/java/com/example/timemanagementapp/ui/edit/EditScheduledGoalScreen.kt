@@ -28,7 +28,6 @@ import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.ui.AppViewModelProvider
-import com.example.timemanagementapp.ui.components.GoalCard
 import com.example.timemanagementapp.ui.components.GoalTemplateCard
 import com.example.timemanagementapp.ui.createGoal.GoalDetails
 import com.example.timemanagementapp.ui.createGoal.GoalUiState
@@ -47,8 +46,8 @@ object EditScheduledGoalDestination : NavigationDest {
 @Composable
 fun EditScheduledGoalScreen(
     modifier: Modifier = Modifier,
-    viewModel: EditGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    navigateBack: () -> Unit,
+    viewModel: EditScheduledGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    navigateToEditScheduledGoals: (Int) -> Unit,
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
@@ -68,11 +67,12 @@ fun EditScheduledGoalScreen(
             onGoalValueChange = viewModel::updateUiState,
             onSaveGoalClick = {
                 coroutineScope.launch {
-                    val saved = viewModel.updateScheduledGoal()
-                    if(saved) navigateBack()
+                    viewModel.updateScheduledGoal {eventId ->
+                        navigateToEditScheduledGoals(eventId)
+                    }
                 }
             },
-            navigateBack = navigateBack,
+            navigateBack = { viewModel.calendarEventId.value?.let(navigateToEditScheduledGoals) },
             modifier = modifier.padding(innerPadding)
         )
     }

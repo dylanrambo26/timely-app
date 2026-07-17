@@ -27,8 +27,6 @@ class CreateGoalViewModel(
     private val calendarEventsRepository: CalendarEventsRepository
 ) : ViewModel(){
 
-    //TODO might separate checks for time remaining in day to an addScheduledGoal screen therefore this could be reusable
-
     var goalUiState by mutableStateOf(GoalUiState())
         private set
 
@@ -93,7 +91,8 @@ class CreateGoalViewModel(
 
         val isValidDuration = scheduledGoalsRepository.isValidDurationForDate(
             goalTotalMinutes = goalTotalMinutes,
-            eventId = calendarEventId
+            eventId = calendarEventId,
+            excludedScheduledGoalId = null
         )
 
         if(!isValidDuration){
