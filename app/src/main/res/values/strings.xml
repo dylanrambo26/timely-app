@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">TimeManagementApp</string>
+    <string name="app_name">Timely</string>
     <string name="add_log_button_desc"> Add Log Button</string>
     <string name="home_screen">Home Screen</string>
     <string name="calendar">Calendar</string>
