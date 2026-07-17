@@ -38,10 +38,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import com.example.timemanagementapp.data.testGoalsSizeThree
 import com.example.timemanagementapp.ui.components.AddGoalButton
+import com.example.timemanagementapp.ui.components.DisplayTime
 import com.example.timemanagementapp.ui.goal.GoalListUiState
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.components.GoalTemplateList
+import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListUiState
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
@@ -55,7 +58,6 @@ object AddExistingGoalDestination : NavigationDest{
 
 @Composable
 fun AddExistingGoalScreen(
-    onAddGoalButtonClicked: () -> Unit = {},
     onCancelButtonClicked: () -> Unit = {},
     navigateToCreateGoal: (Int) -> Unit,
     navigateToViewGoals: (Int) -> Unit,
@@ -65,8 +67,9 @@ fun AddExistingGoalScreen(
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
 ){
-    //val scheduledGoalsListUiState by viewModel.scheduledGoalsListUiState.collectAsState()
+    val showDurationError by scheduledGoalsViewModel.showDurationError.collectAsState()
     val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
+    val scheduledGoalsListUiState by scheduledGoalsViewModel.scheduledGoalsListUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
         topBar = {
@@ -82,10 +85,14 @@ fun AddExistingGoalScreen(
     ) { innerPadding ->
         AddExistingGoalBody(
             goalListUiState = goalListUiState,
+            scheduledGoalsListUiState = scheduledGoalsListUiState,
+            showDurationError = showDurationError,
             onAddGoalPressed = { goalId ->
                 coroutineScope.launch {
-                    scheduledGoalsViewModel.addScheduledGoalFromExistingGoal(goalId)
-                    navigateToViewGoals(scheduledGoalsViewModel.calendarEventId)
+                    scheduledGoalsViewModel.addScheduledGoalFromExistingGoal(
+                        goalId = goalId,
+                        onNavigate = { navigateToViewGoals(scheduledGoalsViewModel.calendarEventId) }
+                    )
                 }
             },
             onCancelClicked = onCancelButtonClicked,
@@ -101,6 +108,8 @@ fun AddExistingGoalScreen(
 fun AddExistingGoalBody(
     goalListUiState: GoalListUiState,
     //goalsListUiState: ScheduledGoalsListUiState,
+    scheduledGoalsListUiState: ScheduledGoalsListUiState,
+    showDurationError: Boolean,
     onAddGoalPressed: (Int) -> Unit,
     onCreateGoalPressed: () -> Unit,
     onCancelClicked: () -> Unit,
@@ -142,6 +151,16 @@ fun AddExistingGoalBody(
                 modifier = Modifier
                     .weight(1f)
                     .padding(dimensionResource(R.dimen.padding_medium))
+            )
+        }
+        DisplayTime(duration = scheduledGoalsListUiState.remainingMinutesInDay, title = stringResource(R.string.available_time_in_full_day))
+
+        if(showDurationError){
+            Text(
+                text = stringResource(R.string.selected_goal_exceeds_remaining_time),
+                color = MaterialTheme.colorScheme.error,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(8.dp)
             )
         }
         HorizontalDivider(
@@ -187,7 +206,7 @@ fun AddExistingGoalBody(
                 modifier = Modifier
                     .weight(1f)
                     .clickable {
-                        selectedGoalId?.let { onAddGoalPressed(it) }
+                       selectedGoalId?.let { onAddGoalPressed(it) }
                     }
                     .padding(12.dp)
                     .width(200.dp)
@@ -214,12 +233,14 @@ fun AddExistingGoalBodyPreview(){
     TimeManagementAppTheme {
         AddExistingGoalBody(
             goalListUiState = GoalListUiState(
-                goalList = listOf()
+                goalList = testGoalsSizeThree
             ),
+            scheduledGoalsListUiState = ScheduledGoalsListUiState(),
             onAddGoalPressed = {},
             onCancelClicked = {},
             modifier = Modifier,
-            onCreateGoalPressed = {}
+            onCreateGoalPressed = {},
+            showDurationError = true
         )
     }
 }

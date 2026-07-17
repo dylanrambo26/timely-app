@@ -6,8 +6,10 @@ import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.goal.GoalsRepository
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
+import com.example.timemanagementapp.R
 import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
@@ -25,8 +27,6 @@ class CreateGoalViewModel(
     private val calendarEventsRepository: CalendarEventsRepository
 ) : ViewModel(){
 
-    //TODO might separate checks for time remaining in day to an addScheduledGoal screen therefore this could be reusable
-
     var goalUiState by mutableStateOf(GoalUiState())
         private set
 
@@ -39,81 +39,81 @@ class CreateGoalViewModel(
             _date.value = calendarEventsRepository.getEventById(calendarEventId)?.date
         }
     }
-    /*init {
-        viewModelScope.launch {
-            goalsRepository.getTotalMinutesStream().collect { totalMinutes ->
-                goalUiState = goalUiState.copy(
-                    remainingMinutesInDay = MINUTES_IN_24_HOUR_DAY - totalMinutes
-                )
-            }
-        }
-    }*/
 
     fun updateUiState(goalDetails: GoalDetails){
+        val error = validateInput(goalDetails)
         goalUiState =
-            goalUiState.copy(goalDetails = goalDetails, isEntryValid = validateInput(goalDetails))
+            goalUiState.copy(goalDetails = goalDetails, isEntryValid = error == null, errorMessage = error)
     }
 
     fun clearUiState(){
         goalUiState =
-            goalUiState.copy(goalDetails = GoalDetails(), isEntryValid = false, errorMessage = "")
+            goalUiState.copy(goalDetails = GoalDetails(), isEntryValid = false, errorMessage = null)
     }
 
-    private fun validateInput(uiState: GoalDetails = goalUiState.goalDetails): Boolean {
-        val h = uiState.hours.toIntOrNull()
-        if (h == null){
-            goalUiState = goalUiState.copy(errorMessage = "Hours must be a valid number.")
-            return false
-        }
+    private fun validateInput(uiState: GoalDetails): Int? {
+        val h = uiState.hours.toIntOrNull() ?: return R.string.invalid_hours
+        val m = uiState.minutes.toIntOrNull() ?: return R.string.invalid_minutes
 
-        val m = uiState.minutes.toIntOrNull()
-        if (m == null){
-            goalUiState = goalUiState.copy(errorMessage = "Minutes must be a valid number.")
-            return false
-        }
+        if (uiState.title.isBlank()) return R.string.invalid_title
+        if (h !in 0..23) return R.string.invalid_hours_0_23
+        if (m !in 0..59) return R.string.invalid_minutes_0_59
 
-        if(uiState.title.isBlank()){
-            goalUiState = goalUiState.copy(errorMessage = "Title cannot be empty.")
-            return false
-        }
-
-        if(h < 0){
-            goalUiState = goalUiState.copy(errorMessage = "Hours cannot be a negative number.")
-            return false
-        }
-
-        if(m !in 0..59){
-            goalUiState = goalUiState.copy(errorMessage = "Minutes must be between 0 and 59.")
-            return false
-        }
-
-        //TODO remainingminutes is moved to addScheduledGoalViewModel
-        /*val newMinutes = h * 60 + m
-
-        if(newMinutes > goalUiState.remainingMinutesInDay){
-            goalUiState = goalUiState.copy(errorMessage = "The goal's allotted time must be less than the remaining time in the day. Delete or edit the other goals before saving this goal.")
-            return false
-        }*/
-        goalUiState = goalUiState.copy(errorMessage = "")
-        return true
+        return null
     }
 
     suspend fun saveGoal(){
-        if(validateInput()){
-            goalsRepository.insertGoal(goalUiState.goalDetails.toGoal())
+
+        val error = validateInput(goalUiState.goalDetails)
+        if(error != null){
+            goalUiState = goalUiState.copy(
+                errorMessage = error,
+                isEntryValid = false
+            )
+            return
         }
+
+        goalsRepository.insertGoal(goalUiState.goalDetails.toGoal())
     }
 
-    suspend fun saveGoalAndAddToDate(){
-        if(validateInput()){
-            val goalId = goalsRepository.insertGoal(goalUiState.goalDetails.toGoal())
-            scheduledGoalsRepository.insertScheduledGoal(
-                ScheduledGoal(
-                    goalId = goalId,
-                    eventId = calendarEventId,
-                )
+    suspend fun saveGoalAndAddToDate(onNavigate: (Int) -> Unit = {}){
+        val error = validateInput(goalUiState.goalDetails)
+        if(error != null){
+            goalUiState = goalUiState.copy(
+                errorMessage = error,
+                isEntryValid = false
             )
+            return
         }
+
+        val goal = goalUiState.goalDetails.toGoal()
+        val goalTotalMinutes = goal.hours * 60 + goal.minutes
+
+        val isValidDuration = scheduledGoalsRepository.isValidDurationForDate(
+            goalTotalMinutes = goalTotalMinutes,
+            eventId = calendarEventId,
+            excludedScheduledGoalId = null
+        )
+
+        if(!isValidDuration){
+            goalUiState = goalUiState.copy(
+                errorMessage = R.string.selected_goal_exceeds_remaining_time,
+                isEntryValid = false
+            )
+            return
+        }
+
+        val goalId = goalsRepository.insertGoal(goal)
+
+        scheduledGoalsRepository.insertScheduledGoal(
+            ScheduledGoal(
+                goalId = goalId,
+                eventId = calendarEventId
+            )
+        )
+
+        onNavigate(calendarEventId)
+
     }
 }
 
@@ -121,8 +121,7 @@ class CreateGoalViewModel(
 data class GoalUiState(
     val goalDetails: GoalDetails = GoalDetails(),
     val isEntryValid: Boolean = false,
-    //val remainingMinutesInDay: Int = MINUTES_IN_24_HOUR_DAY,
-    val errorMessage: String = ""
+    val errorMessage: Int? = null
 )
 
 data class GoalDetails(

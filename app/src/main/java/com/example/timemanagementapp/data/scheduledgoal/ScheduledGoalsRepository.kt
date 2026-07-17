@@ -23,4 +23,10 @@ interface ScheduledGoalsRepository{
     fun getScheduledGoalsWithGoal(eventId: Int): Flow<List<ScheduledGoalWithGoal>>
 
     fun getScheduledGoalWithGoal(id: Int): Flow<ScheduledGoalWithGoal>
+
+    suspend fun getScheduledGoalsWithGoalsOnce(eventId: Int): List<ScheduledGoalWithGoal>
+
+    suspend fun validInsertScheduledGoal(goalId: Int, eventId: Int): Boolean
+
+    suspend fun isValidDurationForDate(goalTotalMinutes: Int, eventId: Int, excludedScheduledGoalId: Int?): Boolean
 }

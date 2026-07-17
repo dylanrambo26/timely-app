@@ -13,6 +13,7 @@ import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
@@ -36,6 +37,8 @@ class ScheduledGoalsListViewModel(
         private set
     private val _calendarEventId = MutableStateFlow<Int?>(null)
     private val _date = MutableStateFlow<LocalDate?>(null)
+    private val _showDurationError = MutableStateFlow(false)
+    val showDurationError = _showDurationError.asStateFlow()
 
     init{
         viewModelScope.launch {
@@ -53,7 +56,10 @@ class ScheduledGoalsListViewModel(
                 scheduledGoalsRepository.getScheduledGoalsWithGoal(eventId)
                 .map{ scheduledGoals ->
                     val totalMinutes = scheduledGoals.sumOf {
-                        it.goal.hours * 60 + it.goal.minutes
+                        val hours = it.scheduledGoal.customHours ?: it.goal.hours
+                        val minutes = it.scheduledGoal.customMinutes ?: it.goal.minutes
+
+                        hours * 60 + minutes
                     }
 
                     ScheduledGoalsListUiState(
@@ -77,13 +83,20 @@ class ScheduledGoalsListViewModel(
         }
     }
 
-    suspend fun addScheduledGoalFromExistingGoal(goalId: Int){
-        scheduledGoalsRepository.insertScheduledGoal(
-            ScheduledGoal(
-                goalId = goalId,
-                eventId = calendarEventId
-            )
+    suspend fun addScheduledGoalFromExistingGoal(
+        goalId: Int,
+        onNavigate: (Int) -> Unit = {}
+    ){
+        val success = scheduledGoalsRepository.validInsertScheduledGoal(
+            goalId = goalId,
+            eventId = calendarEventId
         )
+
+        _showDurationError.value = !success
+
+        if(success){
+            onNavigate(calendarEventId)
+        }
     }
 
     fun isPastDate(): Boolean{
@@ -120,5 +133,6 @@ data class ScheduledGoalsListUiState(
     val calendarEventId: Int? = null,
     val date: LocalDate? = null,
     val totalMinutes: Int = 0,
-    val remainingMinutesInDay: Int = MINUTES_IN_24_HOUR_DAY - totalMinutes
+    val remainingMinutesInDay: Int = MINUTES_IN_24_HOUR_DAY - totalMinutes,
+    val remainingTimeError: Boolean = false
 )
