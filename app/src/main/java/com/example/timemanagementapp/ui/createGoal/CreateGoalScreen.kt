@@ -1,14 +1,20 @@
 package com.example.timemanagementapp.ui.createGoal
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -37,7 +43,9 @@ import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import com.example.timemanagementapp.data.testGoalsSizeThree
+import com.example.timemanagementapp.ui.components.GoalTemplateCard
 import com.example.timemanagementapp.ui.components.GoalTemplateList
 import com.example.timemanagementapp.ui.goal.GoalListUiState
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
@@ -111,66 +119,57 @@ fun CreateGoalBody(
     modifier: Modifier = Modifier,
     selectedDate: LocalDate? = null
 ){
+    val scrollState = rememberScrollState()
     Column(
         modifier = modifier
             .fillMaxSize()
+            .verticalScroll(scrollState)
             .padding(dimensionResource(R.dimen.padding_medium))
             .navigationBarsPadding(),
 
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Top
+        //verticalArrangement = Arrangement.Center
     ) {
-        Column(
+        Spacer(modifier = Modifier.height(48.dp))
+        Text(
+            text= "New Goal:",
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        GoalTemplateCard(
+            goal = goalUiState.goalDetails.toGoal(),
+        )
+
+        Spacer(modifier = Modifier.height(64.dp))
+
+        AddGoalInputForm(
+            goalDetails = goalUiState.goalDetails,
+            onValueChange = onGoalValueChange,
+            modifier = Modifier.fillMaxWidth()
+        )
+        //Error Message Space
+        Box(
             modifier = Modifier
-                //.weight(2f)
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxWidth()
+                .height(40.dp),
+            contentAlignment = Alignment.Center
         ){
-            AddGoalInputForm(
-                goalDetails = goalUiState.goalDetails,
-                onValueChange = onGoalValueChange,
-                modifier = Modifier.fillMaxWidth()
-            )
-            if(goalUiState.errorMessage != null){
+            goalUiState.errorMessage?.let {
                 Text(
-                    text = stringResource(goalUiState.errorMessage),
+                    text = stringResource(it),
                     color = MaterialTheme.colorScheme.error,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(8.dp)
                 )
             }
-            AddGoalButtons(
-                onSaveGoalClicked = onSaveGoalClicked,
-                onSaveGoalAndAddToDateClicked = onSaveGoalAndAddToDateClicked,
-                onCancelButtonClicked = onCancelButtonClicked,
-                goalUiState = goalUiState,
-                selectedDate = selectedDate
-            )
         }
-        HorizontalDivider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = dimensionResource(R.dimen.padding_medium_large)),
-            thickness = 1.dp,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+        AddGoalButtons(
+            onSaveGoalClicked = onSaveGoalClicked,
+            onSaveGoalAndAddToDateClicked = onSaveGoalAndAddToDateClicked,
+            onCancelButtonClicked = onCancelButtonClicked,
+            goalUiState = goalUiState,
+            selectedDate = selectedDate
         )
-        Column(
-            modifier = Modifier
-                .weight(1f),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = stringResource(R.string.existing_goals),
-                style = MaterialTheme.typography.headlineMedium
-            )
-
-            GoalTemplateList(
-                goals = goalListUiState.goalList,
-                modifier = Modifier
-                    .weight(1f)
-            )
-        }
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
 
@@ -184,8 +183,8 @@ fun AddGoalButtons(
 ){
     Column(
         modifier = Modifier
-            .width(200.dp),
-        verticalArrangement = Arrangement.Center,
+            .width(240.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
         //Save Goal and Add to Date Button
@@ -193,7 +192,8 @@ fun AddGoalButtons(
             onClick = onSaveGoalAndAddToDateClicked,
             enabled = goalUiState.isEntryValid,
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
         ) {
             Text(
                 text = stringResource(
@@ -208,7 +208,8 @@ fun AddGoalButtons(
             onClick = onSaveGoalClicked,
             enabled = goalUiState.isEntryValid,
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
         ) {
             Text(
                 text = stringResource(R.string.save_goal),
@@ -219,7 +220,8 @@ fun AddGoalButtons(
         OutlinedButton(
             onClick = onCancelButtonClicked,
             modifier = Modifier
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .heightIn(min = 48.dp)
         ) {
             Text(
                 text = stringResource(R.string.return_to_view_goals),
