@@ -1,4 +1,5 @@
 # Timely
+![Timely Icon](app/src/main/res//mipmap-xxxhdpi/timely_launcher.webp)
 
 > Timely is an Android productivity application that helps users manage their time wisely by organizing goals within the limited time available each day.
 ---
