@@ -10,14 +10,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import com.example.timemanagementapp.R
-import com.example.timemanagementapp.data.goal.Goal
-import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
+import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.util.calculateRemainingTime
-import com.example.timemanagementapp.util.millisUntilNextMinute
 import kotlinx.coroutines.delay
 
 @Composable
-fun RemainingTaskTime(scheduledGoalWithGoal: ScheduledGoalWithGoal){
+fun RemainingTaskTime(scheduledGoal: ScheduledGoal){
     var remainingMinutes by remember {
         mutableIntStateOf(0)
     }
@@ -26,15 +24,15 @@ fun RemainingTaskTime(scheduledGoalWithGoal: ScheduledGoalWithGoal){
 
     //Need keyed LaunchedEffect when a new goal is selected for current task to recompose with new coroutine
     //also recompose when startTime and completedMillis are changed during pause
-    LaunchedEffect(scheduledGoalWithGoal.scheduledGoal.scheduledGoalId, scheduledGoalWithGoal.scheduledGoal.startTimeMillis, scheduledGoalWithGoal.scheduledGoal.completedMillis) {
+    LaunchedEffect(scheduledGoal.scheduledGoalId, scheduledGoal.startTimeMillis, scheduledGoal.completedMillis) {
         Log.d("Remaining Task Time: ", "Relaunch")
         while(true){
             val remainingTimeState = calculateRemainingTime(
-                startTimeMillis = scheduledGoalWithGoal.scheduledGoal.startTimeMillis,
-                hours = scheduledGoalWithGoal.goal.hours,
-                minutes = scheduledGoalWithGoal.goal.minutes,
+                startTimeMillis = scheduledGoal.startTimeMillis,
+                hours = scheduledGoal.scheduledHours,
+                minutes = scheduledGoal.scheduledMinutes,
                 currentTimeMillis = System.currentTimeMillis(),
-                completedMillis = scheduledGoalWithGoal.scheduledGoal.completedMillis
+                completedMillis = scheduledGoal.completedMillis
             )
             remainingMinutes = remainingTimeState.remainingMinutes
             isDone = remainingTimeState.isDone

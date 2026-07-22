@@ -1,20 +1,19 @@
 package com.example.timemanagementapp.util
 
-import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.goal.GoalStatus
-import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
+import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 
 //Filter goals by each status given in the set of GoalStatus
-fun List<ScheduledGoalWithGoal>.filterByStatus(goalStatusFilters: Set<GoalStatus>): List<ScheduledGoalWithGoal> {
+fun List<ScheduledGoal>.filterByStatus(goalStatusFilters: Set<GoalStatus>): List<ScheduledGoal> {
     return if (goalStatusFilters.isEmpty()) {
         this
     } else {
-        filter {it.scheduledGoal.status in goalStatusFilters}
+        filter {it.status in goalStatusFilters}
     }
 }
 
-fun List<ScheduledGoalWithGoal>.completedGoals() = filter{it.scheduledGoal.status == GoalStatus.COMPLETED}
+fun List<ScheduledGoal>.completedGoals() = filter{it.status == GoalStatus.COMPLETED}
 
-fun List<ScheduledGoalWithGoal>.incompleteGoals() = filter{it.scheduledGoal.status != GoalStatus.COMPLETED}
+fun List<ScheduledGoal>.incompleteGoals() = filter{it.status != GoalStatus.COMPLETED}
 
-fun List<ScheduledGoalWithGoal>.nonActiveGoals() = filter{it.scheduledGoal.status == GoalStatus.NOT_STARTED || it.scheduledGoal.status == GoalStatus.PAUSED}
+fun List<ScheduledGoal>.nonActiveGoals() = filter{it.status == GoalStatus.NOT_STARTED || it.status == GoalStatus.PAUSED}

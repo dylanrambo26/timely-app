@@ -1,5 +1,6 @@
 package com.example.timemanagementapp.ui.createGoal
 
+//import com.example.timemanagementapp.data.TestData
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -16,7 +17,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -25,6 +25,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,17 +39,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
-import com.example.timemanagementapp.ui.AppViewModelProvider
-//import com.example.timemanagementapp.data.TestData
-import com.example.timemanagementapp.ui.navigation.NavigationDest
-import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.layout.ModifierLocalBeyondBoundsLayout
 import com.example.timemanagementapp.data.testGoalsSizeThree
+import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.components.GoalTemplateCard
-import com.example.timemanagementapp.ui.components.GoalTemplateList
 import com.example.timemanagementapp.ui.goal.GoalListUiState
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
+import com.example.timemanagementapp.ui.navigation.NavigationDest
+import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.util.formatLocalDateToShorthandDate
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -59,7 +56,7 @@ object CreateGoalDestination : NavigationDest{
     override val titleRes = R.string.create_a_goal_from_scratch
 
     const val eventIdArg = "eventId"
-    val routeWithArgs = "$route/{$eventIdArg}"
+    val routeWithArgs = "$route?$eventIdArg={$eventIdArg}"
 }
 
 @Composable
@@ -97,11 +94,13 @@ fun CreateGoalScreen(
             onSaveGoalAndAddToDateClicked = {
                 coroutineScope.launch {
                     createGoalViewModel.saveGoalAndAddToDate(
-                        onNavigate = {navigateToViewGoals(createGoalViewModel.calendarEventId)}
+                        onNavigate = {eventId ->
+                            navigateToViewGoals(eventId)}
                     )
                 }
             },
             onCancelButtonClicked = navigateBack,
+            showSaveGoalAndAddToDateButton = createGoalViewModel.canAddGoalToDate,
             modifier = Modifier.padding(innerPadding),
             selectedDate = selectedDate
         )
@@ -116,6 +115,7 @@ fun CreateGoalBody(
     onSaveGoalClicked: () -> Unit,
     onSaveGoalAndAddToDateClicked: () -> Unit,
     onCancelButtonClicked: () -> Unit,
+    showSaveGoalAndAddToDateButton: Boolean,
     modifier: Modifier = Modifier,
     selectedDate: LocalDate? = null
 ){
@@ -167,7 +167,8 @@ fun CreateGoalBody(
             onSaveGoalAndAddToDateClicked = onSaveGoalAndAddToDateClicked,
             onCancelButtonClicked = onCancelButtonClicked,
             goalUiState = goalUiState,
-            selectedDate = selectedDate
+            selectedDate = selectedDate,
+            showSaveGoalAndAddToDateButton = showSaveGoalAndAddToDateButton
         )
         Spacer(modifier = Modifier.height(16.dp))
     }
@@ -180,6 +181,7 @@ fun AddGoalButtons(
     onCancelButtonClicked: () -> Unit,
     selectedDate: LocalDate? = null,
     goalUiState: GoalUiState,
+    showSaveGoalAndAddToDateButton: Boolean
 ){
     Column(
         modifier = Modifier
@@ -187,21 +189,23 @@ fun AddGoalButtons(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        //Save Goal and Add to Date Button
-        FilledTonalButton(
-            onClick = onSaveGoalAndAddToDateClicked,
-            enabled = goalUiState.isEntryValid,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 48.dp)
-        ) {
-            Text(
-                text = stringResource(
-                    R.string.save_goal_and_add_to_date,
-                    formatLocalDateToShorthandDate(selectedDate)
-                ),
-                fontSize = 16.sp,
-            )
+        //Save Goal and Add to Date Button (only show if eventId exists in view model)
+        if(showSaveGoalAndAddToDateButton){
+            FilledTonalButton(
+                onClick = onSaveGoalAndAddToDateClicked,
+                enabled = goalUiState.isEntryValid,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+            ) {
+                Text(
+                    text = stringResource(
+                        R.string.save_goal_and_add_to_date,
+                        formatLocalDateToShorthandDate(selectedDate)
+                    ),
+                    fontSize = 16.sp,
+                )
+            }
         }
         //Save Goal Button
         OutlinedButton(
@@ -224,7 +228,7 @@ fun AddGoalButtons(
                 .heightIn(min = 48.dp)
         ) {
             Text(
-                text = stringResource(R.string.return_to_view_goals),
+                text = stringResource(R.string.back),
                 fontSize = 15.sp,
                 color = MaterialTheme.colorScheme.secondary
             )
@@ -312,6 +316,7 @@ fun CreateGoalScreenPreview(){
             goalListUiState = GoalListUiState(
                 goalList = testGoalsSizeThree,
             ),
+            showSaveGoalAndAddToDateButton = false,
             selectedDate = LocalDate.now()
         )
     }

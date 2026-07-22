@@ -1,4 +1,4 @@
-package com.example.timemanagementapp.ui.edit
+package com.example.timemanagementapp.ui.goal
 
 //import com.example.timemanagementapp.data.TestData
 import androidx.compose.foundation.layout.Arrangement
@@ -31,40 +31,32 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
-import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
-import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
+import com.example.timemanagementapp.data.goal.Goal
+import com.example.timemanagementapp.data.testGoalsSizeThree
 import com.example.timemanagementapp.ui.AppViewModelProvider
-import com.example.timemanagementapp.ui.components.DisplayTime
-import com.example.timemanagementapp.ui.components.ScheduledGoalList
+import com.example.timemanagementapp.ui.components.GoalTemplateList
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
-import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListUiState
-import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
-import com.example.timemanagementapp.util.nonActiveGoals
 
-object EditScheduledGoalsDestination : NavigationDest{
-    override val route = "edit_scheduled_goals"
-    override val titleRes = R.string.edit_goals_for_date
-    const val eventIdArg = "eventId"
-    val routeWithArgs = "$route/{$eventIdArg}"
+object ManageReusableGoalsDestination : NavigationDest{
+    override val route = "manage_reusable_goals"
+    override val titleRes = R.string.manage_reusable_goals
 }
 
 @Composable
-fun EditScheduledGoalsScreen(
-    onAddGoalButtonClicked: (Int) -> Unit = {},
-    onEditGoal: (ScheduledGoal) -> Unit,
-    //viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    viewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+fun ManageReusableGoalsScreen(
+    onAddGoalButtonClicked: () -> Unit = {},
+    onEditGoal: (Goal) -> Unit,
+    viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
 ){
-    //val goalListUiState by viewModel.goalListUiState.collectAsState()
-    val scheduledGoalsListUiState by viewModel.scheduledGoalsListUiState.collectAsState()
+    val goalListUiState by viewModel.goalListUiState.collectAsState()
     Scaffold(
         topBar = {
-            TimelySmallTopAppBar(stringResource(R.string.edit_todays_goals))
-                 },
+            TimelySmallTopAppBar(stringResource(R.string.manage_reusable_goals))
+        },
         bottomBar = {
             TimelyBottomAppBar(
                 onCalendarClick = navigateToCalendar,
@@ -73,26 +65,20 @@ fun EditScheduledGoalsScreen(
             )
         }
     ) { innerPadding ->
-        EditScheduledGoalsBody(
-            //goalListUiState = goalListUiState,
-            scheduledGoalsListUiState = scheduledGoalsListUiState,
-            onDeleteGoal = {scheduledGoal -> viewModel.deleteScheduledGoal(scheduledGoal)},
+        ManageReusableGoalsBody(
+            goalListUiState = goalListUiState,
+            onDeleteGoal = {goal -> viewModel.deleteGoal(goal)},
             onEditGoal = onEditGoal,
-            onAddGoal = {
-                scheduledGoalsListUiState.calendarEventId?.let(onAddGoalButtonClicked)
-            },
             modifier = Modifier.padding(innerPadding)
         )
     }
 }
 
 @Composable
-fun EditScheduledGoalsBody(
-    //goalListUiState: GoalListUiState,
-    scheduledGoalsListUiState: ScheduledGoalsListUiState,
-    onDeleteGoal: (ScheduledGoal) -> Unit,
-    onEditGoal: (ScheduledGoal) -> Unit,
-    onAddGoal: () -> Unit,
+fun ManageReusableGoalsBody(
+    goalListUiState: GoalListUiState,
+    onDeleteGoal: (Goal) -> Unit,
+    onEditGoal: (Goal) -> Unit,
     modifier: Modifier = Modifier
 ){
     Column(
@@ -100,15 +86,14 @@ fun EditScheduledGoalsBody(
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val filteredGoals = scheduledGoalsListUiState.scheduledGoalsList.nonActiveGoals()
 
-        ScheduledGoalList(
-            goals = filteredGoals,
-            onDeleteGoal = onDeleteGoal,
+        GoalTemplateList(
+            goals = goalListUiState.goalList,
             onEditGoal = onEditGoal,
+            onDeleteGoal = onDeleteGoal,
             modifier = Modifier
                 .weight(1f)
-                .padding(dimensionResource(R.dimen.padding_medium))
+                .fillMaxWidth()
         )
         HorizontalDivider(
             modifier = Modifier
@@ -118,8 +103,6 @@ fun EditScheduledGoalsBody(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
 
             )
-        //TimeRemaining(remaining = goalListUiState.remainingMinutesInDay)
-        DisplayTime(duration = scheduledGoalsListUiState.remainingMinutesInDay, title = stringResource(R.string.available_time_in_full_day))
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -127,21 +110,21 @@ fun EditScheduledGoalsBody(
             horizontalArrangement = Arrangement.Center
         ){
             IconButton(
-                onClick = onAddGoal,
+                onClick = {},
                 modifier = Modifier
                     .align(Alignment.CenterVertically)
                     .size(100.dp),
             ) {
                 Icon(
                     imageVector = Icons.Default.AddCircle,
-                    contentDescription = stringResource(R.string.add_goal),
+                    contentDescription = stringResource(R.string.create_a_goal_from_scratch),
                     modifier = Modifier
                         .size(100.dp)
                 )
             }
             Spacer(modifier = Modifier.width(30.dp))
             Text(
-                text = stringResource(R.string.add_goal),
+                text = stringResource(R.string.create_a_goal_from_scratch),
                 modifier = Modifier
                     .align(Alignment.CenterVertically)
             )
@@ -149,48 +132,17 @@ fun EditScheduledGoalsBody(
     }
 
 }
-/*@Preview(showBackground = true)
-@Composable
-fun EditGoalsScreenPreview(){
-    TimeManagementAppTheme {
-        EditGoalsScreen(
-            //currentGoals = TestData.goals,
-            onEditGoal = {},
-            onAddGoalButtonClicked = {},
-            navigateToHome = {},
-            navigateToCalendar = {},
-            navigateToAnalytics = {}
-        )
-    }
-}
 
 @Preview(showBackground = true)
 @Composable
-fun EditGoalsEmptyListScreenPreview(){
-    val emptyGoals = emptyList<Goal>()
+fun ManageReusableGoalsBodyPreview(){
     TimeManagementAppTheme {
-        EditGoalsScreen(
-            //currentGoals = emptyGoals,
-            onEditGoal = {},
-            onAddGoalButtonClicked = {},
-            navigateToHome = {},
-            navigateToCalendar = {},
-            navigateToAnalytics = {}
-        )
-    }
-}*/
-
-@Preview(showBackground = true)
-@Composable
-fun EditScheduledGoalsBodyPreview(){
-    TimeManagementAppTheme {
-        EditScheduledGoalsBody(
-            scheduledGoalsListUiState = ScheduledGoalsListUiState(
-                scheduledGoalsList = testScheduledGoalsSizeThree
+        ManageReusableGoalsBody(
+            goalListUiState = GoalListUiState(
+                goalList = testGoalsSizeThree
             ),
             onDeleteGoal = {},
             onEditGoal = {},
-            onAddGoal = {},
         )
     }
 }

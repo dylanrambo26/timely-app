@@ -7,8 +7,6 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.example.timemanagementapp.data.goal.Goal
-import com.example.timemanagementapp.data.goal.GoalStatus
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -34,7 +32,7 @@ interface ScheduledGoalDao {
             WHERE eventId = :eventId
         """
     )
-    fun getScheduledGoalsWithGoals(eventId: Int): Flow<List<ScheduledGoalWithGoal>>
+    fun getScheduledGoals(eventId: Int): Flow<List<ScheduledGoal>>
 
     @Transaction
     @Query(
@@ -43,7 +41,7 @@ interface ScheduledGoalDao {
             WHERE scheduledGoalId = :id
         """
     )
-    fun getScheduledGoalWithGoal(id: Int): Flow<ScheduledGoalWithGoal>
+    fun getScheduledGoal(id: Int): Flow<ScheduledGoal>
 
     @Transaction
     @Query(
@@ -52,6 +50,6 @@ interface ScheduledGoalDao {
             WHERE eventId = :eventId
         """
     )
-    suspend fun getScheduledGoalsWithGoalsOnce(eventId: Int): List<ScheduledGoalWithGoal>
+    suspend fun getScheduledGoalsOnce(eventId: Int): List<ScheduledGoal>
 
 }

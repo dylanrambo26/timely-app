@@ -16,11 +16,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,14 +40,11 @@ import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
-import java.time.LocalDate
-import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material3.MaterialTheme
 import com.example.timemanagementapp.ui.theme.selectedDate
 import com.example.timemanagementapp.util.formatLocalDateToShorthandDate
 import com.example.timemanagementapp.util.formatYearMonthToMonthYearString
 import com.example.timemanagementapp.util.generateCalendarCellsPreview
+import java.time.LocalDate
 import java.time.YearMonth
 
 object CalendarDestination : NavigationDest {

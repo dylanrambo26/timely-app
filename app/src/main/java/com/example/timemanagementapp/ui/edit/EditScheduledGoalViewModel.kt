@@ -1,13 +1,11 @@
 package com.example.timemanagementapp.ui.edit
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
@@ -17,6 +15,8 @@ import com.example.timemanagementapp.ui.createGoal.toGoal
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.launch
 
 class EditScheduledGoalViewModel(
     savedStateHandle: SavedStateHandle,
@@ -47,20 +47,17 @@ class EditScheduledGoalViewModel(
     init {
         viewModelScope.launch {
             scheduledGoalsRepository
-                .getScheduledGoalWithGoal(scheduledGoalId)
+                .getScheduledGoal(scheduledGoalId)
                 .filterNotNull()
-                .collect { combinedGoal ->
-                    val scheduledGoal = combinedGoal.scheduledGoal
+                .collect { scheduledGoal ->
                     currentScheduledGoal = scheduledGoal
-
-                    val goal = combinedGoal.goal
                     _calendarEventId.value = scheduledGoal.eventId
 
                     val details = GoalDetails(
                         id = scheduledGoal.scheduledGoalId,
-                        title = scheduledGoal.customTitle ?: goal.goalTitle,
-                        hours = (scheduledGoal.customHours ?: goal.hours).toString(),
-                        minutes = (scheduledGoal.customMinutes ?: goal.minutes).toString()
+                        title = scheduledGoal.scheduledGoalTitle,
+                        hours = scheduledGoal.scheduledHours.toString(),
+                        minutes = scheduledGoal.scheduledMinutes.toString()
                     )
 
                     goalUiState = GoalUiState(
@@ -109,9 +106,9 @@ class EditScheduledGoalViewModel(
 
         scheduledGoalsRepository.updateScheduledGoal(
             existingScheduledGoal.copy(
-                customTitle = goalUiState.goalDetails.title,
-                customHours = goalUiState.goalDetails.hours.toIntOrNull(),
-                customMinutes = goalUiState.goalDetails.minutes.toIntOrNull()
+                scheduledGoalTitle = goalUiState.goalDetails.title,
+                scheduledHours = goalUiState.goalDetails.hours.toInt(),
+                scheduledMinutes = goalUiState.goalDetails.minutes.toInt()
             )
         )
 

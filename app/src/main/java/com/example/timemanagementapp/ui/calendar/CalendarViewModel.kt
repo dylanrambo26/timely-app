@@ -1,16 +1,15 @@
 package com.example.timemanagementapp.ui.calendar
 
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
-import java.time.LocalDate
-import java.time.YearMonth
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.timemanagementapp.data.calendar.CalendarEvent
 import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
 import com.example.timemanagementapp.util.CALENDARGRIDSIZE
 import kotlinx.coroutines.launch
+import java.time.LocalDate
+import java.time.YearMonth
 
 class CalendarViewModel(
     val calendarEventsRepository: CalendarEventsRepository

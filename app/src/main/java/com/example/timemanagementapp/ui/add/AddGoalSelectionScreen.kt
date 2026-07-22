@@ -25,7 +25,6 @@ import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
-import java.time.LocalDate
 
 object AddGoalSelectionDestination : NavigationDest{
     override val route = "add_goal_selection"

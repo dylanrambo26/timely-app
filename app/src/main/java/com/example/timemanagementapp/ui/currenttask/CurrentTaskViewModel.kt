@@ -6,7 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.timemanagementapp.data.UserPreferencesRepository
 import com.example.timemanagementapp.data.alarm.AlarmManagerGoalsRepository
 import com.example.timemanagementapp.data.goal.GoalStatus
-import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
+import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -32,7 +32,7 @@ class CurrentTaskViewModel(
                 if (currentTaskId == null) {
                     flowOf(CurrentTaskUiState())
                 } else {
-                    scheduledGoalsRepository.getScheduledGoalWithGoal(currentTaskId)
+                    scheduledGoalsRepository.getScheduledGoal(currentTaskId)
                         .map { combinedGoal ->
                             CurrentTaskUiState(
                                 currentTask = combinedGoal
@@ -46,59 +46,55 @@ class CurrentTaskViewModel(
                 initialValue = CurrentTaskUiState()
             )
 
-    fun startTaskTimer(scheduledGoalWithGoal: ScheduledGoalWithGoal){
+    fun startTaskTimer(scheduledGoal: ScheduledGoal){
         viewModelScope.launch {
             val currentTask = currentTaskUiState.value.currentTask
 
             //Only stop the timer if the previous task was still running and is a different task than the incoming task
             //This is used when the user changes the task while the task is running
-            if(currentTask != null && currentTask.scheduledGoal.scheduledGoalId != scheduledGoalWithGoal.scheduledGoal.scheduledGoalId && currentTask.scheduledGoal.status == GoalStatus.RUNNING){
+            if(currentTask != null && currentTask.scheduledGoalId != scheduledGoal.scheduledGoalId && currentTask.status == GoalStatus.RUNNING){
                 stopTaskTimer()
             }
 
             val startTime = System.currentTimeMillis()
 
-            val updatedScheduledGoal = scheduledGoalWithGoal.scheduledGoal.copy(
+            val updatedScheduledGoal = scheduledGoal.copy(
                 startTimeMillis = startTime,
                 status = GoalStatus.RUNNING
-            )
-
-            val updatedScheduledGoalWithGoal = scheduledGoalWithGoal.copy(
-                scheduledGoal = updatedScheduledGoal
             )
 
             scheduledGoalsRepository.updateScheduledGoal(updatedScheduledGoal)
 
             userPreferencesRepository.saveCurrentTaskID(updatedScheduledGoal.scheduledGoalId)
 
-            alarmManagerGoalsRepository.scheduleTimer(updatedScheduledGoalWithGoal)
+            alarmManagerGoalsRepository.scheduleTimer(updatedScheduledGoal)
         }
     }
 
     suspend fun stopTaskTimer(){
         val currentTask = currentTaskUiState.value.currentTask ?: return
 
-        if(currentTask.scheduledGoal.status == GoalStatus.COMPLETED) return
+        if(currentTask.status == GoalStatus.COMPLETED) return
 
-        if (currentTask.scheduledGoal.startTimeMillis <= 0L) {
+        if (currentTask.startTimeMillis <= 0L) {
             Log.e(
                 "Timer",
-                "Invalid startTimeMillis: ${currentTask.scheduledGoal.startTimeMillis}"
+                "Invalid startTimeMillis: ${currentTask.startTimeMillis}"
             )
             return
         }
 
-        val sessionMillis = System.currentTimeMillis() - (currentTask.scheduledGoal.startTimeMillis)
+        val sessionMillis = System.currentTimeMillis() - (currentTask.startTimeMillis)
 
         scheduledGoalsRepository.updateScheduledGoal(
-            currentTask.scheduledGoal.copy(
-                completedMillis = currentTask.scheduledGoal.completedMillis + sessionMillis,
+            currentTask.copy(
+                completedMillis = currentTask.completedMillis + sessionMillis,
                 startTimeMillis = 0L,
                 status = GoalStatus.PAUSED
             )
         )
 
-        alarmManagerGoalsRepository.cancelTimer(currentTask.scheduledGoal.scheduledGoalId)
+        alarmManagerGoalsRepository.cancelTimer(currentTask.scheduledGoalId)
 
 
     }
@@ -111,5 +107,5 @@ class CurrentTaskViewModel(
 }
 
 data class CurrentTaskUiState(
-    val currentTask: ScheduledGoalWithGoal? = null
+    val currentTask: ScheduledGoal? = null
 )

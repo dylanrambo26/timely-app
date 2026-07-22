@@ -1,7 +1,6 @@
 package com.example.timemanagementapp.data.scheduledgoal
 
 import com.example.timemanagementapp.data.goal.GoalDao
-import com.example.timemanagementapp.data.goal.GoalStatus
 import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY
 import kotlinx.coroutines.flow.Flow
 
@@ -17,18 +16,18 @@ class OfflineScheduledGoalsRepository(
 
     override suspend fun getScheduledGoalOnce(id: Int): ScheduledGoal = scheduledGoalDao.getScheduledGoalOnce(id)
 
-    override fun getScheduledGoalsWithGoal(eventId: Int): Flow<List<ScheduledGoalWithGoal>> = scheduledGoalDao.getScheduledGoalsWithGoals(eventId)
+    override fun getScheduledGoals(eventId: Int): Flow<List<ScheduledGoal>> = scheduledGoalDao.getScheduledGoals(eventId)
 
-    override fun getScheduledGoalWithGoal(id: Int): Flow<ScheduledGoalWithGoal> = scheduledGoalDao.getScheduledGoalWithGoal(id)
+    override fun getScheduledGoal(id: Int): Flow<ScheduledGoal> = scheduledGoalDao.getScheduledGoal(id)
 
-    override suspend fun getScheduledGoalsWithGoalsOnce(eventId: Int): List<ScheduledGoalWithGoal> = scheduledGoalDao.getScheduledGoalsWithGoalsOnce(eventId)
+    override suspend fun getScheduledGoalsOnce(eventId: Int): List<ScheduledGoal> = scheduledGoalDao.getScheduledGoalsOnce(eventId)
 
     //Used to validate existing goals against remaining time
     override suspend fun validInsertScheduledGoal(goalId: Int, eventId: Int): Boolean {
         val goal = goalDao.getGoalOnce(goalId)
 
-        val scheduledGoals = getScheduledGoalsWithGoalsOnce(eventId)
-        val usedMinutes = scheduledGoals.sumOf { it.goal.hours * 60 + it.goal.minutes }
+        val scheduledGoals = getScheduledGoalsOnce(eventId)
+        val usedMinutes = scheduledGoals.sumOf { it.scheduledHours * 60 + it.scheduledMinutes }
 
         val remainingMinutes = MINUTES_IN_24_HOUR_DAY - usedMinutes
         val newScheduledGoalTotalMinutes = goal.hours * 60 + goal.minutes
@@ -40,7 +39,10 @@ class OfflineScheduledGoalsRepository(
         insertScheduledGoal(
             ScheduledGoal(
                 goalId = goalId,
-                eventId = eventId
+                eventId = eventId,
+                scheduledGoalTitle = goal.goalTitle,
+                scheduledHours = goal.hours,
+                scheduledMinutes = goal.minutes
             )
         )
 
@@ -53,12 +55,12 @@ class OfflineScheduledGoalsRepository(
         eventId: Int,
         excludedScheduledGoalId: Int? //to exclude existing scheduled goal total when editing a scheduled goal
     ): Boolean {
-        val scheduledGoals = getScheduledGoalsWithGoalsOnce(eventId)
+        val scheduledGoals = getScheduledGoalsOnce(eventId)
         val usedMinutes = scheduledGoals
-            .filter {it.scheduledGoal.scheduledGoalId != excludedScheduledGoalId}
+            .filter {it.scheduledGoalId != excludedScheduledGoalId}
             .sumOf {
-                val hours = it.scheduledGoal.customHours ?: it.goal.hours
-                val minutes = it.scheduledGoal.customMinutes ?: it.goal.minutes
+                val hours = it.scheduledHours
+                val minutes = it.scheduledMinutes
 
                 hours * 60 + minutes
             }
