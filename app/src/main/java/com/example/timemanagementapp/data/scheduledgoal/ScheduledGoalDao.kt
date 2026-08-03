@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 
 @Dao
 interface ScheduledGoalDao {
@@ -52,4 +53,27 @@ interface ScheduledGoalDao {
     )
     suspend fun getScheduledGoalsOnce(eventId: Int): List<ScheduledGoal>
 
+    //Used to update all scheduled goals that reference a reusable goal that was edited
+    @Query(
+        """
+            UPDATE scheduled_goals
+            SET scheduledGoalTitle = :title,
+                scheduledHours = :hours,
+                scheduledMinutes = :minutes
+            WHERE goalId = :goalId
+                AND isCustomized = 0
+                AND eventId IN (
+                    SELECT eventId
+                    FROM calendar_events
+                    WHERE date >= :startDate
+                )
+        """
+    )
+    suspend fun updateFutureScheduledGoalsFromEditedTemplate(
+        goalId: Int,
+        title: String,
+        hours: Int,
+        minutes: Int,
+        startDate: LocalDate
+    )
 }

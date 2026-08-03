@@ -66,6 +66,7 @@ fun ManageReusableGoalsScreen(
         }
     ) { innerPadding ->
         ManageReusableGoalsBody(
+            onCreateGoalButtonClicked = onAddGoalButtonClicked,
             goalListUiState = goalListUiState,
             onDeleteGoal = {goal -> viewModel.deleteGoal(goal)},
             onEditGoal = onEditGoal,
@@ -76,6 +77,7 @@ fun ManageReusableGoalsScreen(
 
 @Composable
 fun ManageReusableGoalsBody(
+    onCreateGoalButtonClicked: () -> Unit = {},
     goalListUiState: GoalListUiState,
     onDeleteGoal: (Goal) -> Unit,
     onEditGoal: (Goal) -> Unit,
@@ -110,7 +112,7 @@ fun ManageReusableGoalsBody(
             horizontalArrangement = Arrangement.Center
         ){
             IconButton(
-                onClick = {},
+                onClick = onCreateGoalButtonClicked,
                 modifier = Modifier
                     .align(Alignment.CenterVertically)
                     .size(100.dp),

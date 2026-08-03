@@ -3,6 +3,7 @@ package com.example.timemanagementapp.data.scheduledgoal
 import com.example.timemanagementapp.data.goal.GoalDao
 import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 
 class OfflineScheduledGoalsRepository(
     private val scheduledGoalDao: ScheduledGoalDao,
@@ -66,5 +67,15 @@ class OfflineScheduledGoalsRepository(
             }
 
         return usedMinutes + goalTotalMinutes <= MINUTES_IN_24_HOUR_DAY
+    }
+
+    override suspend fun updateFutureScheduledGoalsFromEditedTemplate(
+        goalId: Int,
+        title: String,
+        hours: Int,
+        minutes: Int,
+        startDate: LocalDate
+    ) {
+        scheduledGoalDao.updateFutureScheduledGoalsFromEditedTemplate(goalId, title, hours, minutes, startDate)
     }
 }

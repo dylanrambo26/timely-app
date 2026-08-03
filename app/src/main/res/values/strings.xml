@@ -57,4 +57,5 @@
     <string name="invalid_hours_0_23">Hours must be between 0 and 23</string>
     <string name="manage_reusable_goals">Manage Reusable Goals</string>
     <string name="back">Back</string>
+    <string name="save_and_overwrite_future_scheduled_goals">Save &amp; Overwrite Future Scheduled Goals</string>
 </resources>

@@ -36,6 +36,8 @@ data class ScheduledGoal(
     val startTimeMillis: Long = 0L,
     val completedMillis: Long = 0L,
 
+    val isCustomized: Boolean = false,
+
     //Can be based of the reusable goal from goalid or its own values
     val scheduledGoalTitle: String,
     val scheduledHours: Int,

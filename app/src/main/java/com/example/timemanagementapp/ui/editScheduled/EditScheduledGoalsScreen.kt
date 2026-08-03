@@ -1,4 +1,4 @@
-package com.example.timemanagementapp.ui.edit
+package com.example.timemanagementapp.ui.editScheduled
 
 //import com.example.timemanagementapp.data.TestData
 import androidx.compose.foundation.layout.Arrangement
