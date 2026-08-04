@@ -67,7 +67,7 @@ object AppViewModelProvider{
 
         initializer {
             HomeViewModel(
-                timelyApplication().container.calendarEventsRepository
+                timelyApplication().container.calendarEventsRepository,
             )
         }
 

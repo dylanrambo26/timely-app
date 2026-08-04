@@ -53,7 +53,7 @@ class CurrentTaskViewModel(
             //Only stop the timer if the previous task was still running and is a different task than the incoming task
             //This is used when the user changes the task while the task is running
             if(currentTask != null && currentTask.scheduledGoalId != scheduledGoal.scheduledGoalId && currentTask.status == GoalStatus.RUNNING){
-                stopTaskTimer()
+                stopTaskTimer(goalStatus = GoalStatus.PAUSED)
             }
 
             val startTime = System.currentTimeMillis()
@@ -71,8 +71,10 @@ class CurrentTaskViewModel(
         }
     }
 
-    suspend fun stopTaskTimer(){
+    suspend fun stopTaskTimer(goalStatus: GoalStatus){
         val currentTask = currentTaskUiState.value.currentTask ?: return
+
+        alarmManagerGoalsRepository.cancelTimer(currentTask.scheduledGoalId)
 
         if(currentTask.status == GoalStatus.COMPLETED) return
 
@@ -90,18 +92,20 @@ class CurrentTaskViewModel(
             currentTask.copy(
                 completedMillis = currentTask.completedMillis + sessionMillis,
                 startTimeMillis = 0L,
-                status = GoalStatus.PAUSED
+                status = goalStatus
             )
         )
-
-        alarmManagerGoalsRepository.cancelTimer(currentTask.scheduledGoalId)
-
-
     }
 
     fun pauseTask(){
         viewModelScope.launch {
-            stopTaskTimer()
+            stopTaskTimer(goalStatus = GoalStatus.PAUSED)
+        }
+    }
+
+    fun markAsComplete(){
+        viewModelScope.launch {
+            stopTaskTimer(goalStatus = GoalStatus.COMPLETED)
         }
     }
 }
