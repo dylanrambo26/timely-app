@@ -11,17 +11,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.timemanagementapp.R
 import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.testGoalsSizeThree
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
@@ -29,14 +32,21 @@ import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 @Composable
 fun GoalTemplateList(
     goals: List<Goal>,
-    onGoalClick: (Goal) -> Unit = {},
-
+    onGoalClick: ((Goal) -> Unit)? = null,
+    onEditGoal: ((Goal) -> Unit)? = null,
+    onDeleteGoal: ((Goal) -> Unit)? = null,
     modifier: Modifier = Modifier,
     selectedGoalId: Int? = null,
 ){
     val listState = rememberLazyListState()
     val previousSize = rememberPreviousLazyColumn(goals.size)
 
+    //Only scroll to recently added goal, do not scroll when deleting
+    LaunchedEffect(goals.size) {
+        if (previousSize != null && goals.size > previousSize){
+            listState.animateScrollToItem(goals.lastIndex)
+        }
+    }
     LazyColumn(
         state = listState,
         modifier = modifier,
@@ -51,6 +61,8 @@ fun GoalTemplateList(
                 goal = goal,
                 isSelected = isSelected,
                 onGoalClick = onGoalClick,
+                onEditGoal = onEditGoal,
+                onDeleteGoal = onDeleteGoal
             )
         }
     }
@@ -60,6 +72,8 @@ fun GoalTemplateList(
 fun GoalTemplateCard(
     goal: Goal,
     isSelected: Boolean = false,
+    onDeleteGoal: ((Goal) -> Unit)? = null,
+    onEditGoal: ((Goal) -> Unit)? = null,
     onGoalClick: ((Goal) -> Unit)? = null,
 ){
     Surface(
@@ -93,6 +107,25 @@ fun GoalTemplateCard(
                 Text(text = goal.goalTitle)
                 Spacer(modifier = Modifier.width(12.dp))
                 Text(text = "${goal.hours}h ${goal.minutes}m")
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            if (onDeleteGoal != null || onEditGoal != null){
+                Row {
+                    if (onDeleteGoal != null) {
+                        IconButton(onClick = {onDeleteGoal(goal)})
+                        {
+                            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+                        }
+                    }
+                    if (onEditGoal != null){
+                        IconButton(onClick = {onEditGoal(goal) })
+                        {
+                            Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
+                        }
+                    }
+                }
             }
         }
     }

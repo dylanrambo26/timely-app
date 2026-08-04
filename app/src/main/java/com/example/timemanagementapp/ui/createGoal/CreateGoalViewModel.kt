@@ -1,19 +1,17 @@
 package com.example.timemanagementapp.ui.createGoal
 
-import androidx.compose.runtime.mutableStateOf
-import androidx.lifecycle.ViewModel
-import com.example.timemanagementapp.data.goal.Goal
-import com.example.timemanagementapp.data.goal.GoalsRepository
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.res.stringResource
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
+import com.example.timemanagementapp.data.goal.Goal
+import com.example.timemanagementapp.data.goal.GoalsRepository
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
-import com.example.timemanagementapp.ui.viewgoals.ViewGoalsDestination
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -30,13 +28,20 @@ class CreateGoalViewModel(
     var goalUiState by mutableStateOf(GoalUiState())
         private set
 
-    val calendarEventId: Int = checkNotNull(savedStateHandle[ViewGoalsDestination.eventIdArg])
+    val calendarEventId =
+        savedStateHandle.get<Int>(CreateGoalDestination.eventIdArg)
+            ?.takeIf { it != -1 }
     private val _date = MutableStateFlow<LocalDate?>(null)
     val date: StateFlow<LocalDate?> = _date.asStateFlow()
 
+    val canAddGoalToDate: Boolean
+        get() = calendarEventId != null
+
     init{
-        viewModelScope.launch {
-            _date.value = calendarEventsRepository.getEventById(calendarEventId)?.date
+        calendarEventId?.let {
+            viewModelScope.launch {
+                _date.value = calendarEventsRepository.getEventById(calendarEventId)?.date
+            }
         }
     }
 
@@ -77,6 +82,8 @@ class CreateGoalViewModel(
     }
 
     suspend fun saveGoalAndAddToDate(onNavigate: (Int) -> Unit = {}){
+        val eventId = calendarEventId ?: return
+
         val error = validateInput(goalUiState.goalDetails)
         if(error != null){
             goalUiState = goalUiState.copy(
@@ -91,7 +98,7 @@ class CreateGoalViewModel(
 
         val isValidDuration = scheduledGoalsRepository.isValidDurationForDate(
             goalTotalMinutes = goalTotalMinutes,
-            eventId = calendarEventId,
+            eventId = eventId,
             excludedScheduledGoalId = null
         )
 
@@ -105,15 +112,18 @@ class CreateGoalViewModel(
 
         val goalId = goalsRepository.insertGoal(goal)
 
+        //Insert scheduled goal with reusable new reusable goal values
         scheduledGoalsRepository.insertScheduledGoal(
             ScheduledGoal(
                 goalId = goalId,
-                eventId = calendarEventId
+                eventId = eventId,
+                scheduledGoalTitle = goal.goalTitle,
+                scheduledHours = goal.hours,
+                scheduledMinutes = goal.minutes,
             )
         )
 
-        onNavigate(calendarEventId)
-
+        onNavigate(eventId)
     }
 }
 

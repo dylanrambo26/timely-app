@@ -1,22 +1,23 @@
-package com.example.timemanagementapp.ui.edit
+package com.example.timemanagementapp.ui.editScheduled
 
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.launch
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 import com.example.timemanagementapp.ui.createGoal.GoalDetails
 import com.example.timemanagementapp.ui.createGoal.GoalUiState
 import com.example.timemanagementapp.ui.createGoal.toGoal
+import com.example.timemanagementapp.util.validate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.launch
 
 class EditScheduledGoalViewModel(
     savedStateHandle: SavedStateHandle,
@@ -33,7 +34,7 @@ class EditScheduledGoalViewModel(
     private val _calendarEventId = MutableStateFlow<Int?>(null)
     val calendarEventId: StateFlow<Int?> = _calendarEventId.asStateFlow()
 
-    private fun validateInput(uiState: GoalDetails): Int? {
+    /*private fun validateInput(uiState: GoalDetails): Int? {
         val h = uiState.hours.toIntOrNull() ?: return R.string.invalid_hours
         val m = uiState.minutes.toIntOrNull() ?: return R.string.invalid_minutes
 
@@ -42,42 +43,39 @@ class EditScheduledGoalViewModel(
         if (m !in 0..59) return R.string.invalid_minutes_0_59
 
         return null
-    }
+    }*/
 
     init {
         viewModelScope.launch {
             scheduledGoalsRepository
-                .getScheduledGoalWithGoal(scheduledGoalId)
+                .getScheduledGoal(scheduledGoalId)
                 .filterNotNull()
-                .collect { combinedGoal ->
-                    val scheduledGoal = combinedGoal.scheduledGoal
+                .collect { scheduledGoal ->
                     currentScheduledGoal = scheduledGoal
-
-                    val goal = combinedGoal.goal
                     _calendarEventId.value = scheduledGoal.eventId
 
                     val details = GoalDetails(
                         id = scheduledGoal.scheduledGoalId,
-                        title = scheduledGoal.customTitle ?: goal.goalTitle,
-                        hours = (scheduledGoal.customHours ?: goal.hours).toString(),
-                        minutes = (scheduledGoal.customMinutes ?: goal.minutes).toString()
+                        title = scheduledGoal.scheduledGoalTitle,
+                        hours = scheduledGoal.scheduledHours.toString(),
+                        minutes = scheduledGoal.scheduledMinutes.toString()
                     )
 
                     goalUiState = GoalUiState(
                         goalDetails = details,
-                        isEntryValid = validateInput(details) == null
+                        isEntryValid = goalUiState.goalDetails.validate() == null
                     )
                 }
         }
     }
     fun updateUiState(goalDetails: GoalDetails) {
-        val error = validateInput(goalDetails)
+        val error = goalUiState.goalDetails.validate()
         goalUiState =
             goalUiState.copy(goalDetails = goalDetails, isEntryValid = error == null, errorMessage = error)
     }
 
     suspend fun updateScheduledGoal(onNavigate: (Int) -> Unit = {}) {
-        val error = validateInput(goalUiState.goalDetails)
+        val error = goalUiState.goalDetails.validate()
         if(error != null){
             goalUiState = goalUiState.copy(
                 errorMessage = error,
@@ -109,9 +107,10 @@ class EditScheduledGoalViewModel(
 
         scheduledGoalsRepository.updateScheduledGoal(
             existingScheduledGoal.copy(
-                customTitle = goalUiState.goalDetails.title,
-                customHours = goalUiState.goalDetails.hours.toIntOrNull(),
-                customMinutes = goalUiState.goalDetails.minutes.toIntOrNull()
+                scheduledGoalTitle = goalUiState.goalDetails.title,
+                scheduledHours = goalUiState.goalDetails.hours.toInt(),
+                scheduledMinutes = goalUiState.goalDetails.minutes.toInt(),
+                isCustomized = true
             )
         )
 

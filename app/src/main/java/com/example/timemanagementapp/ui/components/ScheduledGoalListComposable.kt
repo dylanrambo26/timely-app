@@ -29,21 +29,20 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.timemanagementapp.R
-import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.goal.GoalStatus
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
-import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
+import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.ui.theme.completedGoal
 
 @Composable
 fun ScheduledGoalList(
     modifier: Modifier = Modifier,
-    goals: List<ScheduledGoalWithGoal>,
+    goals: List<ScheduledGoal>,
     selectedGoalId: Int? = null,
     onDeleteGoal: ((ScheduledGoal) -> Unit)? = null,
-    onEditGoal: ((ScheduledGoalWithGoal) -> Unit)? = null,
-    onGoalClick: ((ScheduledGoalWithGoal) -> Unit)? = null,
+    onEditGoal: ((ScheduledGoal) -> Unit)? = null,
+    onGoalClick: ((ScheduledGoal) -> Unit)? = null,
     addColors: Boolean = false,
     //goalStatusFilters: Set<GoalStatus> = emptySet(),
 ) {
@@ -74,11 +73,11 @@ fun ScheduledGoalList(
         else{
             items(
                 goals,
-                key = {it.scheduledGoal.scheduledGoalId}
-            ) { combinedGoal ->
-                val isSelected = combinedGoal.scheduledGoal.scheduledGoalId == selectedGoalId
+                key = {it.scheduledGoalId}
+            ) { scheduledGoal ->
+                val isSelected = scheduledGoal.scheduledGoalId == selectedGoalId
                 GoalCard(
-                    combinedGoal = combinedGoal,
+                    scheduledGoal = scheduledGoal,
                     isSelected = isSelected,
                     onDeleteGoal = onDeleteGoal,
                     onEditGoal = onEditGoal,
@@ -92,12 +91,12 @@ fun ScheduledGoalList(
 
 @Composable
 fun GoalCard(
-    combinedGoal: ScheduledGoalWithGoal,
+    scheduledGoal: ScheduledGoal,
     isSelected: Boolean = false,
     addColors: Boolean = false,
     onDeleteGoal: ((ScheduledGoal) -> Unit)? = null,
-    onEditGoal: ((ScheduledGoalWithGoal) -> Unit)? = null,
-    onGoalClick: ((ScheduledGoalWithGoal) -> Unit)? = null,
+    onEditGoal: ((ScheduledGoal) -> Unit)? = null,
+    onGoalClick: ((ScheduledGoal) -> Unit)? = null,
 ){
     Surface(
         modifier = Modifier
@@ -105,7 +104,7 @@ fun GoalCard(
             .padding(8.dp)
             .then(
                 if(onGoalClick != null){
-                    Modifier.clickable { onGoalClick(combinedGoal)}
+                    Modifier.clickable { onGoalClick(scheduledGoal)}
                 } else {
                     Modifier
                 }
@@ -113,7 +112,7 @@ fun GoalCard(
         shape = RoundedCornerShape(12.dp),
         color = if(isSelected){
             MaterialTheme.colorScheme.primaryContainer
-        } else if(addColors && combinedGoal.scheduledGoal.status == GoalStatus.COMPLETED){
+        } else if(addColors && scheduledGoal.status == GoalStatus.COMPLETED){
             MaterialTheme.colorScheme.completedGoal
         } else {
             MaterialTheme.colorScheme.secondaryContainer
@@ -128,11 +127,11 @@ fun GoalCard(
         ) {
             Row {
 
-                val displayTitle = combinedGoal.scheduledGoal.customTitle ?: combinedGoal.goal.goalTitle
-                val displayHours = combinedGoal.scheduledGoal.customHours ?: combinedGoal.goal.hours
-                val displayMinutes = combinedGoal.scheduledGoal.customMinutes ?: combinedGoal.goal.minutes
+                val displayTitle = scheduledGoal.scheduledGoalTitle
+                val displayHours = scheduledGoal.scheduledHours
+                val displayMinutes = scheduledGoal.scheduledMinutes
 
-                Text(text = combinedGoal.scheduledGoal.scheduledGoalId.toString()) //TODO delete later
+                Text(text = scheduledGoal.scheduledGoalId.toString()) //TODO delete later
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(text = displayTitle)
                 Spacer(modifier = Modifier.width(12.dp))
@@ -144,13 +143,13 @@ fun GoalCard(
             if (onDeleteGoal != null || onEditGoal != null){
                 Row {
                     if (onDeleteGoal != null) {
-                        IconButton(onClick = {onDeleteGoal(combinedGoal.scheduledGoal)})
+                        IconButton(onClick = {onDeleteGoal(scheduledGoal)})
                         {
                             Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
                         }
                     }
                     if (onEditGoal != null){
-                        IconButton(onClick = {onEditGoal(combinedGoal) })
+                        IconButton(onClick = {onEditGoal(scheduledGoal) })
                         {
                             Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
                         }
@@ -176,27 +175,7 @@ fun rememberPreviousLazyColumn(value: Int): Int? {
 fun ScheduledGoalListPreview(){
     TimeManagementAppTheme {
         ScheduledGoalList(
-            goals = listOf(
-                ScheduledGoalWithGoal(
-                    scheduledGoal = ScheduledGoal(
-                        goalId = 1,
-                        eventId = 3,
-                        scheduledGoalId = 1,
-                        status = GoalStatus.COMPLETED,
-                        startTimeMillis = 123456789L,
-                        completedMillis = 600000L,
-                        customTitle = null,
-                        customMinutes = null,
-                        customHours = null
-                    ),
-                    goal = Goal(
-                        goalID = 1,
-                        goalTitle = "Test Goal",
-                        hours = 1,
-                        minutes = 30,
-                    )
-                ),
-            ),
+            goals = testScheduledGoalsSizeThree,
             addColors = true,
             /*onDeleteGoal = {},
             onEditGoal = {}*/

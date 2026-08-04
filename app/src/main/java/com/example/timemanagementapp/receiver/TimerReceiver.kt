@@ -29,9 +29,9 @@ class TimerReceiver : BroadcastReceiver(){
         CoroutineScope(Dispatchers.IO).launch{
             val db = GoalsDatabase.getDatabase(context)
             val scheduledGoal = db.scheduledGoalDao().getScheduledGoalOnce(scheduledGoalId)
-            val goal = db.goalDao().getGoalOnce(scheduledGoal.goalId)
+            //val goal = db.goalDao().getGoalOnce(scheduledGoal.goalId)
             db.scheduledGoalDao().update(scheduledGoal.copy(
-                completedMillis = (goal.hours * 60L + goal.minutes) * 60_000L,
+                completedMillis = (scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledHours) * 60_000L,
                 startTimeMillis = 0L,
                 status = GoalStatus.COMPLETED
             ))

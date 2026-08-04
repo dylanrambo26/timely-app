@@ -1,7 +1,7 @@
 package com.example.timemanagementapp.data.scheduledgoal
 
-import com.example.timemanagementapp.data.goal.GoalStatus
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 
 interface ScheduledGoalsRepository{
     suspend fun insertScheduledGoal(scheduledGoal: ScheduledGoal)
@@ -20,13 +20,15 @@ interface ScheduledGoalsRepository{
 
     suspend fun updateCompletedMillis(id: Int, millis: Long)*/
 
-    fun getScheduledGoalsWithGoal(eventId: Int): Flow<List<ScheduledGoalWithGoal>>
+    fun getScheduledGoals(eventId: Int): Flow<List<ScheduledGoal>>
 
-    fun getScheduledGoalWithGoal(id: Int): Flow<ScheduledGoalWithGoal>
+    fun getScheduledGoal(id: Int): Flow<ScheduledGoal>
 
-    suspend fun getScheduledGoalsWithGoalsOnce(eventId: Int): List<ScheduledGoalWithGoal>
+    suspend fun getScheduledGoalsOnce(eventId: Int): List<ScheduledGoal>
 
     suspend fun validInsertScheduledGoal(goalId: Int, eventId: Int): Boolean
 
     suspend fun isValidDurationForDate(goalTotalMinutes: Int, eventId: Int, excludedScheduledGoalId: Int?): Boolean
+
+    suspend fun updateFutureScheduledGoalsFromEditedTemplate(goalId: Int, title: String, hours: Int, minutes: Int, startDate: LocalDate)
 }

@@ -7,7 +7,7 @@ import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
-import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
+import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.receiver.TimerReceiver
 
 //Used by CurrentTaskViewModel to schedule alarm notifications when the task is done
@@ -21,11 +21,10 @@ class AlarmManagerGoalsRepository(
         Context.ALARM_SERVICE
     ) as AlarmManager
 
-    override fun scheduleTimer(scheduledGoalWithGoal: ScheduledGoalWithGoal) {
-        val goal = scheduledGoalWithGoal.goal
-        val scheduledGoal = scheduledGoalWithGoal.scheduledGoal
+    override fun scheduleTimer(scheduledGoal: ScheduledGoal) {
+        val scheduledGoal = scheduledGoal
 
-        val durationMillis = ((goal.hours * 60L + goal.minutes) * 60_000L) - scheduledGoal.completedMillis
+        val durationMillis = ((scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60_000L) - scheduledGoal.completedMillis
 
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
             if (!alarmManager.canScheduleExactAlarms()){
@@ -41,7 +40,7 @@ class AlarmManagerGoalsRepository(
             TimerReceiver::class.java
         ).apply{
             putExtra("scheduledGoalId", scheduledGoal.scheduledGoalId)
-            putExtra("goalTitle", goal.goalTitle)
+            putExtra("scheduledGoalTitle", scheduledGoal.scheduledGoalTitle)
         }
 
         val pendingIntent =

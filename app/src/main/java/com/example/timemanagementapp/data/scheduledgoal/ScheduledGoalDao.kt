@@ -7,9 +7,8 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
-import com.example.timemanagementapp.data.goal.Goal
-import com.example.timemanagementapp.data.goal.GoalStatus
 import kotlinx.coroutines.flow.Flow
+import java.time.LocalDate
 
 @Dao
 interface ScheduledGoalDao {
@@ -34,7 +33,7 @@ interface ScheduledGoalDao {
             WHERE eventId = :eventId
         """
     )
-    fun getScheduledGoalsWithGoals(eventId: Int): Flow<List<ScheduledGoalWithGoal>>
+    fun getScheduledGoals(eventId: Int): Flow<List<ScheduledGoal>>
 
     @Transaction
     @Query(
@@ -43,7 +42,7 @@ interface ScheduledGoalDao {
             WHERE scheduledGoalId = :id
         """
     )
-    fun getScheduledGoalWithGoal(id: Int): Flow<ScheduledGoalWithGoal>
+    fun getScheduledGoal(id: Int): Flow<ScheduledGoal>
 
     @Transaction
     @Query(
@@ -52,6 +51,29 @@ interface ScheduledGoalDao {
             WHERE eventId = :eventId
         """
     )
-    suspend fun getScheduledGoalsWithGoalsOnce(eventId: Int): List<ScheduledGoalWithGoal>
+    suspend fun getScheduledGoalsOnce(eventId: Int): List<ScheduledGoal>
 
+    //Used to update all scheduled goals that reference a reusable goal that was edited
+    @Query(
+        """
+            UPDATE scheduled_goals
+            SET scheduledGoalTitle = :title,
+                scheduledHours = :hours,
+                scheduledMinutes = :minutes
+            WHERE goalId = :goalId
+                AND isCustomized = 0
+                AND eventId IN (
+                    SELECT eventId
+                    FROM calendar_events
+                    WHERE date >= :startDate
+                )
+        """
+    )
+    suspend fun updateFutureScheduledGoalsFromEditedTemplate(
+        goalId: Int,
+        title: String,
+        hours: Int,
+        minutes: Int,
+        startDate: LocalDate
+    )
 }

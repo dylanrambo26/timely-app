@@ -3,13 +3,10 @@ package com.example.timemanagementapp.ui.navigation
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.composable
-import com.example.timemanagementapp.ui.edit.EditScheduledGoalsDestination
-import com.example.timemanagementapp.ui.home.HomeDestination
-import com.example.timemanagementapp.ui.home.HomeScreen
-import androidx.navigation.compose.NavHost
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import androidx.navigation.navigation
 import com.example.timemanagementapp.ui.AppViewModelProvider
@@ -20,16 +17,24 @@ import com.example.timemanagementapp.ui.add.AddGoalSelectionScreen
 import com.example.timemanagementapp.ui.calendar.CalendarDestination
 import com.example.timemanagementapp.ui.calendar.CalendarScreen
 import com.example.timemanagementapp.ui.calendar.CalendarViewModel
-import com.example.timemanagementapp.ui.currenttask.CurrentTaskDestination
-import com.example.timemanagementapp.ui.currenttask.CurrentTaskScreen
 import com.example.timemanagementapp.ui.createGoal.CreateGoalDestination
 import com.example.timemanagementapp.ui.createGoal.CreateGoalScreen
 import com.example.timemanagementapp.ui.createGoal.CreateGoalViewModel
+import com.example.timemanagementapp.ui.currenttask.CurrentTaskDestination
+import com.example.timemanagementapp.ui.currenttask.CurrentTaskScreen
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskViewModel
-import com.example.timemanagementapp.ui.edit.EditScheduledGoalDestination
-import com.example.timemanagementapp.ui.edit.EditScheduledGoalsScreen
-import com.example.timemanagementapp.ui.edit.EditScheduledGoalScreen
+import com.example.timemanagementapp.ui.editReusable.EditReusableGoalDestination
+import com.example.timemanagementapp.ui.editReusable.EditReusableGoalScreen
+import com.example.timemanagementapp.ui.editReusable.EditReusableGoalViewModel
+import com.example.timemanagementapp.ui.editScheduled.EditScheduledGoalDestination
+import com.example.timemanagementapp.ui.editScheduled.EditScheduledGoalScreen
+import com.example.timemanagementapp.ui.editScheduled.EditScheduledGoalsDestination
+import com.example.timemanagementapp.ui.editScheduled.EditScheduledGoalsScreen
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
+import com.example.timemanagementapp.ui.goal.ManageReusableGoalsDestination
+import com.example.timemanagementapp.ui.goal.ManageReusableGoalsScreen
+import com.example.timemanagementapp.ui.home.HomeDestination
+import com.example.timemanagementapp.ui.home.HomeScreen
 import com.example.timemanagementapp.ui.home.HomeViewModel
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
 import com.example.timemanagementapp.ui.viewgoals.ViewGoalsDestination
@@ -67,6 +72,8 @@ fun TimelyNavHost(
                         navController.navigate("${ViewGoalsDestination.route}/$eventId")
                     },
                     navigateToChangeCurrentTask = {navController.navigate(CurrentTaskDestination.route)},
+                    navigateToManageReusableGoals = {navController.navigate(
+                        ManageReusableGoalsDestination.route)},
                     homeViewModel = homeViewModel,
                     currentTaskViewModel = currentTaskViewModel
                 )
@@ -98,7 +105,7 @@ fun TimelyNavHost(
                     onAddGoalButtonClicked = { eventId ->
                         navController.navigate("${AddGoalSelectionDestination.route}/$eventId")
                     },
-                    onEditGoal = { navController.navigate("${EditScheduledGoalDestination.route}/${it.scheduledGoal.scheduledGoalId}")},
+                    onEditGoal = { navController.navigate("${EditScheduledGoalDestination.route}/${it.scheduledGoalId}")},
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToAnalytics = {/*TODO*/},
@@ -120,11 +127,14 @@ fun TimelyNavHost(
                     navigateToAnalytics = {/*TODO*/},
                 )
             }
+
+            //Can be reached from both the home screen and add goal selection screen, therefore eventId can be null if from home screen.
             composable(
                 route = CreateGoalDestination.routeWithArgs,
                 arguments = listOf(
                     navArgument(CreateGoalDestination.eventIdArg){
                         type = NavType.IntType
+                        defaultValue = -1
                     }
                 )
             ){
@@ -204,7 +214,7 @@ fun TimelyNavHost(
                         navController.navigate("${AddExistingGoalDestination.route}/$eventId")
                     },
                     createGoalButtonClicked = {
-                        navController.navigate("${CreateGoalDestination.route}/$eventId")
+                        navController.navigate("${CreateGoalDestination.route}?${CreateGoalDestination.eventIdArg}=$eventId")
                     },
                     returnToEditGoalsClicked = {
                         navController.popBackStack()
@@ -234,8 +244,43 @@ fun TimelyNavHost(
                         navController.navigate("${ViewGoalsDestination.route}/$eventId")
                     },
                     navigateToCreateGoal = { eventId ->
-                        navController.navigate("${CreateGoalDestination.route}/$eventId")
+                        navController.navigate("${CreateGoalDestination.route}?${CreateGoalDestination.eventIdArg}=$eventId")
                     }
+                )
+            }
+            composable(
+                route = ManageReusableGoalsDestination.route
+            ){
+                val viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory)
+
+                ManageReusableGoalsScreen(
+                    onAddGoalButtonClicked = { navController.navigate(CreateGoalDestination.route) },
+                    onEditGoal = {goal ->
+                        navController.navigate("${EditReusableGoalDestination.route}/${goal.goalID}")
+                    },
+                    navigateToHome = {navController.navigate(HomeDestination.route)},
+                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
+                    navigateToAnalytics = {/*TODO*/},
+                    viewModel = viewModel
+                )
+            }
+
+            composable(
+                route = EditReusableGoalDestination.routeWithArgs,
+                arguments = listOf(
+                    navArgument(EditReusableGoalDestination.goalIdArg){
+                        type = NavType.IntType
+                    }
+                )
+            ) {
+                val viewModel: EditReusableGoalViewModel = viewModel(factory = AppViewModelProvider.Factory)
+
+                EditReusableGoalScreen(
+                    navigateBack = {navController.popBackStack()},
+                    navigateToHome = { navController.navigate(HomeDestination.route) },
+                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
+                    navigateToAnalytics = {/*TODO*/},
+                    viewModel = viewModel
                 )
             }
         }

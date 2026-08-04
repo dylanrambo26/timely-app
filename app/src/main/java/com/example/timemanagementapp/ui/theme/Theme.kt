@@ -1,7 +1,5 @@
 package com.example.timemanagementapp.ui.theme
 
-import android.app.Activity
-import androidx.compose.ui.graphics.Color
 import android.os.Build
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -19,10 +17,10 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.room.util.TableInfo
 
 private val DarkColorScheme = darkColorScheme(
     primary = Purple80,

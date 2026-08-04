@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
@@ -31,29 +32,27 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
-import com.example.timemanagementapp.ui.AppViewModelProvider
-import com.example.timemanagementapp.ui.navigation.NavigationDest
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.goal.GoalStatus
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
-import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
+import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.components.RemainingTaskTime
 import com.example.timemanagementapp.ui.components.TimeRemainingInDay
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskUiState
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskViewModel
-import com.example.timemanagementapp.ui.goal.GoalListViewModel
+import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 
 
@@ -72,6 +71,7 @@ fun HomeScreen(
     navigateToAnalytics: () -> Unit,
     navigateToSettings: () -> Unit,
     navigateToChangeCurrentTask: () -> Unit,
+    navigateToManageReusableGoals: () -> Unit,
     modifier: Modifier = Modifier,
     currentTaskViewModel: CurrentTaskViewModel = viewModel(factory = AppViewModelProvider.Factory),
     homeViewModel: HomeViewModel = viewModel(factory = AppViewModelProvider.Factory),
@@ -125,6 +125,7 @@ fun HomeScreen(
                     navigateToViewGoals(eventId)
                 }
             },
+            onManageReusableGoalsClicked = navigateToManageReusableGoals,
             onCurrentTaskClicked = navigateToChangeCurrentTask,
         )
 }}
@@ -140,6 +141,7 @@ fun HomeBody(
     onResumeButtonClicked: () -> Unit = {},
     onViewButtonClicked: () -> Unit = {},
     onCurrentTaskClicked: () -> Unit = {},
+    onManageReusableGoalsClicked: () -> Unit = {},
     modifier: Modifier = Modifier
 ){
     Column (
@@ -149,7 +151,7 @@ fun HomeBody(
         horizontalAlignment = Alignment.CenterHorizontally
     ){
         Text(
-            text= stringResource(R.string.current_task) + " ${currentTaskUiState.currentTask?.goal?.goalTitle ?: "No Active Task"}",
+            text= stringResource(R.string.current_task) + " ${currentTaskUiState.currentTask?.scheduledGoalTitle ?: "No Active Task"}",
             textAlign = TextAlign.Start,
             modifier = Modifier
                 .fillMaxWidth(),
@@ -162,12 +164,12 @@ fun HomeBody(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             item{
-                currentTaskUiState.currentTask?.let {combinedGoal ->
-                    RemainingTaskTime(combinedGoal)
+                currentTaskUiState.currentTask?.let {scheduledGoal ->
+                    RemainingTaskTime(scheduledGoal)
                 }
             }
             item{
-                val currentTaskStatusText = when(currentTaskUiState.currentTask?.scheduledGoal?.status){
+                val currentTaskStatusText = when(currentTaskUiState.currentTask?.status){
                     GoalStatus.COMPLETED -> stringResource(R.string.current_task_status_completed)
                     GoalStatus.NOT_STARTED -> stringResource(R.string.current_task_status_not_started)
                     GoalStatus.RUNNING -> stringResource(R.string.current_task_status_running)
@@ -190,24 +192,24 @@ fun HomeBody(
             thickness = 4.dp
         )
 
-        val pauseButtonEnabled = (currentTaskUiState.currentTask?.scheduledGoal?.status == GoalStatus.RUNNING) ||
-                (currentTaskUiState.currentTask?.scheduledGoal?.status == GoalStatus.PAUSED)
+        val pauseButtonEnabled = (currentTaskUiState.currentTask?.status == GoalStatus.RUNNING) ||
+                (currentTaskUiState.currentTask?.status == GoalStatus.PAUSED)
 
         Button(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp),
             onClick = {
-                if(currentTaskUiState.currentTask?.scheduledGoal?.status == GoalStatus.RUNNING){
+                if(currentTaskUiState.currentTask?.status == GoalStatus.RUNNING){
                     onPauseButtonClicked()
                 }
-                else if(currentTaskUiState.currentTask?.scheduledGoal?.status == GoalStatus.PAUSED){
+                else if(currentTaskUiState.currentTask?.status == GoalStatus.PAUSED){
                     onResumeButtonClicked()
                 }
             },
             enabled = pauseButtonEnabled,
         ){
-            val pauseButtonText = when(currentTaskUiState.currentTask?.scheduledGoal?.status){
+            val pauseButtonText = when(currentTaskUiState.currentTask?.status){
             GoalStatus.PAUSED -> "Task is Paused: Click to Resume"
             GoalStatus.RUNNING -> "Pause Current Task"
             GoalStatus.NOT_STARTED -> "Task Not Started"
@@ -233,13 +235,13 @@ fun HomeBody(
             ) {
                 IconButton(
                     onClick = onViewButtonClicked,
-                    modifier = Modifier.size(100.dp)
+                    modifier = Modifier.size(75.dp)
                 ) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.List,
                         contentDescription = stringResource(R.string.view_todays_goals),
                         modifier = Modifier
-                            .size(100.dp)
+                            .size(75.dp)
                     )
                 }
                 Spacer(modifier = Modifier.width(16.dp))
@@ -249,6 +251,31 @@ fun HomeBody(
                 )
             }
 
+            //Manage Reusable Goals Button
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .weight(1f)
+            ) {
+                IconButton(
+                    onClick = onManageReusableGoalsClicked,
+                    modifier = Modifier.size(75.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ExitToApp,
+                        contentDescription = stringResource(R.string.manage_reusable_goals),
+                        modifier = Modifier
+                            .size(75.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(
+                    text = stringResource(R.string.manage_reusable_goals),
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            //Current Task Button
             Surface(
                 modifier = Modifier
                     .weight(1f)
@@ -277,25 +304,26 @@ fun HomeBody(
 @Composable
 fun HomeBodyPreview(){
     TimeManagementAppTheme{
+        val goal = Goal(
+            goalID = 7,
+            goalTitle = "Test Goal",
+            hours = 1,
+            minutes = 30,
+        )
         HomeBody(
             currentTaskUiState = CurrentTaskUiState(
-                ScheduledGoalWithGoal(
-                    scheduledGoal = ScheduledGoal(
+                ScheduledGoal(
                         scheduledGoalId = 12,
                         eventId = 3,
                         goalId = 7,
                         status = GoalStatus.NOT_STARTED,
                         startTimeMillis = 123456789L,
-                        completedMillis = 600000L
-                    ),
-                    goal = Goal(
-                        goalID = 7,
-                        goalTitle = "Test Goal",
-                        hours = 1,
-                        minutes = 30,
+                        completedMillis = 600000L,
+                        scheduledGoalTitle = goal.goalTitle,
+                        scheduledHours = goal.hours,
+                        scheduledMinutes = goal.minutes,
                     )
-                )
-            ),
+                ),
             modifier = Modifier
                 .fillMaxSize()
                 .padding(dimensionResource(R.dimen.padding_medium)),

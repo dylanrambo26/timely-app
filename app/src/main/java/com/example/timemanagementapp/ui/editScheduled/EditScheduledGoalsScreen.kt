@@ -1,12 +1,12 @@
-package com.example.timemanagementapp.ui.edit
+package com.example.timemanagementapp.ui.editScheduled
 
+//import com.example.timemanagementapp.data.TestData
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -32,9 +32,7 @@ import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
-import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
 import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
-//import com.example.timemanagementapp.data.TestData
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.components.DisplayTime
 import com.example.timemanagementapp.ui.components.ScheduledGoalList
@@ -42,7 +40,6 @@ import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListUiState
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
-import com.example.timemanagementapp.ui.viewgoals.ViewGoalsDestination
 import com.example.timemanagementapp.util.nonActiveGoals
 
 object EditScheduledGoalsDestination : NavigationDest{
@@ -55,7 +52,7 @@ object EditScheduledGoalsDestination : NavigationDest{
 @Composable
 fun EditScheduledGoalsScreen(
     onAddGoalButtonClicked: (Int) -> Unit = {},
-    onEditGoal: (ScheduledGoalWithGoal) -> Unit,
+    onEditGoal: (ScheduledGoal) -> Unit,
     //viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     viewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToHome: () -> Unit,
@@ -94,7 +91,7 @@ fun EditScheduledGoalsBody(
     //goalListUiState: GoalListUiState,
     scheduledGoalsListUiState: ScheduledGoalsListUiState,
     onDeleteGoal: (ScheduledGoal) -> Unit,
-    onEditGoal: (ScheduledGoalWithGoal) -> Unit,
+    onEditGoal: (ScheduledGoal) -> Unit,
     onAddGoal: () -> Unit,
     modifier: Modifier = Modifier
 ){
@@ -149,7 +146,6 @@ fun EditScheduledGoalsBody(
                     .align(Alignment.CenterVertically)
             )
         }
-        Spacer(modifier = Modifier.height(100.dp))
     }
 
 }

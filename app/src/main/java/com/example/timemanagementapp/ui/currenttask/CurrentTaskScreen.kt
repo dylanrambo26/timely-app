@@ -28,7 +28,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
-import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
+import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.components.ScheduledGoalList
@@ -36,7 +36,6 @@ import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListUiState
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
-import com.example.timemanagementapp.ui.viewgoals.ViewGoalsDestination
 import com.example.timemanagementapp.util.incompleteGoals
 
 object CurrentTaskDestination : NavigationDest{
@@ -72,8 +71,8 @@ fun CurrentTaskScreen(
             //goalListUiState = goalListUiState,
             scheduledGoalsListUiState = scheduledGoalsListUiState,
             //currentTaskUiState = currentTaskUiState,
-            onSaveCurrentTaskPressed = {scheduledGoalWithGoal ->
-                currentTaskViewModel.startTaskTimer(scheduledGoalWithGoal)
+            onSaveCurrentTaskPressed = {scheduledGoal ->
+                currentTaskViewModel.startTaskTimer(scheduledGoal)
             },
             navigateToHome = navigateToHome,
             navigateBack = navigateBack,
@@ -87,7 +86,7 @@ fun CurrentTaskBody(
     //goalListUiState: GoalListUiState,
     scheduledGoalsListUiState: ScheduledGoalsListUiState,
     //currentTaskUiState: CurrentTaskUiState,
-    onSaveCurrentTaskPressed: (ScheduledGoalWithGoal) -> Unit,
+    onSaveCurrentTaskPressed: (ScheduledGoal) -> Unit,
     navigateToHome: () -> Unit,
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -101,7 +100,7 @@ fun CurrentTaskBody(
 
         val selectedGoal = scheduledGoalsListUiState.scheduledGoalsList
             .firstOrNull{
-                it.scheduledGoal.scheduledGoalId == selectedGoalId
+                it.scheduledGoalId == selectedGoalId
             }
         val filteredGoals = scheduledGoalsListUiState.scheduledGoalsList.incompleteGoals()
 
@@ -109,8 +108,8 @@ fun CurrentTaskBody(
         ScheduledGoalList(
             goals = filteredGoals,
             selectedGoalId = selectedGoalId,
-            onGoalClick = {combinedGoal ->
-                selectedGoalId = combinedGoal.scheduledGoal.scheduledGoalId
+            onGoalClick = {scheduledGoal ->
+                selectedGoalId = scheduledGoal.scheduledGoalId
             },
             modifier = Modifier
                 .weight(1f)

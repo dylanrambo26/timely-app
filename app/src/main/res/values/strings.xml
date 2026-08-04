@@ -55,4 +55,7 @@
     <string name="invalid_negative_hours">Hours cannot be a negative number.</string>
     <string name="invalid_minutes_0_59">Minutes must be between 0 and 59.</string>
     <string name="invalid_hours_0_23">Hours must be between 0 and 23</string>
+    <string name="manage_reusable_goals">Manage Reusable Goals</string>
+    <string name="back">Back</string>
+    <string name="save_and_overwrite_future_scheduled_goals">Save &amp; Overwrite Future Scheduled Goals</string>
 </resources>

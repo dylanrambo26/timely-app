@@ -3,20 +3,15 @@ package com.example.timemanagementapp.ui.viewgoals
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.timemanagementapp.data.calendar.CalendarEvent
 import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
-import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalWithGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
-import com.example.timemanagementapp.ui.components.ScheduledGoalList
 import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -53,11 +48,11 @@ class ScheduledGoalsListViewModel(
         _calendarEventId
             .filterNotNull()
             .flatMapLatest { eventId ->
-                scheduledGoalsRepository.getScheduledGoalsWithGoal(eventId)
+                scheduledGoalsRepository.getScheduledGoals(eventId)
                 .map{ scheduledGoals ->
                     val totalMinutes = scheduledGoals.sumOf {
-                        val hours = it.scheduledGoal.customHours ?: it.goal.hours
-                        val minutes = it.scheduledGoal.customMinutes ?: it.goal.minutes
+                        val hours = it.scheduledHours
+                        val minutes = it.scheduledMinutes
 
                         hours * 60 + minutes
                     }
@@ -129,7 +124,7 @@ class ScheduledGoalsListViewModel(
 }
 
 data class ScheduledGoalsListUiState(
-    val scheduledGoalsList: List<ScheduledGoalWithGoal> = emptyList(),
+    val scheduledGoalsList: List<ScheduledGoal> = emptyList(),
     val calendarEventId: Int? = null,
     val date: LocalDate? = null,
     val totalMinutes: Int = 0,

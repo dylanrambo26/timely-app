@@ -1,20 +1,26 @@
-package com.example.timemanagementapp.ui.edit
+package com.example.timemanagementapp.ui.editReusable
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
@@ -32,24 +38,26 @@ import com.example.timemanagementapp.ui.components.GoalTemplateCard
 import com.example.timemanagementapp.ui.createGoal.GoalDetails
 import com.example.timemanagementapp.ui.createGoal.GoalUiState
 import com.example.timemanagementapp.ui.createGoal.toGoal
+import com.example.timemanagementapp.ui.editScheduled.EditScheduledGoalBody
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import kotlinx.coroutines.launch
 
-object EditScheduledGoalDestination : NavigationDest {
-    override val route = "edit_goal"
+object EditReusableGoalDestination : NavigationDest {
+    override val route = "edit_reusable_goal"
     override val titleRes = R.string.edit_one_goal
-    const val scheduledGoalIdArg = "scheduledGoalId"
-    val routeWithArgs = "$route/{$scheduledGoalIdArg}"
+    const val goalIdArg = "goalId"
+    val routeWithArgs = "$route/{$goalIdArg}"
 }
 
 @Composable
-fun EditScheduledGoalScreen(
+fun EditReusableGoalScreen(
     modifier: Modifier = Modifier,
-    viewModel: EditScheduledGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    navigateToEditScheduledGoals: (Int) -> Unit,
+    viewModel: EditReusableGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
+
+    navigateBack: () -> Unit,
     navigateToHome: () -> Unit,
-    navigateToCalendar: () -> Unit, //TODO
+    navigateToCalendar: () -> Unit,
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val coroutineScope = rememberCoroutineScope()
@@ -62,28 +70,37 @@ fun EditScheduledGoalScreen(
                 onAnalyticsClick = navigateToAnalytics
             )}
     ) { innerPadding ->
-        EditScheduledGoalBody(
+        EditReusableGoalBody(
             goalUiState = viewModel.goalUiState,
             onGoalValueChange = viewModel::updateUiState,
-            onSaveGoalClick = {
+            onSaveAndUpdateScheduledGoalsClicked = {
                 coroutineScope.launch {
-                    viewModel.updateScheduledGoal {eventId ->
-                        navigateToEditScheduledGoals(eventId)
-                    }
+                    viewModel.updateReusableGoal(
+                        onNavigate = navigateBack,
+                        updateFutureScheduledGoals = true
+                    )
                 }
             },
-            navigateBack = { viewModel.calendarEventId.value?.let(navigateToEditScheduledGoals) },
+            onSaveGoal = {
+                coroutineScope.launch {
+                    viewModel.updateReusableGoal(
+                        onNavigate = navigateBack,
+                        updateFutureScheduledGoals = false
+                    )
+                }
+            },
+            navigateBack = navigateBack,
             modifier = modifier.padding(innerPadding)
         )
     }
-
 }
 
 @Composable
-fun EditScheduledGoalBody(
+fun EditReusableGoalBody(
     goalUiState: GoalUiState,
     onGoalValueChange: (GoalDetails) -> Unit,
-    onSaveGoalClick: () -> Unit,
+    onSaveAndUpdateScheduledGoalsClicked: () -> Unit,
+    onSaveGoal: () -> Unit,
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ){
@@ -91,7 +108,8 @@ fun EditScheduledGoalBody(
         modifier = Modifier
             .fillMaxSize()
             .padding(dimensionResource(R.dimen.padding_medium)),
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
         //TimeRemaining(remaining = goalUiState.remainingMinutesInDay)
         //DisplayTime(duration = goalUiState.remainingMinutesInDay, title = stringResource(R.string.available_time_in_full_day))
@@ -114,45 +132,55 @@ fun EditScheduledGoalBody(
             onValueChange = onGoalValueChange,
             modifier = Modifier.fillMaxWidth()
         )
-
-        Row(
-            modifier = Modifier.padding(16.dp)
+        Column(
+            modifier = Modifier.width(280.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            //Cancel Edit Button
-            OutlinedButton(
-                onClick = navigateBack,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                Text(
-                    text = stringResource(R.string.cancel_edit_one_goal),
-                    fontSize = 16.sp,
-                    color = Color.Red
-                )
-            }
-
             //Save Goal Button
-            OutlinedButton(
-                onClick = onSaveGoalClick,
+            Button(
+                onClick = onSaveGoal,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(1f),
+                    .height(52.dp),
             ) {
                 Text(
                     text = stringResource(R.string.save_edit_one_goal),
                     fontSize = 16.sp,
-                    color = Color.Green
                 )
             }
-        }
-        if(goalUiState.errorMessage != null){
-            Text(
-                text = stringResource(goalUiState.errorMessage),
-                color = MaterialTheme.colorScheme.error,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(8.dp)
-            )
+            if(goalUiState.errorMessage != null){
+                Text(
+                    text = stringResource(goalUiState.errorMessage),
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+
+            //Save Goal and Ripple Edit future scheduled goals
+            OutlinedButton(
+                onClick = onSaveAndUpdateScheduledGoalsClicked,
+                modifier = Modifier
+                    .fillMaxWidth(),
+            ) {
+                Text(
+                    text = stringResource(R.string.save_and_overwrite_future_scheduled_goals),
+                    fontSize = 16.sp,
+                )
+            }
+
+            //Cancel Edit Button
+            TextButton(
+                onClick = navigateBack,
+                modifier = Modifier
+                    .fillMaxWidth()
+            ) {
+                Text(
+                    text = stringResource(R.string.cancel_edit_one_goal),
+                    fontSize = 16.sp,
+                )
+            }
         }
     }
 }
@@ -214,16 +242,17 @@ fun EditGoalInputForm(
 
 @Preview(showBackground = true)
 @Composable
-fun EditScheduledGoalScreenPreview(){
+fun EditReusableGoalBodyPreview(){
     TimeManagementAppTheme {
-        EditScheduledGoalBody(
-           goalUiState = GoalUiState(
-               GoalDetails(
-                   title = "Title", hours = "1", minutes = "30"
-               )
-           ),
+        EditReusableGoalBody(
+            goalUiState = GoalUiState(
+                GoalDetails(
+                    title = "Title", hours = "1", minutes = "30"
+                )
+            ),
             onGoalValueChange = {},
-            onSaveGoalClick = {},
+            onSaveAndUpdateScheduledGoalsClicked = {},
+            onSaveGoal = {},
             navigateBack = {}
         )
     }
