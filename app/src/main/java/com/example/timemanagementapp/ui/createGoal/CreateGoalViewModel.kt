@@ -131,7 +131,8 @@ class CreateGoalViewModel(
 data class GoalUiState(
     val goalDetails: GoalDetails = GoalDetails(),
     val isEntryValid: Boolean = false,
-    val errorMessage: Int? = null
+    val errorMessage: Int? = null,
+    val isDurationEditable: Boolean = true
 )
 
 data class GoalDetails(

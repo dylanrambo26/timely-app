@@ -7,6 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.timemanagementapp.R
+import com.example.timemanagementapp.data.goal.GoalStatus
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 import com.example.timemanagementapp.ui.createGoal.GoalDetails
@@ -34,17 +35,6 @@ class EditScheduledGoalViewModel(
     private val _calendarEventId = MutableStateFlow<Int?>(null)
     val calendarEventId: StateFlow<Int?> = _calendarEventId.asStateFlow()
 
-    /*private fun validateInput(uiState: GoalDetails): Int? {
-        val h = uiState.hours.toIntOrNull() ?: return R.string.invalid_hours
-        val m = uiState.minutes.toIntOrNull() ?: return R.string.invalid_minutes
-
-        if (uiState.title.isBlank()) return R.string.invalid_title
-        if (h !in 0..23) return R.string.invalid_hours_0_23
-        if (m !in 0..59) return R.string.invalid_minutes_0_59
-
-        return null
-    }*/
-
     init {
         viewModelScope.launch {
             scheduledGoalsRepository
@@ -53,6 +43,9 @@ class EditScheduledGoalViewModel(
                 .collect { scheduledGoal ->
                     currentScheduledGoal = scheduledGoal
                     _calendarEventId.value = scheduledGoal.eventId
+
+                    val isCurrentOrPaused =
+                        (scheduledGoal.status == GoalStatus.RUNNING) || (scheduledGoal.status == GoalStatus.PAUSED)
 
                     val details = GoalDetails(
                         id = scheduledGoal.scheduledGoalId,
@@ -63,13 +56,14 @@ class EditScheduledGoalViewModel(
 
                     goalUiState = GoalUiState(
                         goalDetails = details,
-                        isEntryValid = goalUiState.goalDetails.validate() == null
+                        isEntryValid = details.validate() == null,
+                        isDurationEditable = !isCurrentOrPaused
                     )
                 }
         }
     }
     fun updateUiState(goalDetails: GoalDetails) {
-        val error = goalUiState.goalDetails.validate()
+        val error = goalDetails.validate()
         goalUiState =
             goalUiState.copy(goalDetails = goalDetails, isEntryValid = error == null, errorMessage = error)
     }
@@ -85,31 +79,45 @@ class EditScheduledGoalViewModel(
         }
 
         val existingScheduledGoal = currentScheduledGoal ?: return
+        val isDurationLocked = existingScheduledGoal.status == GoalStatus.RUNNING || existingScheduledGoal.status == GoalStatus.PAUSED
+        if(!isDurationLocked){
+            val goal = goalUiState.goalDetails.toGoal()
 
-        val goal = goalUiState.goalDetails.toGoal()
+            val goalTotalMinutes = goal.hours * 60 + goal.minutes
 
-        val goalTotalMinutes = goal.hours * 60 + goal.minutes
-
-        val eventId = existingScheduledGoal.eventId
-        val isValidDuration = scheduledGoalsRepository.isValidDurationForDate(
-            goalTotalMinutes = goalTotalMinutes,
-            eventId = eventId,
-            excludedScheduledGoalId = existingScheduledGoal.scheduledGoalId
-        )
-
-        if(!isValidDuration){
-            goalUiState = goalUiState.copy(
-                errorMessage = R.string.selected_goal_exceeds_remaining_time,
-                isEntryValid = false
+            val eventId = existingScheduledGoal.eventId
+            val isValidDuration = scheduledGoalsRepository.isValidDurationForDate(
+                goalTotalMinutes = goalTotalMinutes,
+                eventId = eventId,
+                excludedScheduledGoalId = existingScheduledGoal.scheduledGoalId
             )
-            return
+
+            if(!isValidDuration){
+                goalUiState = goalUiState.copy(
+                    errorMessage = R.string.selected_goal_exceeds_remaining_time,
+                    isEntryValid = false
+                )
+                return
+            }
+        }
+
+        val updatedHours = if(isDurationLocked){
+            existingScheduledGoal.scheduledHours
+        } else {
+            goalUiState.goalDetails.hours.toInt()
+        }
+
+        val updatedMinutes = if(isDurationLocked){
+            existingScheduledGoal.scheduledMinutes
+        } else {
+            goalUiState.goalDetails.minutes.toInt()
         }
 
         scheduledGoalsRepository.updateScheduledGoal(
             existingScheduledGoal.copy(
                 scheduledGoalTitle = goalUiState.goalDetails.title,
-                scheduledHours = goalUiState.goalDetails.hours.toInt(),
-                scheduledMinutes = goalUiState.goalDetails.minutes.toInt(),
+                scheduledHours = updatedHours,
+                scheduledMinutes = updatedMinutes,
                 isCustomized = true
             )
         )

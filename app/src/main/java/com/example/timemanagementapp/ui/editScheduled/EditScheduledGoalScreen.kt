@@ -112,7 +112,8 @@ fun EditScheduledGoalBody(
         EditGoalInputForm(
             goalDetails = goalUiState.goalDetails,
             onValueChange = onGoalValueChange,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            isDurationEditable = goalUiState.isDurationEditable
         )
 
         Row(
@@ -159,10 +160,20 @@ fun EditScheduledGoalBody(
 
 @Composable
 fun EditGoalInputForm(
+    isDurationEditable: Boolean,
     goalDetails: GoalDetails,
     modifier: Modifier = Modifier,
     onValueChange: (GoalDetails) -> Unit = {}
 ){
+    if(!isDurationEditable){
+        Text(
+            text = stringResource(R.string.duration_locked),
+            color = MaterialTheme.colorScheme.onBackground,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(8.dp)
+        )
+    }
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -179,7 +190,8 @@ fun EditGoalInputForm(
             colors = OutlinedTextFieldDefaults.colors(),
             label = {
                 Text("Hours")
-            }
+            },
+            enabled = isDurationEditable
         )
         // Minutes Text Field
         OutlinedTextField(
@@ -193,7 +205,8 @@ fun EditGoalInputForm(
             colors = OutlinedTextFieldDefaults.colors(),
             label = {
                 Text("Minutes")
-            }
+            },
+            enabled = isDurationEditable
         )
     }
 
@@ -220,7 +233,8 @@ fun EditScheduledGoalScreenPreview(){
            goalUiState = GoalUiState(
                GoalDetails(
                    title = "Title", hours = "1", minutes = "30"
-               )
+               ),
+               isDurationEditable = false
            ),
             onGoalValueChange = {},
             onSaveGoalClick = {},
