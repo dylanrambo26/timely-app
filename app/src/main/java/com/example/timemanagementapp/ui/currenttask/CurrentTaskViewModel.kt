@@ -77,17 +77,13 @@ class CurrentTaskViewModel(
 
         alarmManagerGoalsRepository.cancelTimer(currentTask.scheduledGoalId)
 
-        if(currentTask.status == GoalStatus.COMPLETED) return
+        val isRunning = currentTask.status == GoalStatus.RUNNING && currentTask.startTimeMillis > 0L
 
-        if (currentTask.startTimeMillis <= 0L) {
-            Log.e(
-                "Timer",
-                "Invalid startTimeMillis: ${currentTask.startTimeMillis}"
-            )
-            return
+        val sessionMillis = if(isRunning){
+            System.currentTimeMillis() - (currentTask.startTimeMillis)
+        } else {
+            0L
         }
-
-        val sessionMillis = System.currentTimeMillis() - (currentTask.startTimeMillis)
 
         scheduledGoalsRepository.updateScheduledGoal(
             currentTask.copy(
