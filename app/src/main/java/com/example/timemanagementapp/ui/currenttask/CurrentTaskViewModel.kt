@@ -53,6 +53,7 @@ class CurrentTaskViewModel(
             //Only stop the timer if the previous task was still running and is a different task than the incoming task
             //This is used when the user changes the task while the task is running
             if(currentTask != null && currentTask.scheduledGoalId != scheduledGoal.scheduledGoalId && currentTask.status == GoalStatus.RUNNING){
+                Log.d("CurrentTaskViewModel", "Stop Current Task, Switch to new Current Task")
                 stopTaskTimer(goalStatus = GoalStatus.PAUSED)
             }
 
