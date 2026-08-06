@@ -40,6 +40,7 @@ import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
 import com.example.timemanagementapp.ui.AppViewModelProvider
+import com.example.timemanagementapp.ui.components.DisplayTime
 import com.example.timemanagementapp.ui.components.ScheduledGoalList
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
@@ -154,6 +155,11 @@ fun ViewGoalsBody(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
 
             )
+
+        DisplayTime(
+            duration = scheduledGoalsListUiState.totalMinutes,
+            title = stringResource(R.string.current_filled_time)
+        )
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
@@ -322,7 +328,8 @@ fun ViewGoalsBodyPreview(){
             isPastDate = {false},
             scheduledGoalsListUiState = ScheduledGoalsListUiState(
                 scheduledGoalsList = testScheduledGoalsSizeThree,
-                date = selectedDate
+                date = selectedDate,
+                totalMinutes = 120
             ),
             onAddGoal = {},
             onEditGoalsClicked = {},
