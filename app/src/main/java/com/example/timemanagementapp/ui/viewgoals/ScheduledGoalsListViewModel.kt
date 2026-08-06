@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
+import com.example.timemanagementapp.data.goal.GoalStatus
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY
@@ -119,6 +120,31 @@ class ScheduledGoalsListViewModel(
             val previousEventId = calendarEventsRepository.getOrCreateEventIdForDate(nextDate)
 
             onNavigate(previousEventId)
+        }
+    }
+
+    fun setComplete(scheduledGoal: ScheduledGoal, isCompleted: Boolean){
+        viewModelScope.launch {
+            val scheduledDurationMillis = (scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60000L
+
+            val completedDuration = scheduledGoal.completedMillis >= scheduledDurationMillis
+
+            //Naturally finished task that cannot be reactivated with checkbox
+            if (!isCompleted && completedDuration){
+                return@launch
+            }
+
+            val newStatus = if (isCompleted) {
+                GoalStatus.COMPLETED
+            } else {
+                if (scheduledGoal.completedMillis > 0L) {
+                    GoalStatus.PAUSED
+                } else {
+                    GoalStatus.NOT_STARTED
+                }
+            }
+
+            scheduledGoalsRepository.updateScheduledGoal(scheduledGoal.copy(status = newStatus))
         }
     }
 }

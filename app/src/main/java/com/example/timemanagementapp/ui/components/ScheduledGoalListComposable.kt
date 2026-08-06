@@ -14,6 +14,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxColors
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +36,7 @@ import com.example.timemanagementapp.data.goal.GoalStatus
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
+import com.example.timemanagementapp.ui.theme.checkbox
 import com.example.timemanagementapp.ui.theme.completedGoal
 
 @Composable
@@ -44,6 +48,8 @@ fun ScheduledGoalList(
     onEditGoal: ((ScheduledGoal) -> Unit)? = null,
     onGoalClick: ((ScheduledGoal) -> Unit)? = null,
     addColors: Boolean = false,
+    addCheckboxes: Boolean = false,
+    onCompleteChange: ((ScheduledGoal, Boolean) -> Unit)? = null,
     //goalStatusFilters: Set<GoalStatus> = emptySet(),
 ) {
     val listState = rememberLazyListState()
@@ -82,7 +88,9 @@ fun ScheduledGoalList(
                     onDeleteGoal = onDeleteGoal,
                     onEditGoal = onEditGoal,
                     onGoalClick = onGoalClick,
-                    addColors = addColors
+                    addColors = addColors,
+                    addCheckboxes = addCheckboxes && scheduledGoal.status != GoalStatus.RUNNING,
+                    onCompleteChange = onCompleteChange
                 )
             }
         }
@@ -94,9 +102,11 @@ fun GoalCard(
     scheduledGoal: ScheduledGoal,
     isSelected: Boolean = false,
     addColors: Boolean = false,
+    addCheckboxes: Boolean = false,
     onDeleteGoal: ((ScheduledGoal) -> Unit)? = null,
     onEditGoal: ((ScheduledGoal) -> Unit)? = null,
     onGoalClick: ((ScheduledGoal) -> Unit)? = null,
+    onCompleteChange: ((ScheduledGoal, Boolean) -> Unit)? = null
 ){
     Surface(
         modifier = Modifier
@@ -156,6 +166,21 @@ fun GoalCard(
                     }
                 }
             }
+
+            if (addCheckboxes){
+                val scheduledDurationMillis = (scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60000L
+                val completedDuration = scheduledGoal.completedMillis >= scheduledDurationMillis
+                Checkbox(
+                    checked = scheduledGoal.status == GoalStatus.COMPLETED,
+                    enabled = !completedDuration,
+                    onCheckedChange = {isChecked ->
+                        onCompleteChange?.invoke(scheduledGoal, isChecked)
+                    },
+                    colors = CheckboxDefaults.colors(
+                        checkedColor = MaterialTheme.colorScheme.checkbox
+                    )
+                )
+            }
         }
     }
 }
@@ -174,9 +199,18 @@ fun rememberPreviousLazyColumn(value: Int): Int? {
 @Composable
 fun ScheduledGoalListPreview(){
     TimeManagementAppTheme {
+        val previewGoals = testScheduledGoalsSizeThree.toMutableList().apply {
+            this[0] = this[0].copy(
+                scheduledHours = 0,
+                scheduledMinutes = 1,
+                completedMillis = 60_000L,
+                status = GoalStatus.COMPLETED
+            )
+        }
         ScheduledGoalList(
-            goals = testScheduledGoalsSizeThree,
+            goals = previewGoals,
             addColors = true,
+            addCheckboxes = true,
             /*onDeleteGoal = {},
             onEditGoal = {}*/
             )

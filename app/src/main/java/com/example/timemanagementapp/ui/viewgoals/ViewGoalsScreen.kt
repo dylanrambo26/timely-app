@@ -37,6 +37,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
+import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.components.ScheduledGoalList
@@ -60,9 +61,6 @@ object ViewGoalsDestination : NavigationDest{
 fun ViewGoalsScreen(
     onAddGoalButtonClicked: (Int) -> Unit = {},
     onEditGoalsButtonClicked: (Int) -> Unit = {},
-    //nextDayClicked: () -> Unit,
-    //previousDayClicked: () -> Unit,
-    //viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     scheduledGoalsListViewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToViewGoals: (Int) -> Unit = {},
     navigateToHome: () -> Unit,
@@ -109,14 +107,14 @@ fun ViewGoalsScreen(
                     navigateToViewGoals(eventId)
                 }
             },
-            formattedDate = formattedDate
+            formattedDate = formattedDate,
+            onMarkAsComplete = scheduledGoalsListViewModel::setComplete
         )
     }
 }
 
 @Composable
 fun ViewGoalsBody(
-    //goalListUiState: GoalListUiState,
     scheduledGoalsListUiState: ScheduledGoalsListUiState,
     isPastDate: () -> Boolean,
     onAddGoal: () -> Unit,
@@ -124,6 +122,7 @@ fun ViewGoalsBody(
     nextDayClicked: () -> Unit,
     previousDayClicked: () -> Unit,
     onEditGoalsClicked: () -> Unit,
+    onMarkAsComplete: (ScheduledGoal, Boolean) -> Unit,
     modifier: Modifier = Modifier,
     formattedDate: String = ""
 ){
@@ -141,6 +140,8 @@ fun ViewGoalsBody(
         ScheduledGoalList(
             goals = orderedGoalList,
             addColors = true,
+            addCheckboxes = true,
+            onCompleteChange = onMarkAsComplete,
             modifier = Modifier
                 .weight(1f)
                 .padding(dimensionResource(R.dimen.padding_medium))
@@ -329,6 +330,7 @@ fun ViewGoalsBodyPreview(){
             navigateToCalendar = {},
             nextDayClicked = {},
             previousDayClicked = {},
+            onMarkAsComplete = {_,_ ->},
             modifier = Modifier
         )
     }
