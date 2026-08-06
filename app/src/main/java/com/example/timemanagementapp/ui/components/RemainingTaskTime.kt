@@ -10,6 +10,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.res.stringResource
 import com.example.timemanagementapp.R
+import com.example.timemanagementapp.data.goal.GoalStatus
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.util.calculateRemainingTime
 import kotlinx.coroutines.delay
@@ -22,9 +23,20 @@ fun RemainingTaskTime(scheduledGoal: ScheduledGoal){
 
     var isDone by remember { mutableStateOf(false) }
 
+    val isGoalComplete = scheduledGoal.status == GoalStatus.COMPLETED
+
     //Need keyed LaunchedEffect when a new goal is selected for current task to recompose with new coroutine
     //also recompose when startTime and completedMillis are changed during pause
-    LaunchedEffect(scheduledGoal.scheduledGoalId, scheduledGoal.startTimeMillis, scheduledGoal.completedMillis) {
+    LaunchedEffect(
+        scheduledGoal.scheduledGoalId,
+        scheduledGoal.startTimeMillis,
+        scheduledGoal.completedMillis,
+        scheduledGoal.status
+    ) {
+
+        if(isGoalComplete){
+            return@LaunchedEffect
+        }
         Log.d("Remaining Task Time: ", "Relaunch")
         while(true){
             val remainingTimeState = calculateRemainingTime(
@@ -44,6 +56,7 @@ fun RemainingTaskTime(scheduledGoal: ScheduledGoal){
     DisplayTimer(
         duration = remainingMinutes,
         isDone = isDone,
-        title = stringResource(R.string.current_task_time_remaining)
+        title = stringResource(R.string.current_task_time_remaining),
+        isComplete = isGoalComplete
     )
 }

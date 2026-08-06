@@ -58,4 +58,6 @@
     <string name="manage_reusable_goals">Manage Reusable Goals</string>
     <string name="back">Back</string>
     <string name="save_and_overwrite_future_scheduled_goals">Save &amp; Overwrite Future Scheduled Goals</string>
+    <string name="duration_locked">Duration editing locked while goal is current task.</string>
+    <string name="mark_as_complete">Mark as Complete</string>
 </resources>

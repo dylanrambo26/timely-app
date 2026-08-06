@@ -22,7 +22,7 @@ class TimerReceiver : BroadcastReceiver(){
         intent: Intent
     ) {
         val scheduledGoalId = intent.getIntExtra("scheduledGoalId", -1)
-        val goalTitle = intent.getStringExtra("goalTitle") ?: return
+        val goalTitle = intent.getStringExtra("scheduledGoalTitle") ?: return
 
         Log.d("TimerReceiver", "Timer finished for $goalTitle")
 
@@ -31,7 +31,7 @@ class TimerReceiver : BroadcastReceiver(){
             val scheduledGoal = db.scheduledGoalDao().getScheduledGoalOnce(scheduledGoalId)
             //val goal = db.goalDao().getGoalOnce(scheduledGoal.goalId)
             db.scheduledGoalDao().update(scheduledGoal.copy(
-                completedMillis = (scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledHours) * 60_000L,
+                completedMillis = (scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60_000L,
                 startTimeMillis = 0L,
                 status = GoalStatus.COMPLETED
             ))

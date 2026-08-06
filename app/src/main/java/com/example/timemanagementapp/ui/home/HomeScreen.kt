@@ -20,12 +20,15 @@ import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonColors
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MediumTopAppBar
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -35,6 +38,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -54,6 +58,7 @@ import com.example.timemanagementapp.ui.currenttask.CurrentTaskUiState
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskViewModel
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
+import com.example.timemanagementapp.ui.theme.completedGoal
 
 
 object HomeDestination : NavigationDest {
@@ -127,6 +132,7 @@ fun HomeScreen(
             },
             onManageReusableGoalsClicked = navigateToManageReusableGoals,
             onCurrentTaskClicked = navigateToChangeCurrentTask,
+            onMarkAsCompleteClicked = {currentTaskViewModel.markAsComplete()}
         )
 }}
 
@@ -142,6 +148,7 @@ fun HomeBody(
     onViewButtonClicked: () -> Unit = {},
     onCurrentTaskClicked: () -> Unit = {},
     onManageReusableGoalsClicked: () -> Unit = {},
+    onMarkAsCompleteClicked: () -> Unit = {},
     modifier: Modifier = Modifier
 ){
     Column (
@@ -195,6 +202,7 @@ fun HomeBody(
         val pauseButtonEnabled = (currentTaskUiState.currentTask?.status == GoalStatus.RUNNING) ||
                 (currentTaskUiState.currentTask?.status == GoalStatus.PAUSED)
 
+        //Pause Button
         Button(
             modifier = Modifier
                 .fillMaxWidth()
@@ -219,13 +227,39 @@ fun HomeBody(
             Text(text = pauseButtonText, textAlign = TextAlign.Center)
         }
 
+        val isComplete = currentTaskUiState.currentTask?.status == GoalStatus.COMPLETED
+        //Mark task as complete button
+        OutlinedButton(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp),
+            onClick = { onMarkAsCompleteClicked() },
+            colors = ButtonDefaults.outlinedButtonColors(
+                containerColor = if(isComplete){
+                    MaterialTheme.colorScheme.completedGoal
+                } else {
+                    Color.Transparent
+                }
+            )
+        ){
+
+            val markAsCompleteButtonText = if(isComplete){
+                "Marked As Complete"
+            } else {
+                stringResource(R.string.mark_as_complete)
+            }
+            Text(
+                text = markAsCompleteButtonText,
+                color = MaterialTheme.colorScheme.onSurface
+            )
+        }
+
         Row(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(vertical = 12.dp)
-                .weight(0.67f)
         ) {
             //Edit Log Button
             Column(
@@ -316,7 +350,7 @@ fun HomeBodyPreview(){
                         scheduledGoalId = 12,
                         eventId = 3,
                         goalId = 7,
-                        status = GoalStatus.NOT_STARTED,
+                        status = GoalStatus.COMPLETED,
                         startTimeMillis = 123456789L,
                         completedMillis = 600000L,
                         scheduledGoalTitle = goal.goalTitle,

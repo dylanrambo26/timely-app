@@ -10,8 +10,9 @@ import com.example.timemanagementapp.R
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 
 @Composable
-fun DisplayTimer(duration: Int, isDone: Boolean, title: String){
+fun DisplayTimer(duration: Int, isDone: Boolean, title: String, isComplete: Boolean){
     val durationText = when{
+        isComplete -> "$title Goal Completed"
         isDone -> "$title Timer Over"
         duration == 0 -> "$title Less than 1 minute"
         else -> "$title ${duration / 60}h ${duration % 60}m"
@@ -31,7 +32,8 @@ fun DisplayTimerPreview(){
         DisplayTimer(
             duration = 3,
             isDone = false,
-            title = "Task: "
+            title = "Task: ",
+            isComplete = true
         )
     }
 }

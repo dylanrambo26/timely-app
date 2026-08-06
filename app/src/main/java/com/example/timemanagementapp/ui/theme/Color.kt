@@ -13,5 +13,8 @@ val Pink40 = Color(0xFF7D5260)
 val CompletedGoalLight = Color(0xFFD8F5D0)
 val CompletedGoalDark = Color(0xFF2E7D32)
 
+val CheckboxLight = Color(0xFF1C501F)
+val CheckboxDark = Color(0xFFB1FDA2)
+
 val selectedDateLight = Color(0xFF739DFF)
 val selectedDateDark = Color(0xFF0057FF)

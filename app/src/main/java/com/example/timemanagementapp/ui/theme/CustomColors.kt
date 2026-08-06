@@ -9,3 +9,6 @@ val ColorScheme.completedGoal: Color
 
 val ColorScheme.selectedDate: Color
     get() = if(surface.luminance() > 0.5f) selectedDateLight else selectedDateDark
+
+val ColorScheme.checkbox: Color
+    get() = if(surface.luminance() > 0.5f) CheckboxLight else CheckboxDark

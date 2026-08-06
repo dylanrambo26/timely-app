@@ -27,7 +27,7 @@ fun calculateRemainingTime(
     //Clamp endTime to 0 if less than 0
     val remainingMillis = (totalMillis - elapsedMillis).coerceAtLeast(0L)
 
-    Log.d(
+    /*Log.d(
         "Remaining Time",
         """
             totalMillis = $totalMillis
@@ -36,7 +36,7 @@ fun calculateRemainingTime(
             remainingMillis = $remainingMillis
             remainingMinutes = ${remainingMillis / 60_000}
         """.trimIndent()
-    )
+    )*/
 
     return RemainingTimeState(
         remainingMinutes = (remainingMillis / 60_000).toInt(),

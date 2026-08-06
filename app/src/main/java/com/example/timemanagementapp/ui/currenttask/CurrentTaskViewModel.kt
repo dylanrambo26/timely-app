@@ -53,7 +53,8 @@ class CurrentTaskViewModel(
             //Only stop the timer if the previous task was still running and is a different task than the incoming task
             //This is used when the user changes the task while the task is running
             if(currentTask != null && currentTask.scheduledGoalId != scheduledGoal.scheduledGoalId && currentTask.status == GoalStatus.RUNNING){
-                stopTaskTimer()
+                Log.d("CurrentTaskViewModel", "Stop Current Task, Switch to new Current Task")
+                stopTaskTimer(goalStatus = GoalStatus.PAUSED)
             }
 
             val startTime = System.currentTimeMillis()
@@ -71,37 +72,37 @@ class CurrentTaskViewModel(
         }
     }
 
-    suspend fun stopTaskTimer(){
+    suspend fun stopTaskTimer(goalStatus: GoalStatus){
         val currentTask = currentTaskUiState.value.currentTask ?: return
 
-        if(currentTask.status == GoalStatus.COMPLETED) return
+        alarmManagerGoalsRepository.cancelTimer(currentTask.scheduledGoalId)
 
-        if (currentTask.startTimeMillis <= 0L) {
-            Log.e(
-                "Timer",
-                "Invalid startTimeMillis: ${currentTask.startTimeMillis}"
-            )
-            return
+        val isRunning = currentTask.status == GoalStatus.RUNNING && currentTask.startTimeMillis > 0L
+
+        val sessionMillis = if(isRunning){
+            System.currentTimeMillis() - (currentTask.startTimeMillis)
+        } else {
+            0L
         }
-
-        val sessionMillis = System.currentTimeMillis() - (currentTask.startTimeMillis)
 
         scheduledGoalsRepository.updateScheduledGoal(
             currentTask.copy(
                 completedMillis = currentTask.completedMillis + sessionMillis,
                 startTimeMillis = 0L,
-                status = GoalStatus.PAUSED
+                status = goalStatus
             )
         )
-
-        alarmManagerGoalsRepository.cancelTimer(currentTask.scheduledGoalId)
-
-
     }
 
     fun pauseTask(){
         viewModelScope.launch {
-            stopTaskTimer()
+            stopTaskTimer(goalStatus = GoalStatus.PAUSED)
+        }
+    }
+
+    fun markAsComplete(){
+        viewModelScope.launch {
+            stopTaskTimer(goalStatus = GoalStatus.COMPLETED)
         }
     }
 }

@@ -7,6 +7,7 @@ import android.content.Intent
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
+import androidx.core.app.NotificationManagerCompat
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.receiver.TimerReceiver
 
@@ -26,14 +27,22 @@ class AlarmManagerGoalsRepository(
 
         val durationMillis = ((scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60_000L) - scheduledGoal.completedMillis
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+        /*if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
             if (!alarmManager.canScheduleExactAlarms()){
                 val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply{
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 }
                 context.startActivity(intent)
             }
-        }
+        }*/
+
+        val canScheduleExactAlarms =
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+                    alarmManager.canScheduleExactAlarms()
+
+        val notificationsEnabled =
+            NotificationManagerCompat.from(context).areNotificationsEnabled()
+
 
         val intent = Intent(
             context,
@@ -53,13 +62,23 @@ class AlarmManagerGoalsRepository(
 
         val triggerTime = System.currentTimeMillis() + durationMillis
 
+        Log.d(
+            CURRENT_TASK_TIMER,
+            """
+        Exact alarm permission: $canScheduleExactAlarms
+        Notifications enabled: $notificationsEnabled
+        Duration millis: $durationMillis
+        Trigger time: $triggerTime
+        """.trimIndent()
+        )
+
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             triggerTime,
             pendingIntent
         )
 
-        Log.d(CURRENT_TASK_TIMER, "timer set")
+        Log.d(CURRENT_TASK_TIMER, "Duration: ${durationMillis / 1000}s (${durationMillis / 60000} min)")
     }
 
     //Cancel the alarm broadcast

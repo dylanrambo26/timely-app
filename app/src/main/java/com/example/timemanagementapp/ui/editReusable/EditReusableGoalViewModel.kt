@@ -43,14 +43,14 @@ class EditReusableGoalViewModel(
 
                     goalUiState = GoalUiState(
                         goalDetails = details,
-                        isEntryValid = goalUiState.goalDetails.validate() == null
+                        isEntryValid = details.validate() == null
                     )
                 }
         }
     }
 
     fun updateUiState(goalDetails: GoalDetails) {
-        val error = goalUiState.goalDetails.validate()
+        val error = goalDetails.validate()
         goalUiState =
             goalUiState.copy(goalDetails = goalDetails, isEntryValid = error == null, errorMessage = error)
     }
