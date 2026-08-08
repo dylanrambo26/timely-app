@@ -5,6 +5,8 @@ import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.example.timemanagementapp.data.alarm.AlarmManagerGoalsRepository
+import com.example.timemanagementapp.data.analytics.AnalyticsRepository
+import com.example.timemanagementapp.data.analytics.OfflineAnalyticsRepository
 import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
 import com.example.timemanagementapp.data.calendar.OfflineCalendarEventsRepository
 import com.example.timemanagementapp.data.goal.GoalsDatabase
@@ -28,6 +30,7 @@ interface AppContainer{
     val alarmManagerGoalsRepository: AlarmManagerGoalsRepository
     val scheduledGoalsRepository: ScheduledGoalsRepository
     val calendarEventsRepository: CalendarEventsRepository
+    val analyticsRepository: AnalyticsRepository
 }
 
 class AppDataContainer(private val context: Context) : AppContainer {
@@ -50,5 +53,9 @@ class AppDataContainer(private val context: Context) : AppContainer {
 
     override val calendarEventsRepository: CalendarEventsRepository by lazy {
         OfflineCalendarEventsRepository(GoalsDatabase.getDatabase(context).calendarEventDao())
+    }
+
+    override val analyticsRepository: AnalyticsRepository by lazy {
+        OfflineAnalyticsRepository(GoalsDatabase.getDatabase(context).analyticsDao())
     }
 }

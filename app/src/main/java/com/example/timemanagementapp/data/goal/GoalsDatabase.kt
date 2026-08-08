@@ -6,6 +6,7 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.example.timemanagementapp.data.Converters
+import com.example.timemanagementapp.data.analytics.AnalyticsDao
 import com.example.timemanagementapp.data.calendar.CalendarEvent
 import com.example.timemanagementapp.data.calendar.CalendarEventDao
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
@@ -17,7 +18,7 @@ import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalDao
         CalendarEvent::class,
         ScheduledGoal::class
     ],
-    version = 12,
+    version = 13,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -25,6 +26,7 @@ abstract class GoalsDatabase : RoomDatabase(){
     abstract fun goalDao(): GoalDao
     abstract fun calendarEventDao(): CalendarEventDao
     abstract fun scheduledGoalDao(): ScheduledGoalDao
+    abstract fun analyticsDao(): AnalyticsDao
     companion object {
 
         @Volatile

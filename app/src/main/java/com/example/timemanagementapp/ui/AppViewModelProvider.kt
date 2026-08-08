@@ -7,6 +7,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.timemanagementapp.TimelyApplication
+import com.example.timemanagementapp.ui.analytics.AnalyticsViewModel
 import com.example.timemanagementapp.ui.calendar.CalendarViewModel
 import com.example.timemanagementapp.ui.createGoal.CreateGoalViewModel
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskViewModel
@@ -76,6 +77,11 @@ object AppViewModelProvider{
                 this.createSavedStateHandle(),
                 timelyApplication().container.goalsRepository,
                 timelyApplication().container.scheduledGoalsRepository
+            )
+        }
+        initializer {
+            AnalyticsViewModel(
+                timelyApplication().container.analyticsRepository
             )
         }
     }
