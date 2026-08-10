@@ -14,6 +14,9 @@ import com.example.timemanagementapp.ui.add.AddExistingGoalDestination
 import com.example.timemanagementapp.ui.add.AddExistingGoalScreen
 import com.example.timemanagementapp.ui.add.AddGoalSelectionDestination
 import com.example.timemanagementapp.ui.add.AddGoalSelectionScreen
+import com.example.timemanagementapp.ui.analytics.AnalyticsDestination
+import com.example.timemanagementapp.ui.analytics.AnalyticsScreen
+import com.example.timemanagementapp.ui.analytics.AnalyticsViewModel
 import com.example.timemanagementapp.ui.calendar.CalendarDestination
 import com.example.timemanagementapp.ui.calendar.CalendarScreen
 import com.example.timemanagementapp.ui.calendar.CalendarViewModel
@@ -67,7 +70,7 @@ fun TimelyNavHost(
                 HomeScreen(
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToSettings = {/*TODO*/},
-                    navigateToAnalytics = {/*TODO*/},
+                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                     navigateToViewGoals = {eventId ->
                         navController.navigate("${ViewGoalsDestination.route}/$eventId")
                     },
@@ -86,10 +89,20 @@ fun TimelyNavHost(
                 
                 CalendarScreen(
                     navigateToHome = {navController.navigate(HomeDestination.route)},
-                    navigateToAnalytics = {/*TODO*/},
+                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                     onViewGoalsClicked = {eventId ->
                         navController.navigate("${ViewGoalsDestination.route}/$eventId")},
                     calendarViewModel = viewModel
+                )
+            }
+            composable(route = AnalyticsDestination.route){
+                val viewModel: AnalyticsViewModel = viewModel(factory = AppViewModelProvider.Factory)
+
+                AnalyticsScreen(
+                    navigateToHome = {navController.navigate(HomeDestination.route)},
+                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
+                    navigateToSettings = {/*TODO*/},
+                    analyticsViewModel = viewModel
                 )
             }
             composable(
@@ -108,7 +121,7 @@ fun TimelyNavHost(
                     onEditGoal = { navController.navigate("${EditScheduledGoalDestination.route}/${it.scheduledGoalId}")},
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
-                    navigateToAnalytics = {/*TODO*/},
+                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                     viewModel = viewModel
                 )
             }
@@ -124,7 +137,7 @@ fun TimelyNavHost(
                     },
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {/*TODO*/},
-                    navigateToAnalytics = {/*TODO*/},
+                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                 )
             }
 
@@ -144,7 +157,7 @@ fun TimelyNavHost(
                 CreateGoalScreen(
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
-                    navigateToAnalytics = {/*TODO*/},
+                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                     createGoalViewModel = createGoalViewModel,
                     goalListViewModel = goalListViewModel,
                     navigateToViewGoals = {eventId ->
@@ -162,7 +175,7 @@ fun TimelyNavHost(
                     scheduledGoalsListViewModel = scheduledGoalsListViewModel,
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
-                    navigateToAnalytics = {/*TODO*/},
+                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                     navigateBack = {navController.popBackStack()}
                 )
             }
@@ -186,7 +199,7 @@ fun TimelyNavHost(
                     },
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
-                    navigateToAnalytics = {/*TODO*/},
+                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                     navigateToViewGoals = { eventId ->
                         navController.navigate("${ViewGoalsDestination.route}/$eventId"){
                             popUpTo(ViewGoalsDestination.route){
@@ -221,7 +234,7 @@ fun TimelyNavHost(
                     },
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
-                    navigateToAnalytics = {/*TODO*/},
+                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                 )
             }
             composable(
@@ -239,7 +252,7 @@ fun TimelyNavHost(
                     goalListViewModel = viewModel,
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
-                    navigateToAnalytics = {/*TODO*/},
+                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                     navigateToViewGoals = { eventId->
                         navController.navigate("${ViewGoalsDestination.route}/$eventId")
                     },
@@ -260,7 +273,7 @@ fun TimelyNavHost(
                     },
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
-                    navigateToAnalytics = {/*TODO*/},
+                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                     viewModel = viewModel
                 )
             }
@@ -279,7 +292,7 @@ fun TimelyNavHost(
                     navigateBack = {navController.popBackStack()},
                     navigateToHome = { navController.navigate(HomeDestination.route) },
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
-                    navigateToAnalytics = {/*TODO*/},
+                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                     viewModel = viewModel
                 )
             }
