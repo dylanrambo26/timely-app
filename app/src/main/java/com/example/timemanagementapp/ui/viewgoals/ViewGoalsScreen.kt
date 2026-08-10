@@ -270,7 +270,7 @@ fun ViewGoalsBody(
 fun ViewGoalsHeader(
     previousDayClicked: () -> Unit = {},
     nextDayClicked: () -> Unit = {},
-    displayedDay: LocalDate?,
+    displayedDay: LocalDate,
     modifier: Modifier = Modifier
 ){
     Row(

@@ -11,6 +11,7 @@ import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
@@ -49,8 +50,10 @@ class ScheduledGoalsListViewModel(
         _calendarEventId
             .filterNotNull()
             .flatMapLatest { eventId ->
-                scheduledGoalsRepository.getScheduledGoals(eventId)
-                .map{ scheduledGoals ->
+                combine(
+                    scheduledGoalsRepository.getScheduledGoals(eventId),
+                    _date.filterNotNull()
+                ){scheduledGoals, date ->
                     val totalMinutes = scheduledGoals.sumOf {
                         val hours = it.scheduledHours
                         val minutes = it.scheduledMinutes
@@ -61,10 +64,11 @@ class ScheduledGoalsListViewModel(
                     ScheduledGoalsListUiState(
                         scheduledGoalsList = scheduledGoals,
                         calendarEventId = eventId,
-                        date = _date.value,
+                        date = date,
                         totalMinutes = totalMinutes,
                         remainingMinutesInDay = MINUTES_IN_24_HOUR_DAY - totalMinutes
                     )
+
                 }
             }
             .stateIn(
@@ -152,7 +156,7 @@ class ScheduledGoalsListViewModel(
 data class ScheduledGoalsListUiState(
     val scheduledGoalsList: List<ScheduledGoal> = emptyList(),
     val calendarEventId: Int? = null,
-    val date: LocalDate? = null,
+    val date: LocalDate = LocalDate.now(),
     val totalMinutes: Int = 0,
     val remainingMinutesInDay: Int = MINUTES_IN_24_HOUR_DAY - totalMinutes,
     val remainingTimeError: Boolean = false

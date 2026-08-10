@@ -198,13 +198,15 @@ fun AddGoalButtons(
                     .fillMaxWidth()
                     .heightIn(min = 48.dp)
             ) {
-                Text(
-                    text = stringResource(
-                        R.string.save_goal_and_add_to_date,
-                        formatLocalDateToShorthandDate(selectedDate)
-                    ),
-                    fontSize = 16.sp,
-                )
+                selectedDate?.let {date ->
+                    Text(
+                        text = stringResource(
+                            R.string.save_goal_and_add_to_date,
+                            formatLocalDateToShorthandDate(date)
+                        ),
+                        fontSize = 16.sp,
+                    )
+                }
             }
         }
         //Save Goal Button

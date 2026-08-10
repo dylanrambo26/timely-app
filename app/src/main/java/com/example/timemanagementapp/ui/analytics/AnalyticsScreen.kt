@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -21,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.timemanagementapp.R
@@ -30,6 +32,11 @@ import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.ui.AppViewModelProvider
+import com.example.timemanagementapp.ui.components.DisplayTime
+import com.example.timemanagementapp.util.formatLocalDateToAnalyticsRange
+import com.example.timemanagementapp.util.formatLocalDateToCalendarDate
+import com.example.timemanagementapp.util.millisToMinutes
+import java.time.LocalDate
 
 object AnalyticsDestination : NavigationDest {
     override val route = "analytics"
@@ -111,15 +118,20 @@ fun AnalyticsBody(
             }
         }
         Text(
+            text = formatLocalDateToAnalyticsRange(analyticsUiState.startDate, analyticsUiState.endDate),
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier
+                .padding(dimensionResource(R.dimen.padding_medium))
+                .fillMaxWidth()
+        )
+
+        Text(
             text = stringResource(R.string.completed_goals_in_date_range) + " ${analyticsUiState.completedGoalCount}",
             modifier = Modifier
                 .padding(dimensionResource(R.dimen.padding_medium))
         )
-        Text(
-            text = stringResource(R.string.total_completed_time_in_date_range) + " ${analyticsUiState.totalCompletedMillis}",
-            modifier = Modifier
-                .padding(dimensionResource(R.dimen.padding_medium))
-        )
+        DisplayTime(millisToMinutes(analyticsUiState.totalCompletedMillis), stringResource(R.string.total_completed_time_in_date_range))
     }
 }
 
@@ -143,6 +155,10 @@ fun AnalyticsBodyPreview(){
         AnalyticsBody(
             analyticsUiState = AnalyticsUiState(
                 selectedPeriod = AnalyticsTimePeriod.MONTHLY,
+                startDate = LocalDate.now().withDayOfMonth(1),
+                endDate = LocalDate.now().withDayOfMonth(LocalDate.now().lengthOfMonth()),
+                completedGoalCount = 10,
+                totalCompletedMillis = 1000000L
             ),
             updateTimePeriod = {}
         )

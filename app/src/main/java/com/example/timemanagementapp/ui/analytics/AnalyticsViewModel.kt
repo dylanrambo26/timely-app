@@ -12,7 +12,9 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import java.time.DayOfWeek
 import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
 
 class AnalyticsViewModel(
     val analyticsRepository: AnalyticsRepository
@@ -30,10 +32,24 @@ class AnalyticsViewModel(
                 val today = LocalDate.now()
 
                 val startDate = when(selectedPeriod){
-                    AnalyticsTimePeriod.WEEKLY -> today.minusDays(6)
+                    AnalyticsTimePeriod.WEEKLY ->
+                        today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
                     AnalyticsTimePeriod.MONTHLY -> today.withDayOfMonth(1)
                     AnalyticsTimePeriod.YEARLY -> today.withDayOfYear(1)
                 }
+
+                //Only used for display on Analytics Screen, not for analytics queries since future scheduled goals could affect averages for being incomplete
+                val displayEndDate = when(selectedPeriod){
+                    AnalyticsTimePeriod.WEEKLY ->
+                        today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY))
+
+                    AnalyticsTimePeriod.MONTHLY ->
+                        today.withDayOfMonth(today.lengthOfMonth())
+
+                    AnalyticsTimePeriod.YEARLY ->
+                        today.withDayOfYear(today.lengthOfYear())
+                }
+                //The queries will take today only as the end date because of possible incompleted future goals
                 combine(
                     analyticsRepository.getCompletedGoalsCount(
                         startDate = startDate,
@@ -48,7 +64,9 @@ class AnalyticsViewModel(
                     AnalyticsUiState(
                         selectedPeriod = selectedPeriod,
                         completedGoalCount = completedGoalCount,
-                        totalCompletedMillis = totalCompletedMillis
+                        totalCompletedMillis = totalCompletedMillis,
+                        startDate = startDate,
+                        endDate = displayEndDate
                     )
                 }
             }.stateIn(
@@ -64,6 +82,8 @@ class AnalyticsViewModel(
 
 data class AnalyticsUiState(
     val selectedPeriod: AnalyticsTimePeriod = AnalyticsTimePeriod.WEEKLY,
+    val startDate: LocalDate = LocalDate.now().minusDays(6),
+    val endDate: LocalDate = LocalDate.now(),
     val completedGoalCount: Int = 0,
     val totalCompletedMillis: Long = 0L
 )
