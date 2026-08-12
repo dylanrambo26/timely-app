@@ -9,4 +9,6 @@ class OfflineAnalyticsRepository(
     override fun getCompletedGoalsCount(startDate: LocalDate, endDate: LocalDate): Flow<Int> = analyticsDao.getCompletedGoalsCount(startDate, endDate)
 
     override fun getTotalCompletedMillis(startDate: LocalDate, endDate: LocalDate): Flow<Long> = analyticsDao.getTotalCompletedMillis(startDate, endDate)
+
+    override fun getTotalScheduledMillisForCompleteGoals(startDate: LocalDate, endDate: LocalDate): Flow<Long>  = analyticsDao.getTotalScheduledMillisForCompleteGoals(startDate, endDate)
 }

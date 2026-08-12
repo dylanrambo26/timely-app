@@ -62,4 +62,6 @@
     <string name="mark_as_complete">Mark as Complete</string>
     <string name="completed_goals_in_date_range">Number of Completed Goals: </string>
     <string name="total_completed_time_in_date_range">Total Completed Time:</string>
+    <string name="average_completed_time_in_date_range">Average Completed Time per Completed Goal:</string>
+    <string name="average_percentage_of_time_completed">Average Percentage of Time Completed: %.1f%%</string>
 </resources>

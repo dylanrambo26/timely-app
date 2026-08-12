@@ -125,6 +125,15 @@ fun AnalyticsBody(
                 .padding(dimensionResource(R.dimen.padding_medium))
         )
         DisplayTime(millisToMinutes(analyticsUiState.totalCompletedMillis), stringResource(R.string.total_completed_time_in_date_range))
+        DisplayTime(millisToMinutes(analyticsUiState.averageCompletedMillis), stringResource(R.string.average_completed_time_in_date_range))
+        Text(
+            text = stringResource(
+                R.string.average_percentage_of_time_completed,
+                analyticsUiState.completionPercentage
+            ),
+            modifier = Modifier
+                .padding(dimensionResource(R.dimen.padding_medium))
+        )
     }
 }
 
@@ -145,13 +154,18 @@ fun AnalyticsScreenPreview()
 @Composable
 fun AnalyticsBodyPreview(){
     TimeManagementAppTheme {
+        val completedMillis = 10 * 60 * 60_000L
+        val completedGoals = 10
+        val scheduledMillis = 11 * 60 * 60_000L
         AnalyticsBody(
             analyticsUiState = AnalyticsUiState(
-                selectedPeriod = AnalyticsTimePeriod.MONTHLY,
-                startDate = LocalDate.now().withDayOfMonth(1),
-                endDate = LocalDate.now().withDayOfMonth(LocalDate.now().lengthOfMonth()),
-                completedGoalCount = 10,
-                totalCompletedMillis = 1000000L
+                selectedPeriod = AnalyticsTimePeriod.YEARLY,
+                startDate = LocalDate.now().withDayOfYear(1),
+                endDate = LocalDate.now().withDayOfYear(LocalDate.now().lengthOfYear()),
+                completedGoalCount = completedGoals,
+                totalCompletedMillis = completedMillis,
+                averageCompletedMillis = completedMillis / completedGoals,
+                completionPercentage = completedMillis.toDouble() / scheduledMillis * 100
             ),
             updateTimePeriod = {}
         )

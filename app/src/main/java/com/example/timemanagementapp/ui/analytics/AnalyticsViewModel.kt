@@ -55,15 +55,35 @@ class AnalyticsViewModel(
                     analyticsRepository.getTotalCompletedMillis(
                         startDate = startDate,
                         endDate = today
+                    ),
+                    analyticsRepository.getTotalScheduledMillisForCompleteGoals(
+                        startDate = startDate,
+                        endDate = today
                     )
                 ){
-                    completedGoalCount, totalCompletedMillis ->
+                    completedGoalCount, totalCompletedMillis, totalScheduledMillis ->
+
+                    //Calculates average completed millis per task
+                    val averageCompletedMillis = if (completedGoalCount > 0){
+                        totalCompletedMillis / completedGoalCount
+                    } else {
+                        0L
+                    }
+
+                    val completionPercentage = if(totalScheduledMillis > 0){
+                        totalCompletedMillis.toDouble() / totalScheduledMillis * 100
+                    } else {
+                        0.0
+                    }
+
                     AnalyticsUiState(
                         selectedPeriod = selectedPeriod,
                         completedGoalCount = completedGoalCount,
                         totalCompletedMillis = totalCompletedMillis,
                         startDate = startDate,
-                        endDate = displayEndDate
+                        endDate = displayEndDate,
+                        averageCompletedMillis = averageCompletedMillis,
+                        completionPercentage = completionPercentage
                     )
                 }
             }.stateIn(
@@ -82,7 +102,9 @@ data class AnalyticsUiState(
     val startDate: LocalDate = LocalDate.now().minusDays(6),
     val endDate: LocalDate = LocalDate.now(),
     val completedGoalCount: Int = 0,
-    val totalCompletedMillis: Long = 0L
+    val totalCompletedMillis: Long = 0L,
+    val averageCompletedMillis: Long = 0L,
+    val completionPercentage: Double = 0.0
 )
 
 enum class AnalyticsTimePeriod{

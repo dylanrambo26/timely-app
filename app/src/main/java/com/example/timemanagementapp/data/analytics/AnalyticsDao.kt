@@ -32,4 +32,17 @@ interface AnalyticsDao {
         startDate: LocalDate,
         endDate: LocalDate
     ): Flow<Long>
+
+    @Query("""
+        SELECT SUM((scheduledHours * 60 + scheduledMinutes) * 60000)
+        FROM scheduled_goals sg
+        INNER JOIN calendar_events ce
+            ON sg.eventId = ce.eventId
+        WHERE sg.status == 'COMPLETED'
+        AND ce.date BETWEEN :startDate AND :endDate
+    """)
+    fun getTotalScheduledMillisForCompleteGoals(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Flow<Long>
 }
