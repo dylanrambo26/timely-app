@@ -3,14 +3,11 @@ package com.example.timemanagementapp.ui.analytics
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.timemanagementapp.data.analytics.AnalyticsRepository
-import com.example.timemanagementapp.ui.currenttask.CurrentTaskUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import java.time.DayOfWeek
 import java.time.LocalDate

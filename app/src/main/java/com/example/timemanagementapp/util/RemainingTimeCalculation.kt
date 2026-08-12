@@ -1,7 +1,5 @@
 package com.example.timemanagementapp.util
 
-import android.util.Log
-
 data class RemainingTimeState(
     val remainingMinutes: Int,
     val isDone: Boolean

@@ -10,19 +10,19 @@ import com.example.timemanagementapp.data.goal.GoalDao
 import com.example.timemanagementapp.data.goal.GoalsDatabase
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalDao
-import kotlinx.coroutines.test.runTest
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
-import org.junit.runner.RunWith
-import java.io.IOException
 import com.example.timemanagementapp.data.testCalendarEvents
 import com.example.timemanagementapp.data.testGoals
 import com.example.timemanagementapp.data.testScheduledGoals
 import com.example.timemanagementapp.data.testScheduledGoalsDifferentMillis
 import com.example.timemanagementapp.data.testScheduledGoalsMixedStatus
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.test.runTest
+import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import java.io.IOException
 import java.time.LocalDate
 
 @RunWith(AndroidJUnit4::class)

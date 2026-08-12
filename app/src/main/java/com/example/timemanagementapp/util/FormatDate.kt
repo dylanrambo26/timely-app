@@ -1,10 +1,8 @@
 package com.example.timemanagementapp.util
 
-import androidx.compose.ui.text.TextStyle
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
-import java.util.Locale
 
 private val shorthandDateFormatter = DateTimeFormatter.ofPattern("M/d")
 

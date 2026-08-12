@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
@@ -22,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -38,7 +36,6 @@ import com.example.timemanagementapp.ui.components.GoalTemplateCard
 import com.example.timemanagementapp.ui.createGoal.GoalDetails
 import com.example.timemanagementapp.ui.createGoal.GoalUiState
 import com.example.timemanagementapp.ui.createGoal.toGoal
-import com.example.timemanagementapp.ui.editScheduled.EditScheduledGoalBody
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import kotlinx.coroutines.launch

@@ -6,8 +6,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.timemanagementapp.R
 import com.example.timemanagementapp.data.goal.GoalsRepository
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 import com.example.timemanagementapp.ui.createGoal.GoalDetails
