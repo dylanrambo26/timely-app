@@ -40,7 +40,9 @@ import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
 import com.example.timemanagementapp.ui.AppViewModelProvider
+import com.example.timemanagementapp.ui.components.ColorLegend
 import com.example.timemanagementapp.ui.components.DisplayTime
+import com.example.timemanagementapp.ui.components.LegendItem
 import com.example.timemanagementapp.ui.components.ScheduledGoalList
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
@@ -160,26 +162,18 @@ fun ViewGoalsBody(
             duration = scheduledGoalsListUiState.totalMinutes,
             title = stringResource(R.string.current_filled_time)
         )
-        Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            Box(
-                modifier = Modifier
-                    .size(20.dp)
-                    .background(MaterialTheme.colorScheme.completedGoal)
+        ColorLegend(
+            items = listOf(
+                LegendItem(
+                    label = "= Completed",
+                    color = MaterialTheme.colorScheme.completedGoal
+                ),
+                LegendItem(
+                    label = "= Incomplete",
+                    color = MaterialTheme.colorScheme.secondaryContainer
+                )
             )
-            Text(text = " = Completed")
-            Spacer(modifier = Modifier.width(16.dp))
-            Box(
-                modifier = Modifier
-                    .size(20.dp)
-                    .background(MaterialTheme.colorScheme.secondaryContainer)
-            )
-            Text(text = " = Incomplete")
-        }
+        )
         if (!isPastDate()){
             Row(
                 horizontalArrangement = Arrangement.Center,

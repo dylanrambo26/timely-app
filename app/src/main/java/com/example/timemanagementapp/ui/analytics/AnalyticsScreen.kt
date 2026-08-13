@@ -17,6 +17,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
@@ -26,10 +27,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.TimelyScaffold
+import com.example.timemanagementapp.ui.components.ColorLegend
 import com.example.timemanagementapp.ui.components.DisplayTime
 import com.example.timemanagementapp.ui.components.DonutChart
+import com.example.timemanagementapp.ui.components.LegendItem
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
+import com.example.timemanagementapp.ui.theme.completedGoal
 import com.example.timemanagementapp.util.formatLocalDateToAnalyticsRange
 import com.example.timemanagementapp.util.millisToMinutes
 import java.time.LocalDate
@@ -77,7 +81,8 @@ fun AnalyticsBody(
     Column(
         modifier = modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState())
+            .verticalScroll(rememberScrollState()),
+        horizontalAlignment = Alignment.CenterHorizontally
     ){
         Row(
             modifier = Modifier
@@ -143,6 +148,22 @@ fun AnalyticsBody(
             completedPercentage = analyticsUiState.completedPercentage,
             partialPercentage = analyticsUiState.partialPercentage,
             unfinishedPercentage = analyticsUiState.unfinishedPercentage
+        )
+        ColorLegend(
+            items = listOf(
+                LegendItem(
+                    label = "= Unfinished Time",
+                    color = MaterialTheme.colorScheme.error
+                ),
+                LegendItem(
+                    label = "= Partially Completed Time",
+                    color = MaterialTheme.colorScheme.primary
+                ),
+                LegendItem(
+                    label = "= Completed Time",
+                    color = MaterialTheme.colorScheme.completedGoal
+                )
+            )
         )
     }
 }
