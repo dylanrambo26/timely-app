@@ -181,4 +181,31 @@ class AnalyticsDaoTest {
         val expected = (15 + 30 + 45) * 60_000L
         assertEquals(expected, result)
     }
+
+    @Test
+    @Throws(Exception::class)
+    fun analyticsDao_getScheduledMillisForWeek_returnsCorrectMillis() = runTest {
+        insertParentTestData(testScheduledGoals)
+        val result = analyticsDao.getTotalScheduledMillisForCompleteGoals(weekStartDate, endDate).first()
+        val expected = ((1 * 60) + 30) * 60_000L // 1hr 30m
+        assertEquals(expected, result)
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun analyticsDao_getScheduledMillisForMonth_returnsCorrectMillis() = runTest {
+        insertParentTestData(testScheduledGoals)
+        val result = analyticsDao.getTotalScheduledMillisForCompleteGoals(monthStartDate, endDate).first()
+        val expected = (3 * 60) * 60_000L // 3hr
+        assertEquals(expected, result)
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun analyticsDao_getScheduledMillisForYear_returnsCorrectMillis() = runTest {
+        insertParentTestData(testScheduledGoals)
+        val result = analyticsDao.getTotalScheduledMillisForCompleteGoals(yearStartDate, endDate).first()
+        val expected = ((4 * 60)+30) * 60_000L // 4hr 30min
+        assertEquals(expected, result)
+    }
 }
