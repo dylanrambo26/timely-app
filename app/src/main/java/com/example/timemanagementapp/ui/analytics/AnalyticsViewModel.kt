@@ -59,9 +59,17 @@ class AnalyticsViewModel(
                     analyticsRepository.getTotalScheduledMillisForCompleteGoals(
                         startDate = startDate,
                         endDate = today
+                    ),
+                    analyticsRepository.getPartialCompletedMillis(
+                        startDate = startDate,
+                        endDate = today
+                    ),
+                    analyticsRepository.getUnfinishedMillis(
+                        startDate = startDate,
+                        endDate = today
                     )
                 ){
-                    completedGoalCount, totalCompletedMillis, totalScheduledMillis ->
+                    completedGoalCount, totalCompletedMillis, totalScheduledMillis, partialMillis, unfinishedMillis ->
 
                     //Calculates average completed millis per task
                     val averageCompletedMillis = if (completedGoalCount > 0){
@@ -70,10 +78,27 @@ class AnalyticsViewModel(
                         0L
                     }
 
-                    val completionPercentage = if(totalScheduledMillis > 0){
+                    //Calculates how well user utilizes their completed time out of the scheduled time
+                    val scheduledTimeUtilization = if(totalScheduledMillis > 0){
                         totalCompletedMillis.toDouble() / totalScheduledMillis * 100
                     } else {
                         0.0
+                    }
+
+                    val percentageMillisSum = totalCompletedMillis + partialMillis + unfinishedMillis
+
+                    val completedPercentage: Float
+                    val partialPercentage: Float
+                    val unfinishedPercentage: Float
+
+                    if (percentageMillisSum > 0){
+                        completedPercentage = totalCompletedMillis.toFloat() / percentageMillisSum * 100
+                        partialPercentage = partialMillis.toFloat() / percentageMillisSum * 100
+                        unfinishedPercentage = unfinishedMillis.toFloat() / percentageMillisSum * 100
+                    } else {
+                        completedPercentage = 0f
+                        partialPercentage = 0f
+                        unfinishedPercentage = 0f
                     }
 
                     AnalyticsUiState(
@@ -83,7 +108,10 @@ class AnalyticsViewModel(
                         startDate = startDate,
                         endDate = displayEndDate,
                         averageCompletedMillis = averageCompletedMillis,
-                        completionPercentage = completionPercentage
+                        scheduledTimeUtilization = scheduledTimeUtilization,
+                        completedPercentage = completedPercentage,
+                        partialPercentage = partialPercentage,
+                        unfinishedPercentage = unfinishedPercentage
                     )
                 }
             }.stateIn(
@@ -104,7 +132,10 @@ data class AnalyticsUiState(
     val completedGoalCount: Int = 0,
     val totalCompletedMillis: Long = 0L,
     val averageCompletedMillis: Long = 0L,
-    val completionPercentage: Double = 0.0
+    val scheduledTimeUtilization: Double = 0.0,
+    val completedPercentage: Float = 0f,
+    val partialPercentage: Float = 0f,
+    val unfinishedPercentage: Float = 0f
 )
 
 enum class AnalyticsTimePeriod{

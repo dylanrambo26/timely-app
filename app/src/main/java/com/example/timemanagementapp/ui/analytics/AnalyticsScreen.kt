@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
@@ -25,6 +27,7 @@ import com.example.timemanagementapp.R
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.TimelyScaffold
 import com.example.timemanagementapp.ui.components.DisplayTime
+import com.example.timemanagementapp.ui.components.DonutChart
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.util.formatLocalDateToAnalyticsRange
@@ -72,7 +75,9 @@ fun AnalyticsBody(
     modifier: Modifier = Modifier
 ){
     Column(
-        modifier = modifier.fillMaxSize()
+        modifier = modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ){
         Row(
             modifier = Modifier
@@ -128,11 +133,16 @@ fun AnalyticsBody(
         DisplayTime(millisToMinutes(analyticsUiState.averageCompletedMillis), stringResource(R.string.average_completed_time_in_date_range))
         Text(
             text = stringResource(
-                R.string.average_percentage_of_time_completed,
-                analyticsUiState.completionPercentage
+                R.string.scheduled_time_utilized,
+                analyticsUiState.scheduledTimeUtilization
             ),
             modifier = Modifier
                 .padding(dimensionResource(R.dimen.padding_medium))
+        )
+        DonutChart(
+            completedPercentage = analyticsUiState.completedPercentage,
+            partialPercentage = analyticsUiState.partialPercentage,
+            unfinishedPercentage = analyticsUiState.unfinishedPercentage
         )
     }
 }
@@ -165,7 +175,10 @@ fun AnalyticsBodyPreview(){
                 completedGoalCount = completedGoals,
                 totalCompletedMillis = completedMillis,
                 averageCompletedMillis = completedMillis / completedGoals,
-                completionPercentage = completedMillis.toDouble() / scheduledMillis * 100
+                scheduledTimeUtilization = completedMillis.toDouble() / scheduledMillis * 100,
+                completedPercentage = 30.0f,
+                partialPercentage = 35.0f,
+                unfinishedPercentage = 35.0f
             ),
             updateTimePeriod = {}
         )
