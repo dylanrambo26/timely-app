@@ -29,22 +29,26 @@ fun ColorLegend(
     isCircleShape: Boolean = false,
     modifier: Modifier = Modifier
 ){
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier
     ) {
         items.forEach {item ->
-            Box(
-                modifier = Modifier
-                    .size(20.dp)
-                    .background(
-                        color = item.color,
-                        shape = if(isCircleShape) CircleShape else RectangleShape
-                    )
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = item.label)
-            Spacer(modifier = Modifier.width(16.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ){
+                Box(
+                    modifier = Modifier
+                        .size(20.dp)
+                        .background(
+                            color = item.color,
+                            shape = if(isCircleShape) CircleShape else RectangleShape
+                        )
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(text = item.label)
+                Spacer(modifier = Modifier.width(16.dp))
+            }
         }
     }
 

@@ -46,20 +46,19 @@ class AnalyticsViewModel(
                     AnalyticsTimePeriod.YEARLY ->
                         today.withDayOfYear(today.lengthOfYear())
                 }
-                //The queries will take today only as the end date because of possible incompleted future goals
-                combine(
-                    analyticsRepository.getCompletedGoalsCount(
-                        startDate = startDate,
-                        endDate = today
-                    ),
-                    analyticsRepository.getTotalCompletedMillis(
-                        startDate = startDate,
-                        endDate = today
-                    ),
-                    analyticsRepository.getTotalScheduledMillisForCompleteGoals(
-                        startDate = startDate,
-                        endDate = today
-                    ),
+                val completedStatsFlow = combine(
+                    analyticsRepository.getCompletedGoalsCount(startDate, today),
+                    analyticsRepository.getTotalCompletedMillis(startDate, today),
+                    analyticsRepository.getTotalScheduledMillisForCompleteGoals(startDate, today)
+                ){completedGoalCount, totalCompletedMillis, totalScheduledMillis ->
+                    CompletedStats(
+                        completedGoalCount = completedGoalCount,
+                        totalCompletedMillis = totalCompletedMillis,
+                        totalScheduledMillis = totalScheduledMillis
+                    )
+                }
+
+                val progressStatsFlow = combine(
                     analyticsRepository.getPartialCompletedMillis(
                         startDate = startDate,
                         endDate = today
@@ -67,34 +66,50 @@ class AnalyticsViewModel(
                     analyticsRepository.getUnfinishedMillis(
                         startDate = startDate,
                         endDate = today
+                    ),
+                    analyticsRepository.getCompletedScheduledMillis(
+                        startDate = startDate,
+                        endDate = today
                     )
-                ){
-                    completedGoalCount, totalCompletedMillis, totalScheduledMillis, partialMillis, unfinishedMillis ->
+                ){partialMillis, unfinishedMillis, completedScheduledMillis ->
+                    ProgressStats(
+                        partialMillis = partialMillis,
+                        unfinishedMillis = unfinishedMillis,
+                        completedScheduledMillis = completedScheduledMillis
+                    )
+                }
+
+
+                //The queries will take today only as the end date because of possible incompleted future goals
+                combine(
+                    completedStatsFlow,
+                    progressStatsFlow
+                ){ completedStats, progressStats ->
 
                     //Calculates average completed millis per task
-                    val averageCompletedMillis = if (completedGoalCount > 0){
-                        totalCompletedMillis / completedGoalCount
+                    val averageCompletedMillis = if (completedStats.completedGoalCount > 0){
+                        completedStats.totalCompletedMillis / completedStats.completedGoalCount
                     } else {
                         0L
                     }
 
                     //Calculates how well user utilizes their completed time out of the scheduled time
-                    val scheduledTimeUtilization = if(totalScheduledMillis > 0){
-                        totalCompletedMillis.toDouble() / totalScheduledMillis * 100
+                    val scheduledTimeUtilization = if(completedStats.totalScheduledMillis > 0){
+                        completedStats.totalCompletedMillis.toDouble() / completedStats.totalScheduledMillis * 100
                     } else {
                         0.0
                     }
 
-                    val percentageMillisSum = totalCompletedMillis + partialMillis + unfinishedMillis
+                    val percentageMillisSum = progressStats.completedScheduledMillis + progressStats.partialMillis + progressStats.unfinishedMillis
 
                     val completedPercentage: Float
                     val partialPercentage: Float
                     val unfinishedPercentage: Float
 
                     if (percentageMillisSum > 0){
-                        completedPercentage = totalCompletedMillis.toFloat() / percentageMillisSum * 100
-                        partialPercentage = partialMillis.toFloat() / percentageMillisSum * 100
-                        unfinishedPercentage = unfinishedMillis.toFloat() / percentageMillisSum * 100
+                        completedPercentage = progressStats.completedScheduledMillis.toFloat() / percentageMillisSum * 100
+                        partialPercentage = progressStats.partialMillis.toFloat() / percentageMillisSum * 100
+                        unfinishedPercentage = progressStats.unfinishedMillis.toFloat() / percentageMillisSum * 100
                     } else {
                         completedPercentage = 0f
                         partialPercentage = 0f
@@ -103,8 +118,8 @@ class AnalyticsViewModel(
 
                     AnalyticsUiState(
                         selectedPeriod = selectedPeriod,
-                        completedGoalCount = completedGoalCount,
-                        totalCompletedMillis = totalCompletedMillis,
+                        completedGoalCount = completedStats.completedGoalCount,
+                        totalCompletedMillis = completedStats.totalCompletedMillis,
                         startDate = startDate,
                         endDate = displayEndDate,
                         averageCompletedMillis = averageCompletedMillis,
@@ -124,6 +139,18 @@ class AnalyticsViewModel(
         selectedPeriod.value = period
     }
 }
+
+data class CompletedStats(
+    val completedGoalCount: Int,
+    val totalCompletedMillis: Long,
+    val totalScheduledMillis: Long
+)
+
+data class ProgressStats(
+    val partialMillis: Long,
+    val unfinishedMillis: Long,
+    val completedScheduledMillis: Long
+)
 
 data class AnalyticsUiState(
     val selectedPeriod: AnalyticsTimePeriod = AnalyticsTimePeriod.WEEKLY,

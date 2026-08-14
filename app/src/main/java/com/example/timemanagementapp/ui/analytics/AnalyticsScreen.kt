@@ -163,7 +163,9 @@ fun AnalyticsBody(
                     label = "Completed Time",
                     color = MaterialTheme.colorScheme.completedGoal
                 )
-            )
+            ),
+            modifier = Modifier
+                .padding(dimensionResource(R.dimen.padding_medium))
         )
     }
 }

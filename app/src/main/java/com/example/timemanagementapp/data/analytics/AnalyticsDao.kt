@@ -37,6 +37,25 @@ interface AnalyticsDao {
         endDate: LocalDate
     ): Flow<Long>
 
+    //Get the total time scheduled from completed goals in the date range
+    @Query("""
+        SELECT COALESCE(
+            SUM(
+                ((sg.scheduledHours * 60 + sg.scheduledMinutes) * 60000)
+            ),
+            0
+        )
+        FROM scheduled_goals sg
+        INNER JOIN calendar_events ce
+            ON sg.eventId = ce.eventId
+        WHERE sg.status == 'COMPLETED'
+        AND ce.date BETWEEN :startDate AND :endDate 
+    """)
+    fun getCompletedScheduledMillis(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Flow<Long>
+
     //Get the original scheduled amount of time for completed goals within the date range
     @Query("""
         SELECT SUM((scheduledHours * 60 + scheduledMinutes) * 60000)

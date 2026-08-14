@@ -18,6 +18,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.ui.theme.completedGoal
+import com.example.timemanagementapp.util.MIN_PERCENTAGE_FOR_LABEL
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -154,30 +155,35 @@ fun DonutChart(
             style = percentageTextStyle
         )
 
-        drawText(
-            textLayoutResult = completedTextLayout,
-            topLeft = Offset(
-                completedTextPosition.x - completedTextLayout.size.width / 2f,
-                completedTextPosition.y - completedTextLayout.size.height / 2f,
+        if(completedPercentage >= MIN_PERCENTAGE_FOR_LABEL){
+            drawText(
+                textLayoutResult = completedTextLayout,
+                topLeft = Offset(
+                    completedTextPosition.x - completedTextLayout.size.width / 2f,
+                    completedTextPosition.y - completedTextLayout.size.height / 2f,
+                )
             )
-        )
+        }
 
-        drawText(
-            textLayoutResult = partialTextLayout,
-            topLeft = Offset(
-                partialTextPosition.x - partialTextLayout.size.width / 2f,
-                partialTextPosition.y - partialTextLayout.size.height / 2f,
+        if(partialPercentage >= MIN_PERCENTAGE_FOR_LABEL){
+            drawText(
+                textLayoutResult = partialTextLayout,
+                topLeft = Offset(
+                    partialTextPosition.x - partialTextLayout.size.width / 2f,
+                    partialTextPosition.y - partialTextLayout.size.height / 2f,
+                )
             )
-        )
+        }
 
-        drawText(
-            textLayoutResult = unfinishedTextLayout,
-            topLeft = Offset(
-                unfinishedTextPosition.x - unfinishedTextLayout.size.width / 2f,
-                unfinishedTextPosition.y - unfinishedTextLayout.size.height / 2f,
+        if(unfinishedPercentage >= MIN_PERCENTAGE_FOR_LABEL){
+            drawText(
+                textLayoutResult = unfinishedTextLayout,
+                topLeft = Offset(
+                    unfinishedTextPosition.x - unfinishedTextLayout.size.width / 2f,
+                    unfinishedTextPosition.y - unfinishedTextLayout.size.height / 2f,
+                )
             )
-        )
-
+        }
     }
 }
 

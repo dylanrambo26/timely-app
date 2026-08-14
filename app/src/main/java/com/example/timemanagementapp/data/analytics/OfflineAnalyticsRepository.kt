@@ -15,4 +15,6 @@ class OfflineAnalyticsRepository(
     override fun getPartialCompletedMillis(startDate: LocalDate, endDate: LocalDate): Flow<Long> = analyticsDao.getPartialCompletedMillis(startDate, endDate)
 
     override fun getUnfinishedMillis(startDate: LocalDate, endDate: LocalDate): Flow<Long> = analyticsDao.getUnfinishedMillis(startDate, endDate)
+
+    override fun getCompletedScheduledMillis(startDate: LocalDate, endDate: LocalDate): Flow<Long> = analyticsDao.getCompletedScheduledMillis(startDate, endDate)
 }
