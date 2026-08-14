@@ -152,15 +152,15 @@ fun AnalyticsBody(
         ColorLegend(
             items = listOf(
                 LegendItem(
-                    label = "= Unfinished Time",
+                    label = "Unfinished Time",
                     color = MaterialTheme.colorScheme.error
                 ),
                 LegendItem(
-                    label = "= Partially Completed Time",
+                    label = "Partially Completed Time",
                     color = MaterialTheme.colorScheme.primary
                 ),
                 LegendItem(
-                    label = "= Completed Time",
+                    label = "Completed Time",
                     color = MaterialTheme.colorScheme.completedGoal
                 )
             )
@@ -181,7 +181,10 @@ fun AnalyticsScreenPreview()
     }
 }*/
 
-@Preview(showBackground = true)
+@Preview(
+    showBackground = true,
+    heightDp = 1000
+)
 @Composable
 fun AnalyticsBodyPreview(){
     TimeManagementAppTheme {
