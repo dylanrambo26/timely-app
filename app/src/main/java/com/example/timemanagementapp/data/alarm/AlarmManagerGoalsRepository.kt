@@ -5,6 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import android.provider.Settings
 import android.util.Log
 import androidx.core.app.NotificationManagerCompat
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
@@ -22,18 +23,16 @@ class AlarmManagerGoalsRepository(
     ) as AlarmManager
 
     override fun scheduleTimer(scheduledGoal: ScheduledGoal) {
-        val scheduledGoal = scheduledGoal
 
         val durationMillis = ((scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60_000L) - scheduledGoal.completedMillis
 
-        /*if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
-            if (!alarmManager.canScheduleExactAlarms()){
-                val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply{
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                }
-                context.startActivity(intent)
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()){
+            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
-        }*/
+            context.startActivity(intent)
+            return
+        }
 
         val canScheduleExactAlarms =
             Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
