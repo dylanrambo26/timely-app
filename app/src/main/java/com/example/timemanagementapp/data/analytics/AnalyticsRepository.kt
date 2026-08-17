@@ -10,4 +10,6 @@ interface AnalyticsRepository {
     fun getPartialCompletedMillis(startDate: LocalDate, endDate: LocalDate): Flow<Long>
     fun getUnfinishedMillis(startDate: LocalDate, endDate: LocalDate): Flow<Long>
     fun getCompletedScheduledMillis(startDate: LocalDate, endDate: LocalDate): Flow<Long>
+
+    fun getDailyAnalytics(startDate: LocalDate, endDate: LocalDate): Flow<List<DailyAnalytics>>
 }
