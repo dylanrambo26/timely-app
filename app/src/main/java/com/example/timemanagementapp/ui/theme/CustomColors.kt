@@ -12,3 +12,6 @@ val ColorScheme.selectedDate: Color
 
 val ColorScheme.checkbox: Color
     get() = if(surface.luminance() > 0.5f) CheckboxLight else CheckboxDark
+
+val ColorScheme.activityGridYellow: Color
+    get() = if(surface.luminance() > 0.5f)activityGridYellowLight else activityGridYellowDark

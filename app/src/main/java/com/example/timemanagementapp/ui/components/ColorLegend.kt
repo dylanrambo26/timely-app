@@ -1,6 +1,7 @@
 package com.example.timemanagementapp.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,6 +45,10 @@ fun ColorLegend(
                             color = item.color,
                             shape = if(isCircleShape) CircleShape else RectangleShape
                         )
+                        .border(
+                            width = 3.dp,
+                            color = item.borderColor
+                        )
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(text = item.label)
@@ -56,7 +61,8 @@ fun ColorLegend(
 
 data class LegendItem(
     val label: String,
-    val color: Color
+    val color: Color,
+    val borderColor: Color = Color.Transparent
 )
 
 @Preview(showBackground = true)
@@ -67,11 +73,12 @@ fun ColorLegendPreview(){
             items = listOf(
                 LegendItem(
                     label = "= Test1",
-                    color = MaterialTheme.colorScheme.completedGoal
+                    color = MaterialTheme.colorScheme.completedGoal,
+                    borderColor = MaterialTheme.colorScheme.primary
                 ),
                 LegendItem(
                     label = "= Test2",
-                    color = MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary,
                 )
             )
         )

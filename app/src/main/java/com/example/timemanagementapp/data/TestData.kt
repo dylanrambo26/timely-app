@@ -3,6 +3,12 @@ package com.example.timemanagementapp.data
 import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.goal.GoalStatus
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
+import com.example.timemanagementapp.ui.analytics.AnalyticsTimePeriod
+import com.example.timemanagementapp.ui.analytics.DailyActivity
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
+import kotlin.random.Random
 
 val goal1 = Goal(
     goalID = 1,
@@ -68,3 +74,51 @@ val testGoalsSizeThree: List<Goal>
         goal2,
         goal3
     )
+
+fun generateTestDailyActivity(
+    timePeriod: AnalyticsTimePeriod,
+): List<DailyActivity>{
+    val today = LocalDate.of(2026, 8, 17)
+
+    val startDate = when(timePeriod){
+        AnalyticsTimePeriod.WEEKLY ->
+            today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
+        AnalyticsTimePeriod.MONTHLY -> today.withDayOfMonth(1)
+        AnalyticsTimePeriod.YEARLY -> today.withDayOfYear(1)
+    }
+
+    val displayEndDate = when(timePeriod){
+        AnalyticsTimePeriod.WEEKLY ->
+            today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY))
+
+        AnalyticsTimePeriod.MONTHLY ->
+            today.withDayOfMonth(today.lengthOfMonth())
+
+        AnalyticsTimePeriod.YEARLY ->
+            today.withDayOfYear(today.lengthOfYear())
+    }
+
+    val dailyActivity = mutableListOf<DailyActivity>()
+    var currentDate = startDate
+
+    val seededRandom = Random(12346)
+
+    while(!currentDate.isAfter(displayEndDate)){
+
+        val hasScheduledGoals = seededRandom.nextFloat() > 0.2f
+
+        if(hasScheduledGoals){
+            dailyActivity.add(
+                DailyActivity(
+                    date = currentDate,
+                    completionPercentage = seededRandom.nextFloat() * 100
+                )
+            )
+        }
+
+
+        currentDate = currentDate.plusDays(1)
+    }
+
+    return dailyActivity
+}

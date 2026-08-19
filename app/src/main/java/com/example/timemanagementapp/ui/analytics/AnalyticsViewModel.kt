@@ -28,24 +28,21 @@ class AnalyticsViewModel(
             .flatMapLatest { selectedPeriod ->
                 val today = LocalDate.now()
 
-                val startDate = when(selectedPeriod){
+                //displayEndDate only used for display on Analytics Screen, not for analytics queries since future scheduled goals could affect averages for being incomplete
+                val (startDate, displayEndDate) = when(selectedPeriod){
                     AnalyticsTimePeriod.WEEKLY ->
-                        today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
-                    AnalyticsTimePeriod.MONTHLY -> today.withDayOfMonth(1)
-                    AnalyticsTimePeriod.YEARLY -> today.withDayOfYear(1)
-                }
-
-                //Only used for display on Analytics Screen, not for analytics queries since future scheduled goals could affect averages for being incomplete
-                val displayEndDate = when(selectedPeriod){
-                    AnalyticsTimePeriod.WEEKLY ->
-                        today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY))
+                        today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)) to
+                                today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY))
 
                     AnalyticsTimePeriod.MONTHLY ->
-                        today.withDayOfMonth(today.lengthOfMonth())
+                        today.withDayOfMonth(1) to today.withDayOfMonth(today.lengthOfMonth())
 
                     AnalyticsTimePeriod.YEARLY ->
-                        today.withDayOfYear(today.lengthOfYear())
+                        today.withDayOfYear(1) to today.withDayOfYear(today.lengthOfYear())
                 }
+
+                val gridOffset = startDate.dayOfWeek.value % 7
+
                 val completedStatsFlow = combine(
                     analyticsRepository.getCompletedGoalsCount(startDate, today),
                     analyticsRepository.getTotalCompletedMillis(startDate, today),
@@ -57,27 +54,6 @@ class AnalyticsViewModel(
                         totalScheduledMillis = totalScheduledMillis
                     )
                 }
-
-                /*val progressStatsFlow = combine(
-                    analyticsRepository.getPartialCompletedMillis(
-                        startDate = startDate,
-                        endDate = today
-                    ),
-                    analyticsRepository.getUnfinishedMillis(
-                        startDate = startDate,
-                        endDate = today
-                    ),
-                    analyticsRepository.getCompletedScheduledMillis(
-                        startDate = startDate,
-                        endDate = today
-                    )
-                ){partialMillis, unfinishedMillis, completedScheduledMillis ->
-                    ProgressStats(
-                        partialMillis = partialMillis,
-                        unfinishedMillis = unfinishedMillis,
-                        completedScheduledMillis = completedScheduledMillis
-                    )
-                }*/
 
                 val dailyAnalyticsFlow =
                     analyticsRepository.getDailyAnalytics(
@@ -151,6 +127,7 @@ class AnalyticsViewModel(
                         completedPercentage = completedPercentage,
                         partialPercentage = partialPercentage,
                         unfinishedPercentage = unfinishedPercentage,
+                        gridOffset = gridOffset,
                         dailyActivity = dailyActivity
                     )
                 }
@@ -179,7 +156,7 @@ data class CompletedStats(
 
 data class DailyActivity(
     val date: LocalDate,
-    val completionPercentage: Float
+    val completionPercentage: Float,
 )
 
 data class AnalyticsUiState(
@@ -193,6 +170,7 @@ data class AnalyticsUiState(
     val completedPercentage: Float = 0f,
     val partialPercentage: Float = 0f,
     val unfinishedPercentage: Float = 0f,
+    val gridOffset: Int = 0,
     val dailyActivity: List<DailyActivity> = listOf()
 )
 
