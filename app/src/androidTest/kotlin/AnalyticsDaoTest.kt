@@ -208,4 +208,94 @@ class AnalyticsDaoTest {
         val expected = ((4 * 60)+30) * 60_000L // 4hr 30min
         assertEquals(expected, result)
     }
+
+    @Test
+    @Throws(Exception::class)
+    fun analyticsDao_getDailyAnalyticsForWeek_returnsCorrectDailyTotals() = runTest {
+        insertParentTestData(testScheduledGoalsMixedStatus)
+        val result = analyticsDao.getDailyAnalytics(weekStartDate, endDate).first()
+
+        assertEquals(1, result.size)
+
+        val expected = mapOf(
+            LocalDate.of(2026, 8, 10) to Triple(
+                0L,
+                60 * 60_000L,
+                30 * 60_000L
+            )
+        )
+
+        expected.forEach {(date, values) ->
+            val actual = result.first{it.date == date}
+
+            assertEquals(values.first, actual.completedScheduledMillis)
+            assertEquals(values.second, actual.partialMillis)
+            assertEquals(values.third, actual.unfinishedMillis)
+        }
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun analyticsDao_getDailyAnalyticsForMonth_returnsCorrectDailyTotals() = runTest {
+        insertParentTestData(testScheduledGoalsMixedStatus)
+        val result = analyticsDao.getDailyAnalytics(monthStartDate, endDate).first()
+
+        assertEquals(2, result.size)
+
+        val expected = mapOf(
+            LocalDate.of(2026, 8, 10) to Triple(
+                0L,
+                60 * 60_000L,
+                30 * 60_000L
+            ),
+            LocalDate.of(2026, 8, 3) to Triple(
+                90 * 60_000L,
+                0L,
+                0L
+            )
+        )
+
+        expected.forEach {(date, values) ->
+            val actual = result.first{it.date == date}
+
+            assertEquals(values.first, actual.completedScheduledMillis)
+            assertEquals(values.second, actual.partialMillis)
+            assertEquals(values.third, actual.unfinishedMillis)
+        }
+    }
+
+    @Test
+    @Throws(Exception::class)
+    fun analyticsDao_getDailyAnalyticsForYear_returnsCorrectDailyTotals() = runTest {
+        insertParentTestData(testScheduledGoalsMixedStatus)
+        val result = analyticsDao.getDailyAnalytics(yearStartDate, endDate).first()
+
+        assertEquals(3, result.size)
+
+        val expected = mapOf(
+            LocalDate.of(2026, 8, 10) to Triple(
+                0L,
+                60 * 60_000L,
+                30 * 60_000L
+            ),
+            LocalDate.of(2026, 8, 3) to Triple(
+                90 * 60_000L,
+                0L,
+                0L
+            ),
+            LocalDate.of(2026, 5, 10) to Triple(
+                0L,
+                60 * 60_000L,
+                30 * 60_000L
+            )
+        )
+
+        expected.forEach {(date, values) ->
+            val actual = result.first{it.date == date}
+
+            assertEquals(values.first, actual.completedScheduledMillis)
+            assertEquals(values.second, actual.partialMillis)
+            assertEquals(values.third, actual.unfinishedMillis)
+        }
+    }
 }

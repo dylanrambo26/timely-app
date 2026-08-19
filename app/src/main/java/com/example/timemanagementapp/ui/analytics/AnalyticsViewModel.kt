@@ -104,8 +104,9 @@ class AnalyticsViewModel(
                     val dailyActivity = dailyAnalytics.map {day ->
                         val partialAndCompletedMillis = day.completedScheduledMillis + day.partialMillis
 
-                        val dailyPercentage = if (percentageMillisSum > 0){
-                            partialAndCompletedMillis.toFloat() / percentageMillisSum * 100
+                        val dailyPercentageSum = day.completedScheduledMillis + day.partialMillis + day.unfinishedMillis
+                        val dailyPercentage = if (dailyPercentageSum > 0){
+                            partialAndCompletedMillis.toFloat() / dailyPercentageSum * 100
                         } else {
                             0f
                         }
