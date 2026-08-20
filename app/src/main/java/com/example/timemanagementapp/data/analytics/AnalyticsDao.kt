@@ -104,4 +104,50 @@ interface AnalyticsDao {
         startDate: LocalDate,
         endDate: LocalDate
     ): Flow<Long>
+
+    @Query("""
+        SELECT
+            ce.date AS date,
+            
+            -- Sum of the durations of goals that are completed
+            COALESCE(SUM(
+                CASE
+                    WHEN sg.status = 'COMPLETED'
+                    THEN (sg.scheduledHours * 60 + sg.scheduledMinutes) * 60000
+                    ELSE 0
+                END
+            ), 0) AS completedScheduledMillis,
+
+            -- Sum of the completedMillis from goals that are unfinished
+            COALESCE(SUM(
+                CASE
+                    WHEN sg.status != 'COMPLETED'
+                    THEN sg.completedMillis
+                    ELSE 0
+                END
+            ), 0) AS partialMillis,
+            
+            -- Sum of the time that has not been completed on unfinished goals
+            COALESCE(SUM(
+                CASE
+                    WHEN sg.status != 'COMPLETED'
+                    THEN ((sg.scheduledHours * 60 + sg.scheduledMinutes) * 60000)
+                         - sg.completedMillis
+                    ELSE 0
+                END
+            ), 0) AS unfinishedMillis
+    
+        FROM calendar_events ce
+        INNER JOIN scheduled_goals sg
+            ON sg.eventId = ce.eventId
+    
+        WHERE ce.date BETWEEN :startDate AND :endDate
+    
+        GROUP BY ce.date
+        ORDER BY ce.date
+    """)
+    fun getDailyAnalytics(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Flow<List<DailyAnalytics>>
 }

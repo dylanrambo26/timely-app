@@ -18,3 +18,6 @@ val CheckboxDark = Color(0xFFB1FDA2)
 
 val selectedDateLight = Color(0xFF739DFF)
 val selectedDateDark = Color(0xFF0057FF)
+
+val activityGridYellowLight = Color(0xFFFDF297)
+val activityGridYellowDark = Color(0xFFF5DE2A)

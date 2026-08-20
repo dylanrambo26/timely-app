@@ -28,24 +28,21 @@ class AnalyticsViewModel(
             .flatMapLatest { selectedPeriod ->
                 val today = LocalDate.now()
 
-                val startDate = when(selectedPeriod){
+                //displayEndDate only used for display on Analytics Screen, not for analytics queries since future scheduled goals could affect averages for being incomplete
+                val (startDate, displayEndDate) = when(selectedPeriod){
                     AnalyticsTimePeriod.WEEKLY ->
-                        today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY))
-                    AnalyticsTimePeriod.MONTHLY -> today.withDayOfMonth(1)
-                    AnalyticsTimePeriod.YEARLY -> today.withDayOfYear(1)
-                }
-
-                //Only used for display on Analytics Screen, not for analytics queries since future scheduled goals could affect averages for being incomplete
-                val displayEndDate = when(selectedPeriod){
-                    AnalyticsTimePeriod.WEEKLY ->
-                        today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY))
+                        today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)) to
+                                today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY))
 
                     AnalyticsTimePeriod.MONTHLY ->
-                        today.withDayOfMonth(today.lengthOfMonth())
+                        today.withDayOfMonth(1) to today.withDayOfMonth(today.lengthOfMonth())
 
                     AnalyticsTimePeriod.YEARLY ->
-                        today.withDayOfYear(today.lengthOfYear())
+                        today.withDayOfYear(1) to today.withDayOfYear(today.lengthOfYear())
                 }
+
+                val gridOffset = startDate.dayOfWeek.value % 7
+
                 val completedStatsFlow = combine(
                     analyticsRepository.getCompletedGoalsCount(startDate, today),
                     analyticsRepository.getTotalCompletedMillis(startDate, today),
@@ -58,33 +55,17 @@ class AnalyticsViewModel(
                     )
                 }
 
-                val progressStatsFlow = combine(
-                    analyticsRepository.getPartialCompletedMillis(
-                        startDate = startDate,
-                        endDate = today
-                    ),
-                    analyticsRepository.getUnfinishedMillis(
-                        startDate = startDate,
-                        endDate = today
-                    ),
-                    analyticsRepository.getCompletedScheduledMillis(
+                val dailyAnalyticsFlow =
+                    analyticsRepository.getDailyAnalytics(
                         startDate = startDate,
                         endDate = today
                     )
-                ){partialMillis, unfinishedMillis, completedScheduledMillis ->
-                    ProgressStats(
-                        partialMillis = partialMillis,
-                        unfinishedMillis = unfinishedMillis,
-                        completedScheduledMillis = completedScheduledMillis
-                    )
-                }
-
 
                 //The queries will take today only as the end date because of possible incompleted future goals
                 combine(
                     completedStatsFlow,
-                    progressStatsFlow
-                ){ completedStats, progressStats ->
+                    dailyAnalyticsFlow
+                ){ completedStats, dailyAnalytics ->
 
                     //Calculates average completed millis per task
                     val averageCompletedMillis = if (completedStats.completedGoalCount > 0){
@@ -100,20 +81,40 @@ class AnalyticsViewModel(
                         0.0
                     }
 
-                    val percentageMillisSum = progressStats.completedScheduledMillis + progressStats.partialMillis + progressStats.unfinishedMillis
+                    val completedScheduledMillis = dailyAnalytics.sumOf {it.completedScheduledMillis}
+                    val partialMillis = dailyAnalytics.sumOf {it.partialMillis}
+                    val unfinishedMillis = dailyAnalytics.sumOf {it.unfinishedMillis}
+
+                    val percentageMillisSum = completedScheduledMillis + partialMillis + unfinishedMillis
 
                     val completedPercentage: Float
                     val partialPercentage: Float
                     val unfinishedPercentage: Float
 
                     if (percentageMillisSum > 0){
-                        completedPercentage = progressStats.completedScheduledMillis.toFloat() / percentageMillisSum * 100
-                        partialPercentage = progressStats.partialMillis.toFloat() / percentageMillisSum * 100
-                        unfinishedPercentage = progressStats.unfinishedMillis.toFloat() / percentageMillisSum * 100
+                        completedPercentage = completedScheduledMillis.toFloat() / percentageMillisSum * 100
+                        partialPercentage = partialMillis.toFloat() / percentageMillisSum * 100
+                        unfinishedPercentage = unfinishedMillis.toFloat() / percentageMillisSum * 100
                     } else {
                         completedPercentage = 0f
                         partialPercentage = 0f
                         unfinishedPercentage = 0f
+                    }
+
+                    val dailyActivity = dailyAnalytics.map {day ->
+                        val partialAndCompletedMillis = day.completedScheduledMillis + day.partialMillis
+
+                        val dailyPercentageSum = day.completedScheduledMillis + day.partialMillis + day.unfinishedMillis
+                        val dailyPercentage = if (dailyPercentageSum > 0){
+                            partialAndCompletedMillis.toFloat() / dailyPercentageSum * 100
+                        } else {
+                            0f
+                        }
+
+                        DailyActivity(
+                            date = day.date,
+                            completionPercentage = dailyPercentage
+                        )
                     }
 
                     AnalyticsUiState(
@@ -126,7 +127,9 @@ class AnalyticsViewModel(
                         scheduledTimeUtilization = scheduledTimeUtilization,
                         completedPercentage = completedPercentage,
                         partialPercentage = partialPercentage,
-                        unfinishedPercentage = unfinishedPercentage
+                        unfinishedPercentage = unfinishedPercentage,
+                        gridOffset = gridOffset,
+                        dailyActivity = dailyActivity
                     )
                 }
             }.stateIn(
@@ -146,10 +149,15 @@ data class CompletedStats(
     val totalScheduledMillis: Long
 )
 
-data class ProgressStats(
+/*data class ProgressStats(
     val partialMillis: Long,
     val unfinishedMillis: Long,
     val completedScheduledMillis: Long
+)*/
+
+data class DailyActivity(
+    val date: LocalDate,
+    val completionPercentage: Float,
 )
 
 data class AnalyticsUiState(
@@ -162,7 +170,9 @@ data class AnalyticsUiState(
     val scheduledTimeUtilization: Double = 0.0,
     val completedPercentage: Float = 0f,
     val partialPercentage: Float = 0f,
-    val unfinishedPercentage: Float = 0f
+    val unfinishedPercentage: Float = 0f,
+    val gridOffset: Int = 0,
+    val dailyActivity: List<DailyActivity> = listOf()
 )
 
 enum class AnalyticsTimePeriod{
