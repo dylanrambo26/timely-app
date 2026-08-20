@@ -17,6 +17,7 @@ Have you ever found yourself wondering where all your time went? It's easy to sp
 - Edit scheduled goals
 - Delete scheduled goals
 - Schedule goals for specific dates
+- Analytics Dashboard
 - View daily schedule
 - Navigate between days
 - Current task time tracking
@@ -27,7 +28,6 @@ Have you ever found yourself wondering where all your time went? It's easy to sp
 
 ### Planned Features
 
-- [ ] Analytics dashboard
 - [ ] Custom themes
 - [ ] Notifications & reminders
 - [ ] Goal completion history
@@ -49,11 +49,18 @@ Have you ever found yourself wondering where all your time went? It's easy to sp
 | Create Goal                            | Current Task                    |
 |----------------------------------------|---------------------------------|
 | ![Create Goal Screen](images/create_goal_screen.jpg) | ![Current Task Screen](images/current_task_screen.jpg) |
+
+| Analytics Part 1                       | Analytics Part 2                |
+|----------------------------------------|---------------------------------|
+| ![View Goals Screen](images/analytics_screen_part_1.jpg) | ![Edit Goals Screen](images/analytics_screen_part_2.jpg) |
 ---
 
 ## 🎥 Demo
 
 ![Timely Demo GIF](images/timely_demo.gif)
+
+## Analytics Demo
+![Timely Analytics Demo GIF](images/timely_analytics_demo.gif)
 
 Link To Full Demo Video
 [Timely Demo Video (Youtube)](https://youtu.be/0Wy609OTCPI)
@@ -98,6 +105,7 @@ UI (Jetpack Compose)
 app/src/main/java/com/example/timemanagementapp
 ├── data/
 │   ├── alarm/
+│   ├── analytics/
 │   ├── calendar/
 │   └── goal/
 │   └── scheduledgoal/
@@ -111,17 +119,25 @@ app/src/main/java/com/example/timemanagementapp
 │
 ├── ui/
 │   ├── add/
+│   ├── analytics/
 │   ├── calendar/
 │   ├── components/
+        └── analytics/
+        ├── lists/
+        ├── time/
+        ├── AddGoalButton.kt
+        ├── ColorLegend.kt
 │   └── createGoal/
 │   └── currenttask/
-│   └── edit/
+│   └── editReusable/
+│   └── editScheduled/
 │   └── goal/
 │   └── home/
 │   └── navigation/
 │   └── theme/
 │   └── viewgoals/
 │   └── AppViewModelProvider.kt
+│   └── TimelyScaffold.kt
 │
 ├── util/
 ├── MainActivity.kt
@@ -169,8 +185,10 @@ Open the project in Android Studio and run it on an emulator or Android device.
 4. Track the remaining available time as goals are scheduled.
 5. Modify or remove scheduled goals as your plans change.
 6. Select a goal to be tracked as the current task you are working on.
+7. If you want to be notified when the task time is up, accept permissions for alarms and notifications.
 7. When your task time is up, it will notify you it is complete.
 8. View goals to see complete and incomplete goals to see what to work on next.
+9. Check analytics page to see percentages of time completed, time utilization, etc.
 
 ---
 
@@ -185,14 +203,14 @@ Open the project in Android Studio and run it on an emulator or Android device.
 - [x] Current task notifications
 - [x] Remaining time calculation
 - [x] Navigation between screens
+- [x] Analytics page
 
 ### 🚧 In Progress
 
-- [ ] Analytics page
+- [ ] Goal completion history 
 
 ### 📅 Planned
 
-- [ ] Analytics Dashboard
 - [ ] Custom themes
 - [ ] Notification reminders
 - [ ] Recurring goals

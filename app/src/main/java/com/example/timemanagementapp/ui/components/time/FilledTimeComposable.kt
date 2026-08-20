@@ -1,4 +1,4 @@
-package com.example.timemanagementapp.ui.components
+package com.example.timemanagementapp.ui.components.time
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -12,21 +12,30 @@ import com.example.timemanagementapp.util.getTimeRemainingInDay
 import com.example.timemanagementapp.util.millisUntilNextMinute
 import kotlinx.coroutines.delay
 
+
 @Composable
-fun TimeRemainingInDay(){
-    var minutesLeft by remember {
-        mutableIntStateOf(getTimeRemainingInDay())
+fun FilledTime(remaining: Int){
+    var filledTime by remember {
+        mutableIntStateOf(
+            minOf(
+                (60*24) - remaining,
+                getTimeRemainingInDay()
+            )
+        )
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(remaining) {
         while(true){
-            minutesLeft = getTimeRemainingInDay()
+            filledTime = minOf(
+                (60*24) - remaining,
+                getTimeRemainingInDay()
+            )
             delay(millisUntilNextMinute())
         }
     }
 
     DisplayTime(
-        duration = minutesLeft,
-        title = stringResource(R.string.time_remaining_in_day)
+        duration = filledTime,
+        title = stringResource(R.string.time_filled_of_remaining_time_in_day) + "\n"
     )
 }

@@ -34,7 +34,7 @@ import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.testGoalsSizeThree
 import com.example.timemanagementapp.ui.AppViewModelProvider
-import com.example.timemanagementapp.ui.components.GoalTemplateList
+import com.example.timemanagementapp.ui.components.lists.GoalTemplateList
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 

@@ -1,4 +1,4 @@
-package com.example.timemanagementapp.ui.components
+package com.example.timemanagementapp.ui.components.time
 
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Text

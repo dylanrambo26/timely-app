@@ -1,4 +1,4 @@
-package com.example.timemanagementapp.ui.components
+package com.example.timemanagementapp.ui.components.time
 
 import android.util.Log
 import androidx.compose.runtime.Composable

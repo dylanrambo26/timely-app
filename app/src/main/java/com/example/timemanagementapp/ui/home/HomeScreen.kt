@@ -51,8 +51,8 @@ import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.goal.GoalStatus
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.ui.AppViewModelProvider
-import com.example.timemanagementapp.ui.components.RemainingTaskTime
-import com.example.timemanagementapp.ui.components.TimeRemainingInDay
+import com.example.timemanagementapp.ui.components.time.RemainingTaskTime
+import com.example.timemanagementapp.ui.components.time.TimeRemainingInDay
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskUiState
 import com.example.timemanagementapp.ui.currenttask.CurrentTaskViewModel
 import com.example.timemanagementapp.ui.navigation.NavigationDest
