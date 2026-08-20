@@ -29,12 +29,12 @@ import com.example.timemanagementapp.R
 import com.example.timemanagementapp.data.generateTestDailyActivity
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.TimelyScaffold
+import com.example.timemanagementapp.ui.components.ColorLegend
+import com.example.timemanagementapp.ui.components.LegendItem
 import com.example.timemanagementapp.ui.components.analytics.ActivityGridWeeklyMonthly
 import com.example.timemanagementapp.ui.components.analytics.ActivityGridYearly
-import com.example.timemanagementapp.ui.components.ColorLegend
-import com.example.timemanagementapp.ui.components.time.DisplayTime
 import com.example.timemanagementapp.ui.components.analytics.DonutChart
-import com.example.timemanagementapp.ui.components.LegendItem
+import com.example.timemanagementapp.ui.components.time.DisplayTime
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.ui.theme.activityGridYellow

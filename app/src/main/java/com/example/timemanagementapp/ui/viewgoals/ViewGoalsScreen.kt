@@ -39,9 +39,9 @@ import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.components.ColorLegend
-import com.example.timemanagementapp.ui.components.time.DisplayTime
 import com.example.timemanagementapp.ui.components.LegendItem
 import com.example.timemanagementapp.ui.components.lists.ScheduledGoalList
+import com.example.timemanagementapp.ui.components.time.DisplayTime
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.ui.theme.completedGoal

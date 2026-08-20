@@ -38,8 +38,8 @@ import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.data.testGoalsSizeThree
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.components.AddGoalButton
-import com.example.timemanagementapp.ui.components.time.DisplayTime
 import com.example.timemanagementapp.ui.components.lists.GoalTemplateList
+import com.example.timemanagementapp.ui.components.time.DisplayTime
 import com.example.timemanagementapp.ui.goal.GoalListUiState
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.navigation.NavigationDest
