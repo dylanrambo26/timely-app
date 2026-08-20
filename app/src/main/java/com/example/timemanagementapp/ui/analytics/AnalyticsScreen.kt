@@ -31,6 +31,7 @@ import com.example.timemanagementapp.data.generateTestDailyActivity
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.TimelyScaffold
 import com.example.timemanagementapp.ui.components.ActivityGridWeeklyMonthly
+import com.example.timemanagementapp.ui.components.ActivityGridYearly
 import com.example.timemanagementapp.ui.components.ColorLegend
 import com.example.timemanagementapp.ui.components.DisplayTime
 import com.example.timemanagementapp.ui.components.DonutChart
@@ -184,6 +185,12 @@ fun AnalyticsBody(
                 displayEndDate = analyticsUiState.endDate
             )
         }
+        else{
+            ActivityGridYearly(
+                dailyActivity = analyticsUiState.dailyActivity,
+                year = analyticsUiState.startDate.year,
+            )
+        }
 
         ColorLegend(
             items = listOf(
@@ -211,7 +218,7 @@ fun AnalyticsBody(
 
 @Preview(
     showBackground = true,
-    heightDp = 1400
+    heightDp = 1400,
 )
 @Composable
 fun AnalyticsBodyPreview(){
@@ -221,7 +228,7 @@ fun AnalyticsBodyPreview(){
         val scheduledMillis = 11 * 60 * 60_000L
         val today = LocalDate.now()
         val monthlyOffset = today.withDayOfMonth(1).dayOfWeek.value % 7
-        val period = AnalyticsTimePeriod.MONTHLY
+        val period = AnalyticsTimePeriod.YEARLY
         val (startDate, endDate) = when(period){
             AnalyticsTimePeriod.WEEKLY ->
                 today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)) to
@@ -235,7 +242,7 @@ fun AnalyticsBodyPreview(){
         }
         AnalyticsBody(
             analyticsUiState = AnalyticsUiState(
-                selectedPeriod = AnalyticsTimePeriod.MONTHLY,
+                selectedPeriod = AnalyticsTimePeriod.YEARLY,
                 startDate = startDate,
                 endDate = endDate,
                 completedGoalCount = completedGoals,
@@ -246,7 +253,7 @@ fun AnalyticsBodyPreview(){
                 partialPercentage = 35.0f,
                 unfinishedPercentage = 35.0f,
                 gridOffset = monthlyOffset,
-                dailyActivity = generateTestDailyActivity(AnalyticsTimePeriod.MONTHLY)
+                dailyActivity = generateTestDailyActivity(AnalyticsTimePeriod.YEARLY)
             ),
             updateTimePeriod = {}
         )
