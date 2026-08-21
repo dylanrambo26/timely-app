@@ -140,7 +140,7 @@ fun GoalInformation(
             modifier = Modifier
                 .weight(1f)
         ) {
-            val formattedDate = formatLocalDateToShorthandDate(selectedDate)
+            val formattedDate = formatLocalDateToShorthandDate(selectedDate, "Today's")
             IconButton(
                 onClick = {
                     onViewGoalsClicked()

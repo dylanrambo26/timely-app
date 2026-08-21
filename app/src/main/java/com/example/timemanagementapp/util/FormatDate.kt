@@ -15,9 +15,9 @@ private val monthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
  * @return String formatted as the mm/dd shorthand,
  * ex. (Local Date of 2026-07-15 -> String of "7/15")
  */
-fun formatLocalDateToShorthandDate(date: LocalDate): String {
+fun formatLocalDateToShorthandDate(date: LocalDate, todayString: String): String {
     if (date == LocalDate.now()){
-        return "Today's"
+        return todayString
     }
 
     return date.format(shorthandDateFormatter)

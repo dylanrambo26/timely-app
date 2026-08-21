@@ -319,10 +319,14 @@ fun AddGoalButtons(
             ) {
                 selectedDate?.let {date ->
                     Text(
-                        text = stringResource(
-                            R.string.save_goal_and_add_to_date,
-                            formatLocalDateToShorthandDate(date)
-                        ),
+                        text = if (!goalUiState.isGoalRecurring){
+                            stringResource(
+                                R.string.save_goal_and_add_to_date,
+                                formatLocalDateToShorthandDate(date, "Today")
+                            )
+                        } else {
+                            stringResource(R.string.save_and_schedule)
+                        },
                         fontSize = 16.sp,
                     )
                 }
@@ -425,12 +429,11 @@ fun CreateGoalScreenPreview(){
         CreateGoalBody(
             goalUiState = GoalUiState(
                 GoalDetails(
-                    title = "Title", hours = "1", minutes = "30"
+                    title = "", hours = "1", minutes = "30"
                 ),
                 isEntryValid = false,
                 errorMessage = R.string.invalid_title,
-                isGoalRecurring = true,
-                recurrenceType = RecurrenceType.WEEKLY
+                isGoalRecurring = false,
             ),
             onGoalValueChange = {},
             onSaveGoalClicked = {},

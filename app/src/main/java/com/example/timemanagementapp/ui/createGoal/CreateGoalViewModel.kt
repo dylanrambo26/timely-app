@@ -165,7 +165,6 @@ data class GoalUiState(
     val errorMessage: Int? = null,
     val isDurationEditable: Boolean = true,
     val isGoalRecurring: Boolean = false,
-    val recurrenceType: RecurrenceType? = null,
     val recurringDays: Set<DayOfWeek> = emptySet()
 )
 
@@ -194,8 +193,3 @@ fun Goal.toGoalDetails(): GoalDetails = GoalDetails(
     hours = hours.toString(),
     minutes = minutes.toString()
 )
-
-enum class RecurrenceType {
-    DAILY,
-    WEEKLY
-}
