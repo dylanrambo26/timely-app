@@ -16,11 +16,14 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -31,11 +34,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.room.util.TableInfo
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
@@ -48,7 +53,11 @@ import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.util.formatLocalDateToShorthandDate
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
 import java.time.LocalDate
+import java.util.Locale
+import kotlin.collections.emptySet
+import java.time.format.TextStyle as DateTextStyle
 
 
 object CreateGoalDestination : NavigationDest{
@@ -102,6 +111,9 @@ fun CreateGoalScreen(
             onCancelButtonClicked = navigateBack,
             showSaveGoalAndAddToDateButton = createGoalViewModel.canAddGoalToDate,
             modifier = Modifier.padding(innerPadding),
+            onRecurringChange = createGoalViewModel::updateIsGoalRecurring,
+            onDailyChange = createGoalViewModel::updateAllRecurringDays,
+            onRecurringDayChange = createGoalViewModel::onRecurringDayChange,
             selectedDate = selectedDate
         )
     }
@@ -114,6 +126,9 @@ fun CreateGoalBody(
     onGoalValueChange: (GoalDetails) -> Unit,
     onSaveGoalClicked: () -> Unit,
     onSaveGoalAndAddToDateClicked: () -> Unit,
+    onRecurringChange: (Boolean) -> Unit,
+    onDailyChange: (Boolean) -> Unit,
+    onRecurringDayChange: (DayOfWeek, Boolean) -> Unit,
     onCancelButtonClicked: () -> Unit,
     showSaveGoalAndAddToDateButton: Boolean,
     modifier: Modifier = Modifier,
@@ -146,6 +161,14 @@ fun CreateGoalBody(
             onValueChange = onGoalValueChange,
             modifier = Modifier.fillMaxWidth()
         )
+
+        RecurringGoalBody(
+            goalUiState = goalUiState,
+            onRecurringChange = onRecurringChange,
+            onDailyChange = onDailyChange,
+            onRecurringDayChange = onRecurringDayChange
+        )
+
         //Error Message Space
         Box(
             modifier = Modifier
@@ -173,6 +196,102 @@ fun CreateGoalBody(
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
+
+@Composable
+fun RecurringGoalBody(
+    goalUiState: GoalUiState,
+    onRecurringChange: (Boolean) -> Unit,
+    onDailyChange: (Boolean) -> Unit,
+    onRecurringDayChange: (DayOfWeek, Boolean) -> Unit
+){
+    Column(){
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Text(
+                text = "Make Goal Recurring?"
+            )
+            Checkbox(
+                checked = goalUiState.isGoalRecurring,
+                onCheckedChange = onRecurringChange,
+                colors = CheckboxDefaults.colors(
+                    checkedColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        }
+        if (goalUiState.isGoalRecurring){
+            RecurrenceOptions(
+                goalUiState = goalUiState,
+                onDailyChange = onDailyChange,
+                onRecurringDayChange = onRecurringDayChange
+            )
+        }
+    }
+
+}
+
+@Composable
+fun RecurrenceOptions(
+    goalUiState: GoalUiState,
+    onRecurringDayChange: (DayOfWeek, Boolean) -> Unit,
+    onDailyChange: (Boolean) -> Unit,
+){
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Text(
+            text = "Daily"
+        )
+        Checkbox(
+            checked = DayOfWeek.entries.all {day ->
+                day in goalUiState.recurringDays
+            },
+            onCheckedChange = onDailyChange,
+            colors = CheckboxDefaults.colors(
+                checkedColor = MaterialTheme.colorScheme.primary
+            )
+        )
+    }
+    DaysOfWeekSelection(
+        goalUiState = goalUiState,
+        onRecurringDayChange = onRecurringDayChange
+    )
+
+}
+
+@Composable
+fun DaysOfWeekSelection(
+    goalUiState: GoalUiState,
+    onRecurringDayChange: (DayOfWeek, Boolean) -> Unit
+){
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        DayOfWeek.entries.forEach { day ->
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = day.getDisplayName(DateTextStyle.SHORT, Locale.getDefault())
+                )
+                Checkbox(
+                    checked = day in goalUiState.recurringDays,
+                    onCheckedChange = {isChecked ->
+                        onRecurringDayChange(day, isChecked)
+                    }
+                )
+            }
+        }
+    }
+}
+
+
 
 @Composable
 fun AddGoalButtons(
@@ -309,7 +428,9 @@ fun CreateGoalScreenPreview(){
                     title = "Title", hours = "1", minutes = "30"
                 ),
                 isEntryValid = false,
-                errorMessage = R.string.invalid_title
+                errorMessage = R.string.invalid_title,
+                isGoalRecurring = true,
+                recurrenceType = RecurrenceType.WEEKLY
             ),
             onGoalValueChange = {},
             onSaveGoalClicked = {},
@@ -318,8 +439,11 @@ fun CreateGoalScreenPreview(){
             goalListUiState = GoalListUiState(
                 goalList = testGoalsSizeThree,
             ),
-            showSaveGoalAndAddToDateButton = false,
-            selectedDate = LocalDate.now()
+            showSaveGoalAndAddToDateButton = true,
+            selectedDate = LocalDate.now(),
+            onRecurringChange = {},
+            onDailyChange = {},
+            onRecurringDayChange = {_,_ ->}
         )
     }
 }

@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
 import java.time.LocalDate
 
 class CreateGoalViewModel(
@@ -43,6 +44,36 @@ class CreateGoalViewModel(
                 _date.value = calendarEventsRepository.getEventById(calendarEventId)?.date
             }
         }
+    }
+
+    fun updateIsGoalRecurring(isRecurring: Boolean){
+        goalUiState = goalUiState.copy(
+            isGoalRecurring = isRecurring
+        )
+    }
+
+    fun updateAllRecurringDays(isChecked: Boolean){
+        goalUiState = goalUiState.copy(
+            recurringDays = if(isChecked){
+                DayOfWeek.entries.toSet()
+            } else {
+                emptySet()
+            }
+        )
+    }
+
+    fun onRecurringDayChange(
+        day: DayOfWeek,
+        isChecked: Boolean
+    ){
+        goalUiState = goalUiState.copy(
+            recurringDays =
+                if (isChecked){
+                    goalUiState.recurringDays + day
+                } else {
+                    goalUiState.recurringDays - day
+                }
+        )
     }
 
     fun updateUiState(goalDetails: GoalDetails){
@@ -132,7 +163,10 @@ data class GoalUiState(
     val goalDetails: GoalDetails = GoalDetails(),
     val isEntryValid: Boolean = false,
     val errorMessage: Int? = null,
-    val isDurationEditable: Boolean = true
+    val isDurationEditable: Boolean = true,
+    val isGoalRecurring: Boolean = false,
+    val recurrenceType: RecurrenceType? = null,
+    val recurringDays: Set<DayOfWeek> = emptySet()
 )
 
 data class GoalDetails(
@@ -160,3 +194,8 @@ fun Goal.toGoalDetails(): GoalDetails = GoalDetails(
     hours = hours.toString(),
     minutes = minutes.toString()
 )
+
+enum class RecurrenceType {
+    DAILY,
+    WEEKLY
+}
