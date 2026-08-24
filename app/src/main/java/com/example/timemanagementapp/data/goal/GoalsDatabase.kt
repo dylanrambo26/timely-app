@@ -16,9 +16,10 @@ import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalDao
     entities = [
         Goal::class,
         CalendarEvent::class,
-        ScheduledGoal::class
+        ScheduledGoal::class,
+        RecurrenceRule::class
     ],
-    version = 13,
+    version = 14,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -27,6 +28,7 @@ abstract class GoalsDatabase : RoomDatabase(){
     abstract fun calendarEventDao(): CalendarEventDao
     abstract fun scheduledGoalDao(): ScheduledGoalDao
     abstract fun analyticsDao(): AnalyticsDao
+    abstract fun recurrenceRuleDao(): RecurrenceRuleDao
     companion object {
 
         @Volatile

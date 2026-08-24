@@ -2,7 +2,10 @@ package com.example.timemanagementapp.data.goal
 
 import kotlinx.coroutines.flow.Flow
 
-class OfflineGoalsRepository(private val goalDao: GoalDao): GoalsRepository {
+class OfflineGoalsRepository(
+    private val goalDao: GoalDao,
+    private val recurrenceRuleDao: RecurrenceRuleDao
+): GoalsRepository {
     override fun getAllGoalsStream(): Flow<List<Goal>> = goalDao.getAllGoals()
 
     override fun getGoalStream(id: Int): Flow<Goal?> = goalDao.getGoal(id)
@@ -18,6 +21,14 @@ class OfflineGoalsRepository(private val goalDao: GoalDao): GoalsRepository {
     override suspend fun deleteGoal(goal: Goal) = goalDao.delete(goal)
 
     override suspend fun updateGoal(goal: Goal) = goalDao.update(goal)
+
+    override suspend fun insertRecurrenceRule(recurrenceRule: RecurrenceRule): Long{
+        return recurrenceRuleDao.insertRecurrenceRule(recurrenceRule)
+    }
+
+    override suspend fun updateRecurrenceRule(recurrenceRule: RecurrenceRule) = recurrenceRuleDao.updateRecurrenceRule(recurrenceRule)
+
+    override suspend fun deleteRecurrenceRule(recurrenceRule: RecurrenceRule) = recurrenceRuleDao.deleteRecurrenceRule(recurrenceRule)
 
     /*override suspend fun updateGoalStatus(id: Int, status: GoalStatus) = goalDao.updateGoalStatus(id, status)
 

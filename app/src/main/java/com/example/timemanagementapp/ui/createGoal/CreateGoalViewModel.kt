@@ -10,6 +10,7 @@ import com.example.timemanagementapp.R
 import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
 import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.goal.GoalsRepository
+import com.example.timemanagementapp.data.goal.RecurrenceRule
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -156,7 +157,12 @@ class CreateGoalViewModel(
         val goalId = goalsRepository.insertGoal(goal)
 
         if(goalUiState.isGoalRecurring){
-            scheduleRecurringGoals()
+            createRecurrenceRule(
+                recurringDays = goalUiState.recurringDays,
+                endDate = goalUiState.recurrenceEndDate,
+                goal = goal,
+                goalId = goalId
+            )
         }
         else {
             //Insert scheduled goal with reusable new reusable goal values
@@ -173,10 +179,62 @@ class CreateGoalViewModel(
         onNavigate(eventId)
     }
 
-    suspend fun scheduleRecurringGoals(
-
+    private suspend fun createRecurrenceRule(
+        recurringDays: Set<DayOfWeek>,
+        goalId: Int,
+        endDate: LocalDate?,
+        goal: Goal
     ){
+        val startDate = calculateRecurrenceStartDate(recurringDays)
 
+        val newRecurrenceRule = RecurrenceRule(
+            goalId = goalId,
+            recurringDays = recurringDays,
+            startDate = startDate,
+            endDate = endDate
+        )
+        goalsRepository.insertRecurrenceRule(newRecurrenceRule)
+
+        scheduleRecurringGoals(
+            recurrenceRule = newRecurrenceRule,
+            goal = goal
+        )
+    }
+
+    private suspend fun scheduleRecurringGoals(
+        recurrenceRule: RecurrenceRule,
+        goal: Goal
+    ){
+        val schedulingEndDateExclusive = recurrenceRule.endDate?.plusDays(1) ?: recurrenceRule.startDate.plusMonths(3).plusDays(1)
+
+        val dates = recurrenceRule.startDate.datesUntil(schedulingEndDateExclusive)
+
+        for (date in dates){
+            if (date.dayOfWeek in recurrenceRule.recurringDays){
+                val eventId = calendarEventsRepository.getOrCreateEventIdForDate(date)
+
+                val scheduledGoal = ScheduledGoal(
+                    goalId = recurrenceRule.goalId,
+                    eventId = eventId,
+                    scheduledGoalTitle = goal.goalTitle,
+                    scheduledHours = goal.hours,
+                    scheduledMinutes = goal.minutes
+                )
+                scheduledGoalsRepository.insertScheduledGoal(scheduledGoal)
+            }
+        }
+    }
+
+    private fun calculateRecurrenceStartDate(
+        recurringDays: Set<DayOfWeek>
+    ): LocalDate{
+        var date = LocalDate.now()
+
+        while(date.dayOfWeek !in recurringDays){
+            date = date.plusDays(1)
+        }
+
+        return date
     }
 }
 

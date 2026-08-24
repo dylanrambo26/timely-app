@@ -320,7 +320,8 @@ fun EndDateBody(
             onCheckedChange = onEndDateEnabledChanged,
             colors = CheckboxDefaults.colors(
                 checkedColor = MaterialTheme.colorScheme.primary
-            )
+            ),
+            enabled = goalUiState.recurringDays.isNotEmpty()
         )
     }
     if(goalUiState.hasRecurrenceEndDate){

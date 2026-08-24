@@ -18,6 +18,10 @@ interface GoalsRepository {
 
     suspend fun updateGoal(goal: Goal)
 
+    suspend fun insertRecurrenceRule(recurrenceRule: RecurrenceRule): Long
+    suspend fun updateRecurrenceRule(recurrenceRule: RecurrenceRule)
+    suspend fun deleteRecurrenceRule(recurrenceRule: RecurrenceRule)
+
     /*suspend fun updateGoalStatus(id: Int, status: GoalStatus)
 
     suspend fun updateCompletedMillis(id: Int, millis: Long)*/
