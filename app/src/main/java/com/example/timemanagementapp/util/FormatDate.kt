@@ -6,6 +6,8 @@ import java.time.format.DateTimeFormatter
 
 private val shorthandDateFormatter = DateTimeFormatter.ofPattern("M/d")
 
+private val shorthandDateExtendedFormatter = DateTimeFormatter.ofPattern("MM/dd/YYYY")
+
 private val calendarDateFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy")
 
 private val monthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
@@ -47,4 +49,8 @@ fun formatLocalDateToAnalyticsRange(startDate: LocalDate, endDate: LocalDate): S
     val endDateFormatter = DateTimeFormatter.ofPattern("MMM d yyyy")
 
     return "${startDate.format(startDateFormatter)} - ${endDate.format(endDateFormatter)}"
+}
+
+fun formatLocalDateToExtendedShorthandDate(date: LocalDate): String {
+    return date.format(shorthandDateExtendedFormatter)
 }

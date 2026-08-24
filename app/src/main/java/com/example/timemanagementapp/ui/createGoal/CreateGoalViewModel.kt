@@ -52,6 +52,18 @@ class CreateGoalViewModel(
         )
     }
 
+    fun updateHasRecurrenceEndDate(hasRecurrenceEndDate: Boolean){
+        goalUiState = goalUiState.copy(
+            hasRecurrenceEndDate = hasRecurrenceEndDate
+        )
+    }
+
+    fun updateRecurrenceEndDate(recurrenceEndDate: LocalDate?){
+        goalUiState = goalUiState.copy(
+            recurrenceEndDate = recurrenceEndDate
+        )
+    }
+
     fun updateAllRecurringDays(isChecked: Boolean){
         goalUiState = goalUiState.copy(
             recurringDays = if(isChecked){
@@ -143,18 +155,28 @@ class CreateGoalViewModel(
 
         val goalId = goalsRepository.insertGoal(goal)
 
-        //Insert scheduled goal with reusable new reusable goal values
-        scheduledGoalsRepository.insertScheduledGoal(
-            ScheduledGoal(
-                goalId = goalId,
-                eventId = eventId,
-                scheduledGoalTitle = goal.goalTitle,
-                scheduledHours = goal.hours,
-                scheduledMinutes = goal.minutes,
+        if(goalUiState.isGoalRecurring){
+            scheduleRecurringGoals()
+        }
+        else {
+            //Insert scheduled goal with reusable new reusable goal values
+            scheduledGoalsRepository.insertScheduledGoal(
+                ScheduledGoal(
+                    goalId = goalId,
+                    eventId = eventId,
+                    scheduledGoalTitle = goal.goalTitle,
+                    scheduledHours = goal.hours,
+                    scheduledMinutes = goal.minutes,
+                )
             )
-        )
-
+        }
         onNavigate(eventId)
+    }
+
+    suspend fun scheduleRecurringGoals(
+
+    ){
+
     }
 }
 
@@ -165,7 +187,9 @@ data class GoalUiState(
     val errorMessage: Int? = null,
     val isDurationEditable: Boolean = true,
     val isGoalRecurring: Boolean = false,
-    val recurringDays: Set<DayOfWeek> = emptySet()
+    val recurringDays: Set<DayOfWeek> = emptySet(),
+    val recurrenceEndDate: LocalDate? = null,
+    val hasRecurrenceEndDate: Boolean = false
 )
 
 data class GoalDetails(
