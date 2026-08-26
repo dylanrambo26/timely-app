@@ -54,7 +54,8 @@ object AppViewModelProvider{
 
         initializer {
             CalendarViewModel(
-                timelyApplication().container.calendarEventsRepository
+                timelyApplication().container.calendarEventsRepository,
+                timelyApplication().container.scheduledGoalsRepository
             )
         }
 

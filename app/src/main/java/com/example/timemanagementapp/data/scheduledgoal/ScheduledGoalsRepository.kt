@@ -12,14 +12,6 @@ interface ScheduledGoalsRepository{
 
     suspend fun getScheduledGoalOnce(id: Int): ScheduledGoal
 
-    /*suspend fun getScheduledGoalsByEvent(eventId: Int): Flow<List<ScheduledGoal>>
-
-    suspend fun getScheduledGoalById(goalId: Int): ScheduledGoal?
-
-    suspend fun updateScheduledGoalStatus(id: Int, status: GoalStatus)
-
-    suspend fun updateCompletedMillis(id: Int, millis: Long)*/
-
     fun getScheduledGoals(eventId: Int): Flow<List<ScheduledGoal>>
 
     fun getScheduledGoal(id: Int): Flow<ScheduledGoal>
@@ -31,4 +23,6 @@ interface ScheduledGoalsRepository{
     suspend fun isValidDurationForDate(goalTotalMinutes: Int, eventId: Int, excludedScheduledGoalId: Int?): Boolean
 
     suspend fun updateFutureScheduledGoalsFromEditedTemplate(goalId: Int, title: String, hours: Int, minutes: Int, startDate: LocalDate)
+
+    fun getDatesWithScheduledGoals(startDate: LocalDate, endDate: LocalDate): Flow<List<LocalDate>>
 }

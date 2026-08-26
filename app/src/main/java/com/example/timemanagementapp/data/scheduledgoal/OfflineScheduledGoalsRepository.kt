@@ -17,7 +17,7 @@ class OfflineScheduledGoalsRepository(
 
     override suspend fun getScheduledGoalOnce(id: Int): ScheduledGoal = scheduledGoalDao.getScheduledGoalOnce(id)
 
-    override fun getScheduledGoals(eventId: Int): Flow<List<ScheduledGoal>> = scheduledGoalDao.getScheduledGoals(eventId)
+    override fun getScheduledGoals(eventId: Int): Flow<List<ScheduledGoal>> = scheduledGoalDao.getScheduledGoalsForDate(eventId)
 
     override fun getScheduledGoal(id: Int): Flow<ScheduledGoal> = scheduledGoalDao.getScheduledGoal(id)
 
@@ -78,4 +78,6 @@ class OfflineScheduledGoalsRepository(
     ) {
         scheduledGoalDao.updateFutureScheduledGoalsFromEditedTemplate(goalId, title, hours, minutes, startDate)
     }
+
+    override fun getDatesWithScheduledGoals(startDate: LocalDate, endDate: LocalDate): Flow<List<LocalDate>> = scheduledGoalDao.getDatesWithScheduledGoals(startDate, endDate)
 }

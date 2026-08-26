@@ -11,12 +11,14 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -27,17 +29,23 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
+import com.example.timemanagementapp.data.generateTestDatesWithScheduledGoals
 import com.example.timemanagementapp.ui.AppViewModelProvider
+import com.example.timemanagementapp.ui.components.ColorLegend
+import com.example.timemanagementapp.ui.components.LegendItem
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.ui.theme.selectedDate
@@ -46,6 +54,7 @@ import com.example.timemanagementapp.util.formatYearMonthToMonthYearString
 import com.example.timemanagementapp.util.generateCalendarCellsPreview
 import java.time.LocalDate
 import java.time.YearMonth
+import java.time.temporal.TemporalAdjusters
 
 object CalendarDestination : NavigationDest {
     override val route = "calendar"
@@ -59,6 +68,8 @@ fun CalendarScreen(
     onViewGoalsClicked: (Int?) -> Unit = {},
     calendarViewModel: CalendarViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ){
+    val datesWithGoals by calendarViewModel.datesWithGoals.collectAsState()
+    val displayedMonth by calendarViewModel.displayedMonth.collectAsState()
     Scaffold(
         topBar = {
             TimelySmallTopAppBar(stringResource(R.string.calendar))
@@ -73,7 +84,7 @@ fun CalendarScreen(
     ) {
         innerPadding ->
         CalendarBody(
-            displayedMonth = calendarViewModel.displayedMonth,
+            displayedMonth = displayedMonth,
             calendarCells = calendarViewModel.calendarCells,
             selectedDate = calendarViewModel.selectedDate,
             onPrevMonth = calendarViewModel::previousMonth,
@@ -84,6 +95,7 @@ fun CalendarScreen(
                     onViewGoalsClicked(eventId)
                 }
             },
+            datesWithGoals = datesWithGoals,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -92,6 +104,7 @@ fun CalendarScreen(
 @Composable
 fun CalendarBody(
     calendarCells: List<LocalDate?> = emptyList(),
+    datesWithGoals: Set<LocalDate>,
     selectedDate: LocalDate = LocalDate.now(),
     onPrevMonth: () -> Unit,
     onNextMonth: () -> Unit,
@@ -103,7 +116,7 @@ fun CalendarBody(
     Column(
         modifier = modifier
             .fillMaxSize(),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         CalendarHeader(
             previousMonthClicked = onPrevMonth,
@@ -114,7 +127,13 @@ fun CalendarBody(
         CalendarGrid(
             calendarCells = calendarCells,
             selectedDate = selectedDate,
+            datesWithGoals = datesWithGoals,
             onDateSelected = onDateSelected,
+        )
+        ColorLegend(
+            items = listOf(LegendItem(label = "Has Scheduled Goals", color = MaterialTheme.colorScheme.inversePrimary)),
+            isCircleShape = true,
+            modifier = Modifier.padding(16.dp)
         )
         GoalInformation(
             selectedDate = selectedDate,
@@ -168,6 +187,7 @@ fun GoalInformation(
 fun CalendarCell(
     date: LocalDate?,
     selectedDate: LocalDate?,
+    hasScheduledGoals: Boolean,
     onClick: (LocalDate) -> Unit,
 ){
     val today = LocalDate.now()
@@ -187,6 +207,7 @@ fun CalendarCell(
         }
     }
 
+    val scheduledDotColor = MaterialTheme.colorScheme.inversePrimary
     Box(
         modifier = Modifier
             .aspectRatio(1f)
@@ -202,7 +223,23 @@ fun CalendarCell(
         contentAlignment = Alignment.Center
     ) {
         if (date != null) {
-            Text(date.dayOfMonth.toString())
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(date.dayOfMonth.toString())
+
+                if(hasScheduledGoals){
+                    Box(
+                        modifier = Modifier
+                            .size(10.dp)
+                            .background(color = scheduledDotColor, shape = CircleShape)
+                    )
+                }
+                else{
+                    Spacer(Modifier.height(10.dp))
+                }
+
+            }
         }
     }
 }
@@ -210,6 +247,7 @@ fun CalendarCell(
 @Composable
 fun CalendarGrid(
     calendarCells: List<LocalDate?>,
+    datesWithGoals: Set<LocalDate>,
     selectedDate: LocalDate,
     onDateSelected: (LocalDate) -> Unit,
 ){
@@ -220,6 +258,7 @@ fun CalendarGrid(
             CalendarCell(
                 date = date,
                 selectedDate = selectedDate,
+                hasScheduledGoals = date in datesWithGoals,
                 onClick = onDateSelected
             )
         }
@@ -288,11 +327,17 @@ fun CalendarHeader(
 @Composable
 fun CalendarBodyPreview(){
     TimeManagementAppTheme {
+        val today = LocalDate.now()
+        val month = today.month
         CalendarBody(
             calendarCells = generateCalendarCellsPreview(month = YearMonth.now()),
-            selectedDate = LocalDate.of(2026, 7, 6),
+            selectedDate = today.plusDays(3),
             onPrevMonth = {},
             onNextMonth = {},
+            datesWithGoals = generateTestDatesWithScheduledGoals(
+                startDate = today.withDayOfMonth(1),
+                endDate = today.with(TemporalAdjusters.lastDayOfMonth())
+            )
         )
     }
 }

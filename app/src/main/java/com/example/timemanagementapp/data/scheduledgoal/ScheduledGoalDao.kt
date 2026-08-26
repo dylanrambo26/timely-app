@@ -27,16 +27,32 @@ interface ScheduledGoalDao {
     @Query("SELECT * from scheduled_goals WHERE scheduledGoalId = :id")
     suspend fun getScheduledGoalOnce(id: Int): ScheduledGoal
 
-    @Transaction
+    //Select dates in the date range that have at least one scheduled goal
+    @Query(
+        """
+            SELECT ce.date
+            FROM calendar_events ce
+            WHERE ce.date BETWEEN :startDate AND :endDate
+                AND EXISTS(
+                    SELECT 1
+                    FROM scheduled_goals sg
+                    WHERE sg.eventId = ce.eventId
+                )
+            """
+    )
+    fun getDatesWithScheduledGoals(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Flow<List<LocalDate>>
+
     @Query(
         """
             SELECT * FROM scheduled_goals
             WHERE eventId = :eventId
         """
     )
-    fun getScheduledGoals(eventId: Int): Flow<List<ScheduledGoal>>
+    fun getScheduledGoalsForDate(eventId: Int): Flow<List<ScheduledGoal>>
 
-    @Transaction
     @Query(
         """
             SELECT * FROM scheduled_goals
@@ -45,7 +61,6 @@ interface ScheduledGoalDao {
     )
     fun getScheduledGoal(id: Int): Flow<ScheduledGoal>
 
-    @Transaction
     @Query(
         """
             SELECT * FROM scheduled_goals

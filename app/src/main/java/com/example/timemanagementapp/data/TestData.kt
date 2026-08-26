@@ -122,3 +122,25 @@ fun generateTestDailyActivity(
 
     return dailyActivity
 }
+
+fun generateTestDatesWithScheduledGoals(
+    startDate: LocalDate,
+    endDate: LocalDate
+): Set<LocalDate>{
+
+    val dates = mutableListOf<LocalDate>()
+    var currentDate = startDate
+    val seededRandom = Random(12345)
+
+    while(!currentDate.isAfter(endDate)){
+        val hasScheduledGoals = seededRandom.nextFloat() > 0.7f
+
+        if(hasScheduledGoals){
+            dates.add(currentDate)
+        }
+
+        currentDate = currentDate.plusDays(1)
+    }
+
+    return dates.toSet()
+}

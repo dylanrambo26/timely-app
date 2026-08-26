@@ -6,29 +6,57 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
+import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 import com.example.timemanagementapp.util.CALENDARGRIDSIZE
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.YearMonth
 
 class CalendarViewModel(
-    val calendarEventsRepository: CalendarEventsRepository
+    val calendarEventsRepository: CalendarEventsRepository,
+    val scheduledGoalsRepository: ScheduledGoalsRepository
 ) : ViewModel() {
-    var displayedMonth by mutableStateOf(YearMonth.now())
-        private set
+
+    private val _displayedMonth = MutableStateFlow(YearMonth.now())
+    val displayedMonth = _displayedMonth.asStateFlow()
 
     var selectedDate by mutableStateOf(LocalDate.now())
         private set
 
     val calendarCells: List<LocalDate?>
-        get() = generateCalendarCells(displayedMonth)
+        get() = generateCalendarCells(displayedMonth.value)
+
+    @OptIn(ExperimentalCoroutinesApi::class)
+    val datesWithGoals: StateFlow<Set<LocalDate>> =
+        displayedMonth
+            .flatMapLatest { month ->
+                scheduledGoalsRepository.getDatesWithScheduledGoals(
+                    month.atDay(1),
+                    month.atEndOfMonth()
+                )
+            }
+            .map { it.toSet() }
+            .stateIn(
+                viewModelScope,
+                SharingStarted.WhileSubscribed(5_000),
+                emptySet()
+            )
 
     fun nextMonth(){
-        displayedMonth = displayedMonth.plusMonths(1)
+        _displayedMonth.update { it.plusMonths(1) }
     }
 
     fun previousMonth(){
-        displayedMonth = displayedMonth.minusMonths(1)
+        _displayedMonth.update { it.minusMonths(1) }
     }
 
     fun selectDate(date: LocalDate){
