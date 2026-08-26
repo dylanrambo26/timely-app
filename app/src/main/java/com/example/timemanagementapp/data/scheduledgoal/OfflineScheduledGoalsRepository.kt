@@ -1,13 +1,19 @@
 package com.example.timemanagementapp.data.scheduledgoal
 
+import com.example.timemanagementapp.data.calendar.CalendarEventDao
+import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
+import com.example.timemanagementapp.data.calendar.OfflineCalendarEventsRepository
 import com.example.timemanagementapp.data.goal.GoalDao
+import com.example.timemanagementapp.data.goal.RecurrenceRuleDao
 import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
 class OfflineScheduledGoalsRepository(
     private val scheduledGoalDao: ScheduledGoalDao,
-    private val goalDao: GoalDao
+    private val goalDao: GoalDao,
+    private val recurrenceRuleDao: RecurrenceRuleDao,
+    private val calendarEventsRepository: CalendarEventsRepository
 ): ScheduledGoalsRepository {
     override suspend fun insertScheduledGoal(scheduledGoal: ScheduledGoal) = scheduledGoalDao.insert(scheduledGoal)
 
@@ -43,7 +49,7 @@ class OfflineScheduledGoalsRepository(
                 eventId = eventId,
                 scheduledGoalTitle = goal.goalTitle,
                 scheduledHours = goal.hours,
-                scheduledMinutes = goal.minutes
+                scheduledMinutes = goal.minutes,
             )
         )
 
@@ -80,4 +86,55 @@ class OfflineScheduledGoalsRepository(
     }
 
     override fun getDatesWithScheduledGoals(startDate: LocalDate, endDate: LocalDate): Flow<List<LocalDate>> = scheduledGoalDao.getDatesWithScheduledGoals(startDate, endDate)
+
+    override suspend fun ensureRecurringGoalsScheduledForRange(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ) {
+        val recurrenceRules =
+            recurrenceRuleDao.getRecurrenceRulesOverlappingRange(
+                startDate,
+                endDate
+            )
+
+        recurrenceRules.forEach { rule ->
+            val goal = goalDao.getGoalOnce(rule.goalId)
+
+            val rangeStart = maxOf(startDate, rule.startDate)
+            val rangeEnd = rule.endDate?.let {
+                minOf(endDate, it)
+            } ?: endDate
+
+            if(rangeStart.isAfter(rangeEnd)){
+                return@forEach
+            }
+
+            var date = rangeStart
+
+            while(!date.isAfter(rangeEnd)){
+                if (date.dayOfWeek in rule.recurringDays){
+                    val eventId = calendarEventsRepository.getOrCreateEventIdForDate(date)
+
+                    val alreadyExists = scheduledGoalDao.recurringScheduledGoalExists(
+                        recurrenceRuleId = rule.recurrenceRuleId,
+                        eventId = eventId
+                    )
+
+                    if(!alreadyExists){
+                        scheduledGoalDao.insert(
+                            ScheduledGoal(
+                                goalId = goal.goalID,
+                                eventId = eventId,
+                                recurrenceRuleId = rule.recurrenceRuleId,
+                                scheduledGoalTitle = goal.goalTitle,
+                                scheduledHours = goal.hours,
+                                scheduledMinutes = goal.minutes
+                            )
+                        )
+                    }
+                }
+                date = date.plusDays(1)
+            }
+        }
+    }
 }

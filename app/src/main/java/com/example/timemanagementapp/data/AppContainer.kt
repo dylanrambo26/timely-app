@@ -35,8 +35,12 @@ interface AppContainer{
 }
 
 class AppDataContainer(private val context: Context) : AppContainer {
+
+    private val database: GoalsDatabase by lazy {
+        GoalsDatabase.getDatabase(context)
+    }
+
     override val goalsRepository: GoalsRepository by lazy {
-        val database = GoalsDatabase.getDatabase(context)
         OfflineGoalsRepository(
             goalDao = database.goalDao(),
             recurrenceRuleDao = database.recurrenceRuleDao()
@@ -51,16 +55,19 @@ class AppDataContainer(private val context: Context) : AppContainer {
         AlarmManagerGoalsRepository(context)
     }
 
-    override val scheduledGoalsRepository: ScheduledGoalsRepository by lazy {
-        OfflineScheduledGoalsRepository(GoalsDatabase.getDatabase(context).scheduledGoalDao(),
-            GoalsDatabase.getDatabase(context).goalDao())
-    }
-
     override val calendarEventsRepository: CalendarEventsRepository by lazy {
-        OfflineCalendarEventsRepository(GoalsDatabase.getDatabase(context).calendarEventDao())
+        OfflineCalendarEventsRepository(database.calendarEventDao())
     }
 
+    override val scheduledGoalsRepository: ScheduledGoalsRepository by lazy {
+        OfflineScheduledGoalsRepository(
+            database.scheduledGoalDao(),
+            database.goalDao(),
+            database.recurrenceRuleDao(),
+            calendarEventsRepository = calendarEventsRepository,
+        )
+    }
     override val analyticsRepository: AnalyticsRepository by lazy {
-        OfflineAnalyticsRepository(GoalsDatabase.getDatabase(context).analyticsDao())
+        OfflineAnalyticsRepository(database.analyticsDao())
     }
 }

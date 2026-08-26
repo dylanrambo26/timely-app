@@ -166,6 +166,7 @@ class CreateGoalViewModel(
         }
         else {
             //Insert scheduled goal with reusable new reusable goal values
+            //Goal is only scheduled once
             scheduledGoalsRepository.insertScheduledGoal(
                 ScheduledGoal(
                     goalId = goalId,
@@ -173,6 +174,7 @@ class CreateGoalViewModel(
                     scheduledGoalTitle = goal.goalTitle,
                     scheduledHours = goal.hours,
                     scheduledMinutes = goal.minutes,
+                    recurrenceRuleId = null
                 )
             )
         }
@@ -193,10 +195,12 @@ class CreateGoalViewModel(
             startDate = startDate,
             endDate = endDate
         )
-        goalsRepository.insertRecurrenceRule(newRecurrenceRule)
-
+        val recurrenceRuleId = goalsRepository.insertRecurrenceRule(newRecurrenceRule)
+        val insertedRecurrenceRule = newRecurrenceRule.copy(
+            recurrenceRuleId = recurrenceRuleId.toInt()
+        )
         scheduleRecurringGoals(
-            recurrenceRule = newRecurrenceRule,
+            recurrenceRule = insertedRecurrenceRule,
             goal = goal
         )
     }
@@ -218,7 +222,8 @@ class CreateGoalViewModel(
                     eventId = eventId,
                     scheduledGoalTitle = goal.goalTitle,
                     scheduledHours = goal.hours,
-                    scheduledMinutes = goal.minutes
+                    scheduledMinutes = goal.minutes,
+                    recurrenceRuleId = recurrenceRule.recurrenceRuleId
                 )
                 scheduledGoalsRepository.insertScheduledGoal(scheduledGoal)
             }

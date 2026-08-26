@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
@@ -50,6 +51,17 @@ class CalendarViewModel(
                 SharingStarted.WhileSubscribed(5_000),
                 emptySet()
             )
+
+    init {
+        viewModelScope.launch {
+            displayedMonth.collectLatest { month ->
+                scheduledGoalsRepository.ensureRecurringGoalsScheduledForRange(
+                    startDate = month.atDay(1),
+                    endDate = month.atEndOfMonth()
+                )
+            }
+        }
+    }
 
     fun nextMonth(){
         _displayedMonth.update { it.plusMonths(1) }

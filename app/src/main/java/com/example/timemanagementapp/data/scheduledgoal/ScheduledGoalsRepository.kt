@@ -25,4 +25,6 @@ interface ScheduledGoalsRepository{
     suspend fun updateFutureScheduledGoalsFromEditedTemplate(goalId: Int, title: String, hours: Int, minutes: Int, startDate: LocalDate)
 
     fun getDatesWithScheduledGoals(startDate: LocalDate, endDate: LocalDate): Flow<List<LocalDate>>
+
+    suspend fun ensureRecurringGoalsScheduledForRange(startDate: LocalDate, endDate: LocalDate)
 }

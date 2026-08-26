@@ -138,4 +138,17 @@ interface ScheduledGoalDao {
             notStartedStatus = GoalStatus.NOT_STARTED
         )
     }
+
+    @Query("""
+        SELECT EXISTS(
+            SELECT 1
+            FROM scheduled_goals
+            WHERE recurrenceRuleId = :recurrenceRuleId
+            AND eventId = :eventId
+        )
+    """)
+    suspend fun recurringScheduledGoalExists(
+        recurrenceRuleId: Int,
+        eventId: Int
+    ): Boolean
 }
