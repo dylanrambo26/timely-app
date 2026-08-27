@@ -1,8 +1,9 @@
-package com.example.timemanagementapp.data.goal
+package com.example.timemanagementapp.data.goal.recurrence
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.PrimaryKey
+import com.example.timemanagementapp.data.goal.Goal
 import java.time.DayOfWeek
 import java.time.LocalDate
 

@@ -1,10 +1,8 @@
 package com.example.timemanagementapp.data.scheduledgoal
 
-import com.example.timemanagementapp.data.calendar.CalendarEventDao
 import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
-import com.example.timemanagementapp.data.calendar.OfflineCalendarEventsRepository
 import com.example.timemanagementapp.data.goal.GoalDao
-import com.example.timemanagementapp.data.goal.RecurrenceRuleDao
+import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRuleDao
 import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate

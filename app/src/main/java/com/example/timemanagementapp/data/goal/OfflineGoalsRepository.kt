@@ -1,5 +1,7 @@
 package com.example.timemanagementapp.data.goal
 
+import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRule
+import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRuleDao
 import kotlinx.coroutines.flow.Flow
 
 class OfflineGoalsRepository(

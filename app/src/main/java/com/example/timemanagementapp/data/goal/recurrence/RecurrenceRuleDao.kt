@@ -1,4 +1,4 @@
-package com.example.timemanagementapp.data.goal
+package com.example.timemanagementapp.data.goal.recurrence
 
 import androidx.room.Dao
 import androidx.room.Delete

@@ -9,6 +9,8 @@ import com.example.timemanagementapp.data.Converters
 import com.example.timemanagementapp.data.analytics.AnalyticsDao
 import com.example.timemanagementapp.data.calendar.CalendarEvent
 import com.example.timemanagementapp.data.calendar.CalendarEventDao
+import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRule
+import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRuleDao
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalDao
 
