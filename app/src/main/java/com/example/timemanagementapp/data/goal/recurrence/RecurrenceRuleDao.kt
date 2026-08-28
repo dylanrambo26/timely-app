@@ -38,4 +38,21 @@ interface RecurrenceRuleDao {
         startDate: LocalDate,
         endDate: LocalDate
     ): List<RecurrenceRule>
+
+    @Query("""
+        SELECT date
+        FROM recurrence_exceptions
+        WHERE recurrenceRuleId = :recurrenceRuleId
+        AND date BETWEEN :startDate AND :endDate
+    """)
+    suspend fun getRecurrenceExceptionDatesForRange(
+        recurrenceRuleId: Int,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): List<LocalDate>
+
+    @Insert
+    suspend fun insertRecurrenceException(
+        recurrenceException: RecurrenceException
+    )
 }

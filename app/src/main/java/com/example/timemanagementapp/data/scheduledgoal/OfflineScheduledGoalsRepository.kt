@@ -2,6 +2,7 @@ package com.example.timemanagementapp.data.scheduledgoal
 
 import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
 import com.example.timemanagementapp.data.goal.GoalDao
+import com.example.timemanagementapp.data.goal.recurrence.RecurrenceException
 import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRuleDao
 import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY
 import kotlinx.coroutines.flow.Flow
@@ -85,6 +86,7 @@ class OfflineScheduledGoalsRepository(
 
     override fun getDatesWithScheduledGoals(startDate: LocalDate, endDate: LocalDate): Flow<List<LocalDate>> = scheduledGoalDao.getDatesWithScheduledGoals(startDate, endDate)
 
+    //Schedule goals according to their corresponding recurrence rules (if applicable)
     override suspend fun ensureRecurringGoalsScheduledForRange(
         startDate: LocalDate,
         endDate: LocalDate
@@ -109,30 +111,46 @@ class OfflineScheduledGoalsRepository(
 
             var date = rangeStart
 
+            //Used to not generate goals for scheduled goals that were deleted
+            val exceptionDates = recurrenceRuleDao.getRecurrenceExceptionDatesForRange(
+                recurrenceRuleId = rule.recurrenceRuleId,
+                startDate = rangeStart,
+                endDate = rangeEnd
+            ).toSet()
+
+            //
+            val existingDates = scheduledGoalDao.getExistingRecurringDates(
+                recurrenceRuleId = rule.recurrenceRuleId,
+                startDate = rangeStart,
+                endDate = rangeEnd
+            ).toSet()
+
             while(!date.isAfter(rangeEnd)){
-                if (date.dayOfWeek in rule.recurringDays){
+                if (date.dayOfWeek in rule.recurringDays && date !in exceptionDates && date !in existingDates){
                     val eventId = calendarEventsRepository.getOrCreateEventIdForDate(date)
 
-                    val alreadyExists = scheduledGoalDao.recurringScheduledGoalExists(
-                        recurrenceRuleId = rule.recurrenceRuleId,
-                        eventId = eventId
-                    )
-
-                    if(!alreadyExists){
-                        scheduledGoalDao.insert(
-                            ScheduledGoal(
-                                goalId = goal.goalID,
-                                eventId = eventId,
-                                recurrenceRuleId = rule.recurrenceRuleId,
-                                scheduledGoalTitle = goal.goalTitle,
-                                scheduledHours = goal.hours,
-                                scheduledMinutes = goal.minutes
-                            )
+                    scheduledGoalDao.insert(
+                        ScheduledGoal(
+                            goalId = goal.goalID,
+                            eventId = eventId,
+                            recurrenceRuleId = rule.recurrenceRuleId,
+                            scheduledGoalTitle = goal.goalTitle,
+                            scheduledHours = goal.hours,
+                            scheduledMinutes = goal.minutes
                         )
-                    }
+                    )
                 }
                 date = date.plusDays(1)
             }
         }
+    }
+
+    override suspend fun insertRecurrenceException(recurrenceRuleId: Int, date: LocalDate) {
+        recurrenceRuleDao.insertRecurrenceException(
+            RecurrenceException(
+                recurrenceRuleId = recurrenceRuleId,
+                date = date
+            )
+        )
     }
 }

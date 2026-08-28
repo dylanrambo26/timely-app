@@ -27,4 +27,6 @@ interface ScheduledGoalsRepository{
     fun getDatesWithScheduledGoals(startDate: LocalDate, endDate: LocalDate): Flow<List<LocalDate>>
 
     suspend fun ensureRecurringGoalsScheduledForRange(startDate: LocalDate, endDate: LocalDate)
+
+    suspend fun insertRecurrenceException(recurrenceRuleId: Int, date: LocalDate)
 }

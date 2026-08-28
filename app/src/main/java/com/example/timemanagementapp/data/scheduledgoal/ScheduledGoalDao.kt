@@ -151,4 +151,18 @@ interface ScheduledGoalDao {
         recurrenceRuleId: Int,
         eventId: Int
     ): Boolean
+
+    @Query("""
+        SELECT ce.date
+        FROM scheduled_goals sg
+        INNER JOIN calendar_events ce
+            ON sg.eventId = ce.eventId
+        WHERE sg.recurrenceRuleId = :recurrenceRuleId
+        AND ce.date BETWEEN :startDate AND :endDate
+    """)
+    suspend fun getExistingRecurringDates(
+        recurrenceRuleId: Int,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): List<LocalDate>
 }
