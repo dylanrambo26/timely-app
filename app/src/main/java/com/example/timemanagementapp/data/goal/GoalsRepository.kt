@@ -18,6 +18,8 @@ interface GoalsRepository {
 
     suspend fun deleteGoal(goal: Goal)
 
+    suspend fun deleteGoalAndScheduledGoals(goal: Goal)
+
     suspend fun updateGoal(goal: Goal)
 
     suspend fun insertRecurrenceRule(recurrenceRule: RecurrenceRule): Long

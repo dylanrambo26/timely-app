@@ -10,6 +10,8 @@ interface ScheduledGoalsRepository{
 
     suspend fun deleteScheduledGoal(scheduledGoal: ScheduledGoal)
 
+    suspend fun deleteScheduledGoalsByGoalId(goalId: Int)
+
     suspend fun getScheduledGoalOnce(id: Int): ScheduledGoal
 
     fun getScheduledGoals(eventId: Int): Flow<List<ScheduledGoal>>

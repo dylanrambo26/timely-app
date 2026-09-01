@@ -39,7 +39,7 @@ fun GoalTemplateList(
     goals: List<GoalWithRecurrence>,
     onGoalClick: ((Goal) -> Unit)? = null,
     onEditGoal: ((Goal) -> Unit)? = null,
-    onDeleteGoal: ((Goal) -> Unit)? = null,
+    onDeleteGoal: ((GoalWithRecurrence) -> Unit)? = null,
     modifier: Modifier = Modifier,
     selectedGoalId: Int? = null,
 ){
@@ -68,7 +68,9 @@ fun GoalTemplateList(
                 isSelected = isSelected,
                 onGoalClick = onGoalClick,
                 onEditGoal = onEditGoal,
-                onDeleteGoal = onDeleteGoal
+                onDeleteGoal = {
+                    onDeleteGoal?.invoke(goalWithRecurrence)
+                }
             )
         }
     }
@@ -88,8 +90,8 @@ fun GoalTemplateCard(
             .fillMaxWidth()
             .padding(8.dp)
             .then(
-                if(onGoalClick != null){
-                    Modifier.clickable { onGoalClick(goal)}
+                if (onGoalClick != null) {
+                    Modifier.clickable { onGoalClick(goal) }
                 } else {
                     Modifier
                 }

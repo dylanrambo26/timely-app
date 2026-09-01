@@ -274,7 +274,7 @@ fun TimelyNavHost(
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
-                    viewModel = viewModel
+                    goalListViewModel = viewModel
                 )
             }
 

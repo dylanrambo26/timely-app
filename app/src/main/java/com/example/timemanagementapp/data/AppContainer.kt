@@ -43,7 +43,9 @@ class AppDataContainer(private val context: Context) : AppContainer {
     override val goalsRepository: GoalsRepository by lazy {
         OfflineGoalsRepository(
             goalDao = database.goalDao(),
-            recurrenceRuleDao = database.recurrenceRuleDao()
+            recurrenceRuleDao = database.recurrenceRuleDao(),
+            scheduledGoalDao = database.scheduledGoalDao(),
+            database = database
         )
     }
 

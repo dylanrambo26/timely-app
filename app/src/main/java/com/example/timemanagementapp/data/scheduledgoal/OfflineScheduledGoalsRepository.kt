@@ -20,6 +20,8 @@ class OfflineScheduledGoalsRepository(
 
     override suspend fun deleteScheduledGoal(scheduledGoal: ScheduledGoal) = scheduledGoalDao.delete(scheduledGoal)
 
+    override suspend fun deleteScheduledGoalsByGoalId(goalId: Int) = scheduledGoalDao.deleteScheduledGoalsByGoalId(goalId)
+
     override suspend fun getScheduledGoalOnce(id: Int): ScheduledGoal = scheduledGoalDao.getScheduledGoalOnce(id)
 
     override fun getScheduledGoals(eventId: Int): Flow<List<ScheduledGoal>> = scheduledGoalDao.getScheduledGoalsForDate(eventId)

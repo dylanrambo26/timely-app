@@ -1,13 +1,17 @@
 package com.example.timemanagementapp.data.goal
 
+import androidx.room.withTransaction
 import com.example.timemanagementapp.data.goal.recurrence.GoalWithRecurrence
 import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRule
 import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRuleDao
+import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalDao
 import kotlinx.coroutines.flow.Flow
 
 class OfflineGoalsRepository(
     private val goalDao: GoalDao,
-    private val recurrenceRuleDao: RecurrenceRuleDao
+    private val recurrenceRuleDao: RecurrenceRuleDao,
+    private val scheduledGoalDao: ScheduledGoalDao,
+    private val database: GoalsDatabase
 ): GoalsRepository {
     override fun getAllGoalsStream(): Flow<List<Goal>> = goalDao.getAllGoals()
 
@@ -22,6 +26,13 @@ class OfflineGoalsRepository(
     }
 
     override suspend fun deleteGoal(goal: Goal) = goalDao.delete(goal)
+
+    override suspend fun deleteGoalAndScheduledGoals(goal: Goal){
+        database.withTransaction {
+            scheduledGoalDao.deleteScheduledGoalsByGoalId(goal.goalID)
+            goalDao.delete(goal)
+        }
+    }
 
     override suspend fun updateGoal(goal: Goal) = goalDao.update(goal)
 

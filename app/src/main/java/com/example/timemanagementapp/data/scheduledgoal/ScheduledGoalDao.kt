@@ -23,6 +23,12 @@ interface ScheduledGoalDao {
     @Delete
     suspend fun delete(scheduledGoal: ScheduledGoal)
 
+    @Query("""
+        DELETE FROM scheduled_goals
+        WHERE goalId = :goalId
+    """)
+    suspend fun deleteScheduledGoalsByGoalId(goalId: Int)
+
 
     @Query("SELECT * from scheduled_goals WHERE scheduledGoalId = :id")
     suspend fun getScheduledGoalOnce(id: Int): ScheduledGoal
