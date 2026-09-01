@@ -171,6 +171,11 @@ fun CreateGoalBody(
         Spacer(modifier = Modifier.height(8.dp))
         GoalTemplateCard(
             goal = goalUiState.goalDetails.toGoal(),
+            recurringDays = if (goalUiState.isGoalRecurring){
+                goalUiState.recurringDays
+            } else {
+                null
+            }
         )
 
         Spacer(modifier = Modifier.height(64.dp))
@@ -567,7 +572,7 @@ fun CreateGoalScreenPreview(){
         CreateGoalBody(
             goalUiState = GoalUiState(
                 GoalDetails(
-                    title = "", hours = "1", minutes = "30"
+                    title = "test", hours = "1", minutes = "30"
                 ),
                 isEntryValid = false,
                 errorMessage = R.string.invalid_title,

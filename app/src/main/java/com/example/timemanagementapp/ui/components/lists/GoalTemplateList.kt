@@ -32,6 +32,7 @@ import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRule
 import com.example.timemanagementapp.data.testGoalsWithRecurrenceSizeThree
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.util.toShortLabel
+import java.time.DayOfWeek
 
 @Composable
 fun GoalTemplateList(
@@ -63,7 +64,7 @@ fun GoalTemplateList(
             val isSelected = goalWithRecurrence.goal.goalID == selectedGoalId
             GoalTemplateCard(
                 goal = goalWithRecurrence.goal,
-                recurrenceRule = goalWithRecurrence.recurrenceRule,
+                recurringDays = goalWithRecurrence.recurrenceRule?.recurringDays,
                 isSelected = isSelected,
                 onGoalClick = onGoalClick,
                 onEditGoal = onEditGoal,
@@ -76,7 +77,7 @@ fun GoalTemplateList(
 @Composable
 fun GoalTemplateCard(
     goal: Goal,
-    recurrenceRule: RecurrenceRule? = null,
+    recurringDays: Set<DayOfWeek>? = null,
     isSelected: Boolean = false,
     onDeleteGoal: ((Goal) -> Unit)? = null,
     onEditGoal: ((Goal) -> Unit)? = null,
@@ -121,11 +122,11 @@ fun GoalTemplateCard(
                     style = MaterialTheme.typography.bodyMedium
                 )
 
-                val isRecurring = recurrenceRule != null
+                val isRecurring = recurringDays != null
 
                 if(isRecurring){
                     Text(
-                        text = "Recurring: " + recurrenceRule.recurringDays
+                        text = "Recurring: " + recurringDays
                             .sortedBy { it.value % 7}
                             .joinToString(", ") {day ->
                                 day.toShortLabel()
