@@ -15,7 +15,8 @@ import java.time.LocalDate
             childColumns = ["goalId"],
             onDelete = ForeignKey.CASCADE
         )
-    ]
+    ],
+    tableName = "recurrence_rules"
 )
 data class RecurrenceRule(
     @PrimaryKey(autoGenerate = true)

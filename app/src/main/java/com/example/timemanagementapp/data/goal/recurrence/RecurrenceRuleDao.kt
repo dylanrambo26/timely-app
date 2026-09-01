@@ -27,7 +27,7 @@ interface RecurrenceRuleDao {
 
     //Query for fetching a list of recurrence rules whose time periods fall within the requested range
     @Query("""
-        SELECT * FROM RecurrenceRule
+        SELECT * FROM recurrence_rules
         WHERE startDate <= :endDate
         AND (
             endDate IS NULL

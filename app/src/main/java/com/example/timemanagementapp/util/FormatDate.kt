@@ -1,5 +1,6 @@
 package com.example.timemanagementapp.util
 
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
@@ -53,4 +54,16 @@ fun formatLocalDateToAnalyticsRange(startDate: LocalDate, endDate: LocalDate): S
 
 fun formatLocalDateToExtendedShorthandDate(date: LocalDate): String {
     return date.format(shorthandDateExtendedFormatter)
+}
+
+fun DayOfWeek.toShortLabel(): String {
+    return when(this){
+        DayOfWeek.SUNDAY -> "Su"
+        DayOfWeek.MONDAY -> "M"
+        DayOfWeek.TUESDAY -> "Tu"
+        DayOfWeek.WEDNESDAY -> "W"
+        DayOfWeek.THURSDAY -> "Th"
+        DayOfWeek.FRIDAY -> "F"
+        DayOfWeek.SATURDAY -> "Sa"
+    }
 }

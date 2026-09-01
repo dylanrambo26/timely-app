@@ -5,7 +5,9 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import androidx.room.Update
+import com.example.timemanagementapp.data.goal.recurrence.GoalWithRecurrence
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -33,27 +35,26 @@ interface GoalDao {
     @Query("SELECT COALESCE(SUM(hours * 60 + minutes), 0) FROM goals")
     fun getSumOfTotalMinutes(): Flow<Int>
 
-    /*@Query(
-        """
-            UPDATE goals
-            SET status = :status
-            WHERE goalID = :id
-        """
+    //Get the goals that are recurring
+    /*@Query("""
+        SELECT goals.*,
+            EXISTS(
+                SELECT 1
+                FROM recurrence_rules
+                WHERE recurrence_rules.goalId = goals.goalID
+            ) AS isRecurring
+        FROM goals
+    """
     )
-    suspend fun updateGoalStatus(
-        id: Int,
-        status: GoalStatus
-    )*/
+    fun getGoalsWithRecurrenceStatus(): Flow<List<GoalWithRecurrenceStatus>>*/
 
-    /*@Query(
+    @Transaction
+    @Query(
         """
-            UPDATE goals
-            SET completedMillis = :millis
-            WHERE goalID = :id
+            SELECT *
+            FROM goals
+            ORDER BY goalID ASC
         """
     )
-    suspend fun updateCompletedMillis(
-        id: Int,
-        millis: Long
-    )*/
+    fun getAllGoalsWithRecurrence(): Flow<List<GoalWithRecurrence>>
 }

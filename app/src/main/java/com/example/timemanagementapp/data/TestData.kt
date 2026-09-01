@@ -2,6 +2,8 @@ package com.example.timemanagementapp.data
 
 import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.goal.GoalStatus
+import com.example.timemanagementapp.data.goal.recurrence.GoalWithRecurrence
+import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRule
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.ui.analytics.AnalyticsTimePeriod
 import com.example.timemanagementapp.ui.analytics.DailyActivity
@@ -30,6 +32,21 @@ val goal3 = Goal(
     hours = 1,
     minutes = 30,
 )
+
+val recurrenceRule1 = RecurrenceRule(
+    recurrenceRuleId = 1,
+    goalId = goal1.goalID,
+    recurringDays = setOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
+    startDate = LocalDate.now()
+)
+
+val recurrenceRule2 = RecurrenceRule(
+    recurrenceRuleId = 2,
+    goalId = goal2.goalID,
+    recurringDays = setOf(DayOfWeek.TUESDAY, DayOfWeek.THURSDAY),
+    startDate = LocalDate.now()
+)
+
 
 val testScheduledGoalsSizeThree: List<ScheduledGoal>
     get() = listOf(
@@ -73,6 +90,22 @@ val testGoalsSizeThree: List<Goal>
         goal1,
         goal2,
         goal3
+    )
+
+val testGoalsWithRecurrenceSizeThree: List<GoalWithRecurrence>
+    get() = listOf(
+        GoalWithRecurrence(
+            goal = goal1,
+            recurrenceRule = recurrenceRule1
+        ),
+        GoalWithRecurrence(
+            goal = goal2,
+            recurrenceRule = recurrenceRule2
+        ),
+        GoalWithRecurrence(
+            goal = goal3,
+            recurrenceRule = null
+        )
     )
 
 fun generateTestDailyActivity(

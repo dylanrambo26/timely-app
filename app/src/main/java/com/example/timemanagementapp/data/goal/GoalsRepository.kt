@@ -1,5 +1,6 @@
 package com.example.timemanagementapp.data.goal
 
+import com.example.timemanagementapp.data.goal.recurrence.GoalWithRecurrence
 import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRule
 import kotlinx.coroutines.flow.Flow
 
@@ -23,6 +24,7 @@ interface GoalsRepository {
     suspend fun updateRecurrenceRule(recurrenceRule: RecurrenceRule)
     suspend fun deleteRecurrenceRule(recurrenceRule: RecurrenceRule)
 
+    fun getAllGoalsWithRecurrence(): Flow<List<GoalWithRecurrence>>
     /*suspend fun updateGoalStatus(id: Int, status: GoalStatus)
 
     suspend fun updateCompletedMillis(id: Int, millis: Long)*/

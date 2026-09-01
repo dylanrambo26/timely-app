@@ -1,5 +1,6 @@
 package com.example.timemanagementapp.data.goal
 
+import com.example.timemanagementapp.data.goal.recurrence.GoalWithRecurrence
 import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRule
 import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRuleDao
 import kotlinx.coroutines.flow.Flow
@@ -31,6 +32,8 @@ class OfflineGoalsRepository(
     override suspend fun updateRecurrenceRule(recurrenceRule: RecurrenceRule) = recurrenceRuleDao.updateRecurrenceRule(recurrenceRule)
 
     override suspend fun deleteRecurrenceRule(recurrenceRule: RecurrenceRule) = recurrenceRuleDao.deleteRecurrenceRule(recurrenceRule)
+
+    override fun getAllGoalsWithRecurrence(): Flow<List<GoalWithRecurrence>> = goalDao.getAllGoalsWithRecurrence()
 
     /*override suspend fun updateGoalStatus(id: Int, status: GoalStatus) = goalDao.updateGoalStatus(id, status)
 

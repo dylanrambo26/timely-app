@@ -97,7 +97,6 @@ fun CreateGoalScreen(
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val coroutineScope = rememberCoroutineScope()
-    val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
     val selectedDate by createGoalViewModel.date.collectAsState()
     Scaffold(
         topBar = { TimelySmallTopAppBar(stringResource(R.string.create_a_goal_from_scratch)) },
@@ -111,7 +110,6 @@ fun CreateGoalScreen(
     ) { innerPadding ->
         CreateGoalBody(
             goalUiState = createGoalViewModel.goalUiState,
-            goalListUiState = goalListUiState,
             onGoalValueChange = createGoalViewModel::updateUiState,
             onSaveGoalClicked = {
                 coroutineScope.launch {
@@ -142,7 +140,6 @@ fun CreateGoalScreen(
 @Composable
 fun CreateGoalBody(
     goalUiState: GoalUiState,
-    goalListUiState: GoalListUiState,
     onGoalValueChange: (GoalDetails) -> Unit,
     onSaveGoalClicked: () -> Unit,
     onSaveGoalAndAddToDateClicked: () -> Unit,
@@ -582,9 +579,6 @@ fun CreateGoalScreenPreview(){
             onSaveGoalClicked = {},
             onCancelButtonClicked = {},
             onSaveGoalAndAddToDateClicked = {},
-            goalListUiState = GoalListUiState(
-                goalList = testGoalsSizeThree,
-            ),
             showSaveGoalAndAddToDateButton = true,
             selectedDate = LocalDate.now(),
             onRecurringChange = {},

@@ -23,7 +23,7 @@ import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalDao
         RecurrenceRule::class,
         RecurrenceException::class
     ],
-    version = 16,
+    version = 17,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
