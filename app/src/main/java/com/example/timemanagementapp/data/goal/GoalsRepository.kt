@@ -27,6 +27,8 @@ interface GoalsRepository {
     suspend fun deleteRecurrenceRule(recurrenceRule: RecurrenceRule)
 
     fun getAllGoalsWithRecurrence(): Flow<List<GoalWithRecurrence>>
+
+    fun getGoalWithRecurrenceStream(goalId: Int): Flow<GoalWithRecurrence?>
     /*suspend fun updateGoalStatus(id: Int, status: GoalStatus)
 
     suspend fun updateCompletedMillis(id: Int, millis: Long)*/

@@ -1,5 +1,6 @@
 package com.example.timemanagementapp.ui.editReusable
 
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -31,7 +34,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
+import com.example.timemanagementapp.data.recurrenceRule2
 import com.example.timemanagementapp.ui.AppViewModelProvider
+import com.example.timemanagementapp.ui.components.RecurrenceOptions
+import com.example.timemanagementapp.ui.components.RecurringGoalBody
 import com.example.timemanagementapp.ui.components.lists.GoalTemplateCard
 import com.example.timemanagementapp.ui.createGoal.GoalDetails
 import com.example.timemanagementapp.ui.createGoal.GoalUiState
@@ -39,6 +45,8 @@ import com.example.timemanagementapp.ui.createGoal.toGoal
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
+import java.time.LocalDate
 
 object EditReusableGoalDestination : NavigationDest {
     override val route = "edit_reusable_goal"
@@ -87,6 +95,12 @@ fun EditReusableGoalScreen(
                 }
             },
             navigateBack = navigateBack,
+
+            onDailyChange = viewModel::updateAllRecurringDays,
+            onRecurringDayChange = viewModel::onRecurringDayChange,
+            onEndDateEnabledChanged = viewModel::updateHasRecurrenceEndDate,
+            updateRecurrenceEndDate = viewModel::updateRecurrenceEndDate,
+            onRecurringChange = viewModel::updateIsGoalRecurring,
             modifier = modifier.padding(innerPadding)
         )
     }
@@ -99,12 +113,21 @@ fun EditReusableGoalBody(
     onSaveAndUpdateScheduledGoalsClicked: () -> Unit,
     onSaveGoal: () -> Unit,
     navigateBack: () -> Unit,
+
+    onDailyChange: (Boolean) -> Unit,
+    onRecurringDayChange: (DayOfWeek, Boolean) -> Unit,
+    onEndDateEnabledChanged: (Boolean) -> Unit,
+    updateRecurrenceEndDate: (LocalDate?) -> Unit,
+    onRecurringChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
 ){
+    val scrollState = rememberScrollState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(dimensionResource(R.dimen.padding_medium)),
+            .padding(dimensionResource(R.dimen.padding_medium))
+            .verticalScroll(scrollState),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -114,21 +137,34 @@ fun EditReusableGoalBody(
         val oldGoalDetails = remember(goalUiState.goalDetails.id){
             goalUiState.goalDetails
         }
+
         Text(stringResource(R.string.old_goal))
         GoalTemplateCard(
             goal = oldGoalDetails.toGoal(),
+            recurringDays = goalUiState.originalRecurringDays.takeIf { goalUiState.wasOriginallyRecurring }
         )
+
         Text(stringResource(R.string.new_goal))
         GoalTemplateCard(
             goal = goalUiState.goalDetails.toGoal(),
+            recurringDays = goalUiState.recurringDays.takeIf { goalUiState.isGoalRecurring }
         )
-
 
         EditGoalInputForm(
             goalDetails = goalUiState.goalDetails,
             onValueChange = onGoalValueChange,
             modifier = Modifier.fillMaxWidth()
         )
+
+        EditRecurrenceRuleBody(
+            goalUiState = goalUiState,
+            onDailyChange = onDailyChange,
+            onRecurringDayChange = onRecurringDayChange,
+            onEndDateEnabledChanged = onEndDateEnabledChanged,
+            updateRecurrenceEndDate = updateRecurrenceEndDate,
+            onRecurringChange = onRecurringChange
+        )
+
         Column(
             modifier = Modifier.width(280.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -179,6 +215,42 @@ fun EditReusableGoalBody(
                 )
             }
         }
+    }
+}
+
+@Composable
+fun EditRecurrenceRuleBody(
+    goalUiState: GoalUiState,
+    onDailyChange: (Boolean) -> Unit,
+    onRecurringDayChange: (DayOfWeek, Boolean) -> Unit,
+    onEndDateEnabledChanged: (Boolean) -> Unit,
+    updateRecurrenceEndDate: (LocalDate?) -> Unit,
+    onRecurringChange: (Boolean) -> Unit
+){
+    if(goalUiState.wasOriginallyRecurring){
+        Column {
+            RecurrenceOptions(
+                recurrenceEndDate = goalUiState.recurrenceEndDate,
+                hasRecurrenceEndDate = goalUiState.hasRecurrenceEndDate,
+                recurringDays = goalUiState.recurringDays,
+                onRecurringDayChange = onRecurringDayChange,
+                onEndDateEnabledChanged = onEndDateEnabledChanged,
+                updateRecurrenceEndDate = updateRecurrenceEndDate,
+                onDailyChange = onDailyChange
+            )
+        }
+    } else {
+        RecurringGoalBody(
+            recurringDays = goalUiState.recurringDays,
+            recurrenceEndDate = goalUiState.recurrenceEndDate,
+            hasRecurrenceEndDate = goalUiState.hasRecurrenceEndDate,
+            isGoalRecurring = goalUiState.isGoalRecurring,
+            onRecurringChange = onRecurringChange,
+            onDailyChange = onDailyChange,
+            onRecurringDayChange = onRecurringDayChange,
+            onEndDateEnabledChanged = onEndDateEnabledChanged,
+            updateRecurrenceEndDate = updateRecurrenceEndDate
+        )
     }
 }
 
@@ -237,7 +309,7 @@ fun EditGoalInputForm(
     )
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, heightDp = 1000)
 @Composable
 fun EditReusableGoalBodyPreview(){
     TimeManagementAppTheme {
@@ -245,12 +317,22 @@ fun EditReusableGoalBodyPreview(){
             goalUiState = GoalUiState(
                 GoalDetails(
                     title = "Title", hours = "1", minutes = "30"
-                )
+                ),
+                isGoalRecurring = true,
+                wasOriginallyRecurring = true,
+                recurringDays = setOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
+                originalRecurringDays = setOf(DayOfWeek.THURSDAY, DayOfWeek.TUESDAY)
+
             ),
             onGoalValueChange = {},
             onSaveAndUpdateScheduledGoalsClicked = {},
             onSaveGoal = {},
-            navigateBack = {}
+            navigateBack = {},
+            updateRecurrenceEndDate = {},
+            onDailyChange = {},
+            onRecurringChange = {},
+            onRecurringDayChange = {_,_->},
+            onEndDateEnabledChanged = {}
         )
     }
 }

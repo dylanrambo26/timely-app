@@ -11,9 +11,15 @@ import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 import com.example.timemanagementapp.ui.createGoal.GoalDetails
 import com.example.timemanagementapp.ui.createGoal.GoalUiState
 import com.example.timemanagementapp.ui.createGoal.toGoal
+import com.example.timemanagementapp.ui.goal.withAllRecurringDays
+import com.example.timemanagementapp.ui.goal.withGoalRecurring
+import com.example.timemanagementapp.ui.goal.withRecurrenceEndDate
+import com.example.timemanagementapp.ui.goal.withRecurrenceEndDateEnabled
+import com.example.timemanagementapp.ui.goal.withRecurringDay
 import com.example.timemanagementapp.util.validate
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
 import java.time.LocalDate
 
 class EditReusableGoalViewModel(
@@ -29,9 +35,13 @@ class EditReusableGoalViewModel(
 
     init {
         viewModelScope.launch {
-            goalsRepository.getGoalStream(goalId)
+            goalsRepository.getGoalWithRecurrenceStream(goalId)
                 .filterNotNull()
-                .collect {goal ->
+                .collect {goalWithRecurrence ->
+                    val goal = goalWithRecurrence.goal
+                    val recurrenceRule = goalWithRecurrence.recurrenceRule
+                    val isRecurring = recurrenceRule != null
+
                     val details = GoalDetails(
                         id = goal.goalID,
                         title = goal.goalTitle,
@@ -39,12 +49,43 @@ class EditReusableGoalViewModel(
                         minutes = goal.minutes.toString()
                     )
 
+                    val originalDays = goalWithRecurrence.recurrenceRule?.recurringDays.orEmpty()
+
                     goalUiState = GoalUiState(
                         goalDetails = details,
-                        isEntryValid = details.validate() == null
+                        isEntryValid = details.validate() == null,
+                        isGoalRecurring = isRecurring,
+                        wasOriginallyRecurring = isRecurring,
+                        recurringDays = originalDays,
+                        originalRecurringDays = originalDays,
+                        recurrenceEndDate = recurrenceRule?.endDate,
+                        hasRecurrenceEndDate = recurrenceRule?.endDate != null
                     )
                 }
         }
+    }
+
+    fun updateIsGoalRecurring(isRecurring: Boolean){
+        goalUiState = goalUiState.withGoalRecurring(isRecurring)
+    }
+
+    fun updateAllRecurringDays(isChecked: Boolean){
+        goalUiState = goalUiState.withAllRecurringDays(isChecked)
+    }
+
+    fun onRecurringDayChange(
+        day: DayOfWeek,
+        isChecked: Boolean
+    ){
+        goalUiState = goalUiState.withRecurringDay(day, isChecked)
+    }
+
+    fun updateHasRecurrenceEndDate(hasRecurrenceEndDate: Boolean){
+        goalUiState = goalUiState.withRecurrenceEndDateEnabled(hasRecurrenceEndDate)
+    }
+
+    fun updateRecurrenceEndDate(recurrenceEndDate: LocalDate?){
+        goalUiState = goalUiState.withRecurrenceEndDate(recurrenceEndDate)
     }
 
     fun updateUiState(goalDetails: GoalDetails) {
@@ -53,7 +94,10 @@ class EditReusableGoalViewModel(
             goalUiState.copy(goalDetails = goalDetails, isEntryValid = error == null, errorMessage = error)
     }
 
-    suspend fun updateReusableGoal(onNavigate: () -> Unit = {}, updateFutureScheduledGoals: Boolean) {
+    suspend fun updateReusableGoal(
+        onNavigate: () -> Unit = {},
+        updateFutureScheduledGoals: Boolean
+    ) {
         val error = goalUiState.goalDetails.validate()
         if(error != null){
             goalUiState = goalUiState.copy(

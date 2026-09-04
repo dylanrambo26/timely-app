@@ -46,6 +46,8 @@ class OfflineGoalsRepository(
 
     override fun getAllGoalsWithRecurrence(): Flow<List<GoalWithRecurrence>> = goalDao.getAllGoalsWithRecurrence()
 
+    override fun getGoalWithRecurrenceStream(goalId: Int): Flow<GoalWithRecurrence?> = goalDao.getGoalWithRecurrenceStream(goalId)
+
     /*override suspend fun updateGoalStatus(id: Int, status: GoalStatus) = goalDao.updateGoalStatus(id, status)
 
     override suspend fun updateCompletedMillis(id: Int, millis: Long) = goalDao.updateCompletedMillis(id, millis)*/

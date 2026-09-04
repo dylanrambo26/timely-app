@@ -13,6 +13,11 @@ import com.example.timemanagementapp.data.goal.GoalsRepository
 import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRule
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
+import com.example.timemanagementapp.ui.goal.withAllRecurringDays
+import com.example.timemanagementapp.ui.goal.withGoalRecurring
+import com.example.timemanagementapp.ui.goal.withRecurrenceEndDate
+import com.example.timemanagementapp.ui.goal.withRecurrenceEndDateEnabled
+import com.example.timemanagementapp.ui.goal.withRecurringDay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -48,45 +53,26 @@ class CreateGoalViewModel(
     }
 
     fun updateIsGoalRecurring(isRecurring: Boolean){
-        goalUiState = goalUiState.copy(
-            isGoalRecurring = isRecurring
-        )
+        goalUiState = goalUiState.withGoalRecurring(isRecurring)
     }
 
     fun updateHasRecurrenceEndDate(hasRecurrenceEndDate: Boolean){
-        goalUiState = goalUiState.copy(
-            hasRecurrenceEndDate = hasRecurrenceEndDate
-        )
+        goalUiState = goalUiState.withRecurrenceEndDateEnabled(hasRecurrenceEndDate)
     }
 
     fun updateRecurrenceEndDate(recurrenceEndDate: LocalDate?){
-        goalUiState = goalUiState.copy(
-            recurrenceEndDate = recurrenceEndDate
-        )
+        goalUiState = goalUiState.withRecurrenceEndDate(recurrenceEndDate)
     }
 
     fun updateAllRecurringDays(isChecked: Boolean){
-        goalUiState = goalUiState.copy(
-            recurringDays = if(isChecked){
-                DayOfWeek.entries.toSet()
-            } else {
-                emptySet()
-            }
-        )
+        goalUiState = goalUiState.withAllRecurringDays(isChecked)
     }
 
     fun onRecurringDayChange(
         day: DayOfWeek,
         isChecked: Boolean
     ){
-        goalUiState = goalUiState.copy(
-            recurringDays =
-                if (isChecked){
-                    goalUiState.recurringDays + day
-                } else {
-                    goalUiState.recurringDays - day
-                }
-        )
+        goalUiState = goalUiState.withRecurringDay(day, isChecked)
     }
 
     fun updateUiState(goalDetails: GoalDetails){
@@ -250,7 +236,9 @@ data class GoalUiState(
     val errorMessage: Int? = null,
     val isDurationEditable: Boolean = true,
     val isGoalRecurring: Boolean = false,
+    val wasOriginallyRecurring: Boolean = false,
     val recurringDays: Set<DayOfWeek> = emptySet(),
+    val originalRecurringDays: Set<DayOfWeek> = emptySet(),
     val recurrenceEndDate: LocalDate? = null,
     val hasRecurrenceEndDate: Boolean = false
 )

@@ -57,4 +57,11 @@ interface GoalDao {
         """
     )
     fun getAllGoalsWithRecurrence(): Flow<List<GoalWithRecurrence>>
+
+    @Query("""
+        SELECT *
+        FROM goals
+        WHERE goalID = :goalId
+    """)
+    fun getGoalWithRecurrenceStream(goalId: Int): Flow<GoalWithRecurrence?>
 }

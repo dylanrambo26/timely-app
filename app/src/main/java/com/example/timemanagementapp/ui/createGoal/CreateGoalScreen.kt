@@ -1,7 +1,6 @@
 package com.example.timemanagementapp.ui.createGoal
 
 //import com.example.timemanagementapp.data.TestData
-import android.app.DatePickerDialog
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.triStateToggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -31,7 +29,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -45,24 +42,19 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.room.util.TableInfo
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
-import com.example.timemanagementapp.data.testGoalsSizeThree
 import com.example.timemanagementapp.ui.AppViewModelProvider
+import com.example.timemanagementapp.ui.components.RecurringGoalBody
 import com.example.timemanagementapp.ui.components.lists.GoalTemplateCard
-import com.example.timemanagementapp.ui.goal.GoalListUiState
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
@@ -74,7 +66,6 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import java.util.Locale
-import kotlin.collections.emptySet
 import java.time.format.TextStyle as DateTextStyle
 
 
@@ -187,7 +178,10 @@ fun CreateGoalBody(
         )
 
         RecurringGoalBody(
-            goalUiState = goalUiState,
+            recurringDays = goalUiState.recurringDays,
+            recurrenceEndDate = goalUiState.recurrenceEndDate,
+            hasRecurrenceEndDate = goalUiState.hasRecurrenceEndDate,
+            isGoalRecurring = goalUiState.isGoalRecurring,
             onRecurringChange = onRecurringChange,
             onDailyChange = onDailyChange,
             onRecurringDayChange = onRecurringDayChange,
@@ -222,219 +216,6 @@ fun CreateGoalBody(
         Spacer(modifier = Modifier.height(16.dp))
     }
 }
-
-@Composable
-fun RecurringGoalBody(
-    goalUiState: GoalUiState,
-    onRecurringChange: (Boolean) -> Unit,
-    onDailyChange: (Boolean) -> Unit,
-    onRecurringDayChange: (DayOfWeek, Boolean) -> Unit,
-    onEndDateEnabledChanged: (Boolean) -> Unit,
-    updateRecurrenceEndDate: (LocalDate?) -> Unit
-){
-    Column(){
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ){
-            Text(
-                text = "Make Goal Recurring?"
-            )
-            Checkbox(
-                checked = goalUiState.isGoalRecurring,
-                onCheckedChange = onRecurringChange,
-                colors = CheckboxDefaults.colors(
-                    checkedColor = MaterialTheme.colorScheme.primary
-                )
-            )
-        }
-        if (goalUiState.isGoalRecurring){
-            RecurrenceOptions(
-                goalUiState = goalUiState,
-                onDailyChange = onDailyChange,
-                onRecurringDayChange = onRecurringDayChange,
-                updateRecurrenceEndDate = updateRecurrenceEndDate,
-                onEndDateEnabledChanged = onEndDateEnabledChanged
-            )
-        }
-    }
-
-}
-
-@Composable
-fun RecurrenceOptions(
-    goalUiState: GoalUiState,
-    onRecurringDayChange: (DayOfWeek, Boolean) -> Unit,
-    onEndDateEnabledChanged: (Boolean) -> Unit,
-    updateRecurrenceEndDate: (LocalDate?) -> Unit,
-    onDailyChange: (Boolean) -> Unit,
-){
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ){
-        Text(
-            text = "Daily"
-        )
-        Checkbox(
-            checked = DayOfWeek.entries.all {day ->
-                day in goalUiState.recurringDays
-            },
-            onCheckedChange = onDailyChange,
-            colors = CheckboxDefaults.colors(
-                checkedColor = MaterialTheme.colorScheme.primary
-            )
-        )
-    }
-    DaysOfWeekSelection(
-        goalUiState = goalUiState,
-        onRecurringDayChange = onRecurringDayChange
-    )
-    EndDateBody(
-        goalUiState = goalUiState,
-        updateRecurrenceEndDate = updateRecurrenceEndDate,
-        onEndDateEnabledChanged = onEndDateEnabledChanged
-    )
-}
-
-@Composable
-fun EndDateBody(
-    goalUiState: GoalUiState,
-    onEndDateEnabledChanged: (Boolean) -> Unit,
-    updateRecurrenceEndDate: (LocalDate?) -> Unit
-){
-    var showDatePicker by rememberSaveable {
-        mutableStateOf(false)
-    }
-
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ){
-        Text(
-            text = "Set End Date?"
-        )
-        Checkbox(
-            checked = goalUiState.hasRecurrenceEndDate,
-            onCheckedChange = onEndDateEnabledChanged,
-            colors = CheckboxDefaults.colors(
-                checkedColor = MaterialTheme.colorScheme.primary
-            ),
-            enabled = goalUiState.recurringDays.isNotEmpty()
-        )
-    }
-    if(goalUiState.hasRecurrenceEndDate){
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
-        ){
-            TextButton(
-                onClick = {
-                    showDatePicker = true
-                },
-            ) {
-                Text(
-                    text = if (goalUiState.recurrenceEndDate != null){
-                        formatLocalDateToExtendedShorthandDate(goalUiState.recurrenceEndDate)
-                    } else {
-                        "Select End Date"
-                    }
-                )
-                Icon(
-                    imageVector = Icons.Default.DateRange,
-                    contentDescription = "Calendar Icon"
-                )
-            }
-        }
-    }
-
-    if(showDatePicker){
-        EndDatePicker(
-            goalUiState = goalUiState,
-            updateRecurrenceEndDate = updateRecurrenceEndDate,
-            onDismissRequest = {
-                showDatePicker = false
-            }
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun EndDatePicker(
-    goalUiState: GoalUiState,
-    updateRecurrenceEndDate: (LocalDate?) -> Unit,
-    onDismissRequest: () -> Unit,
-){
-    val datePickerState = rememberDatePickerState()
-    DatePickerDialog(
-        onDismissRequest = onDismissRequest,
-        confirmButton = {
-            TextButton(
-                onClick = {
-                    val selectedMillis = datePickerState.selectedDateMillis
-
-                    if (selectedMillis != null){
-                        val selectedDate = Instant
-                            .ofEpochMilli(selectedMillis)
-                            .atZone(ZoneOffset.UTC)
-                            .toLocalDate()
-
-                        updateRecurrenceEndDate(selectedDate)
-                    }
-
-                    onDismissRequest()
-                }
-            ){
-                Text("OK")
-            }
-        },
-        dismissButton = {
-            TextButton(
-                onClick = onDismissRequest
-            ) {
-                Text("Cancel")
-            }
-        }
-    ){
-        DatePicker(state = datePickerState)
-    }
-}
-
-@Composable
-fun DaysOfWeekSelection(
-    goalUiState: GoalUiState,
-    onRecurringDayChange: (DayOfWeek, Boolean) -> Unit
-){
-    val daysOfWeekSundayFirst = listOf(DayOfWeek.SUNDAY) + DayOfWeek.entries.filter { it != DayOfWeek.SUNDAY}
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-        verticalAlignment = Alignment.CenterVertically
-    ){
-        daysOfWeekSundayFirst.forEach { day ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(
-                    text = day.getDisplayName(DateTextStyle.SHORT, Locale.getDefault())
-                )
-                Checkbox(
-                    checked = day in goalUiState.recurringDays,
-                    onCheckedChange = {isChecked ->
-                        onRecurringDayChange(day, isChecked)
-                    }
-                )
-            }
-        }
-
-    }
-}
-
-
 
 @Composable
 fun AddGoalButtons(
