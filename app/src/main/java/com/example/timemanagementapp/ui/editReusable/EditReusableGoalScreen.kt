@@ -36,6 +36,7 @@ import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.data.recurrenceRule2
 import com.example.timemanagementapp.ui.AppViewModelProvider
+import com.example.timemanagementapp.ui.TimelyScaffold
 import com.example.timemanagementapp.ui.components.RecurrenceOptions
 import com.example.timemanagementapp.ui.components.RecurringGoalBody
 import com.example.timemanagementapp.ui.components.lists.GoalTemplateCard
@@ -63,17 +64,14 @@ fun EditReusableGoalScreen(
     navigateBack: () -> Unit,
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit,
-    navigateToAnalytics: () -> Unit, //TODO
+    navigateToAnalytics: () -> Unit,
 ){
     val coroutineScope = rememberCoroutineScope()
-    Scaffold(
-        topBar = { TimelySmallTopAppBar(stringResource(R.string.edit_one_goal)) },
-        bottomBar = {
-            TimelyBottomAppBar(
-                onCalendarClick = navigateToCalendar,
-                onHomeClick = navigateToHome,
-                onAnalyticsClick = navigateToAnalytics
-            )}
+    TimelyScaffold(
+        topBarTitle = stringResource(R.string.edit_one_goal_top_bar_text),
+        onHomeClick = navigateToHome,
+        onCalendarClick = navigateToCalendar,
+        onAnalyticsClick = navigateToAnalytics
     ) { innerPadding ->
         EditReusableGoalBody(
             goalUiState = viewModel.goalUiState,
@@ -124,11 +122,11 @@ fun EditReusableGoalBody(
     val scrollState = rememberScrollState()
 
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
             .padding(dimensionResource(R.dimen.padding_medium))
             .verticalScroll(scrollState),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_medium)),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         //TimeRemaining(remaining = goalUiState.remainingMinutesInDay)

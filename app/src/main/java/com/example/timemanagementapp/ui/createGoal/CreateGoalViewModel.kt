@@ -108,7 +108,19 @@ class CreateGoalViewModel(
             return
         }
 
-        goalsRepository.insertGoal(goalUiState.goalDetails.toGoal())
+        val goal = goalUiState.goalDetails.toGoal()
+        val goalId = goalsRepository.insertGoal(goal)
+
+        if(goalUiState.isGoalRecurring){
+            createRecurrenceRule(
+                recurringDays = goalUiState.recurringDays,
+                endDate = goalUiState.recurrenceEndDate,
+                goal = goal,
+                goalId = goalId
+            )
+        }
+
+
     }
 
     suspend fun saveGoalAndAddToDate(onNavigate: (Int) -> Unit = {}){
