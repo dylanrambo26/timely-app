@@ -40,6 +40,10 @@ class CreateGoalViewModel(
     val calendarEventId =
         savedStateHandle.get<Int>(CreateGoalDestination.eventIdArg)
             ?.takeIf { it != -1 }
+
+    val copyFromGoalId = savedStateHandle.get<Int>(CreateGoalDestination.copyFromGoalIdArg)
+        ?.takeIf { it != -1 }
+
     private val _date = MutableStateFlow<LocalDate?>(null)
     val date: StateFlow<LocalDate?> = _date.asStateFlow()
 
@@ -51,6 +55,21 @@ class CreateGoalViewModel(
             viewModelScope.launch {
                 _date.value = calendarEventsRepository.getEventById(calendarEventId)?.date
             }
+        }
+
+        copyFromGoalId?.let {goalId ->
+            viewModelScope.launch {
+                val sourceGoal = goalsRepository.getGoalOnce(goalId)
+
+                goalUiState = goalUiState.copy(
+                    goalDetails = sourceGoal.toGoalDetails().copy(id = 0),
+                    isGoalRecurring = false,
+                    recurringDays = emptySet(),
+                    hasRecurrenceEndDate = false,
+                    recurrenceEndDate = null
+                )
+            }
+
         }
     }
 
@@ -99,7 +118,10 @@ class CreateGoalViewModel(
         return null
     }
 
-    suspend fun saveGoal(){
+    suspend fun saveGoal(
+        onNavigateToViewGoals: (Int) -> Unit = {},
+        onNavigateToManageReusableGoals: () -> Unit = {},
+    ){
 
         val error = validateInput(goalUiState.goalDetails)
         if(error != null){
@@ -110,7 +132,26 @@ class CreateGoalViewModel(
             return
         }
 
-        goalsRepository.insertGoal(goalUiState.goalDetails.toGoal())
+        val goal = goalUiState.goalDetails.toGoal()
+        val goalId = goalsRepository.insertGoal(goal)
+
+        val insertedGoal = goal.copy(
+            goalID = goalId
+        )
+
+        if(goalUiState.isGoalRecurring){
+            createRecurrenceUseCase(
+                recurringDays = goalUiState.recurringDays,
+                goal = insertedGoal,
+                endDate = goalUiState.recurrenceEndDate
+            )
+        }
+
+        if (calendarEventId != null){
+            onNavigateToViewGoals(calendarEventId)
+        } else {
+            onNavigateToManageReusableGoals()
+        }
     }
 
     suspend fun saveGoalAndAddToDate(onNavigate: (Int) -> Unit = {}){
@@ -143,28 +184,16 @@ class CreateGoalViewModel(
         }
 
         val goalId = goalsRepository.insertGoal(goal)
-
-        if(goalUiState.isGoalRecurring){
-            createRecurrenceUseCase(
-                recurringDays = goalUiState.recurringDays,
-                goal = goal,
-                endDate = goalUiState.recurrenceEndDate
+        scheduledGoalsRepository.insertScheduledGoal(
+            ScheduledGoal(
+                goalId = goalId,
+                eventId = eventId,
+                scheduledGoalTitle = goal.goalTitle,
+                scheduledHours = goal.hours,
+                scheduledMinutes = goal.minutes,
+                recurrenceRuleId = null
             )
-        }
-        else {
-            //Insert scheduled goal with reusable new reusable goal values
-            //Goal is only scheduled once
-            scheduledGoalsRepository.insertScheduledGoal(
-                ScheduledGoal(
-                    goalId = goalId,
-                    eventId = eventId,
-                    scheduledGoalTitle = goal.goalTitle,
-                    scheduledHours = goal.hours,
-                    scheduledMinutes = goal.minutes,
-                    recurrenceRuleId = null
-                )
-            )
-        }
+        )
         onNavigate(eventId)
     }
 

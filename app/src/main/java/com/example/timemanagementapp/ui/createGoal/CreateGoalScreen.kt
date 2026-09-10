@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -74,7 +75,8 @@ object CreateGoalDestination : NavigationDest{
     override val titleRes = R.string.create_a_goal_from_scratch
 
     const val eventIdArg = "eventId"
-    val routeWithArgs = "$route?$eventIdArg={$eventIdArg}"
+    const val copyFromGoalIdArg = "copyFromGoalId"
+    val routeWithArgs = "$route?$eventIdArg={$eventIdArg}" + "&$copyFromGoalIdArg={$copyFromGoalIdArg}"
 }
 
 @Composable
@@ -83,6 +85,7 @@ fun CreateGoalScreen(
     goalListViewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateBack: () -> Unit,
     navigateToViewGoals: (Int) -> Unit,
+    navigateToManageReusableGoals: () -> Unit,
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
@@ -104,7 +107,10 @@ fun CreateGoalScreen(
             onGoalValueChange = createGoalViewModel::updateUiState,
             onSaveGoalClicked = {
                 coroutineScope.launch {
-                    createGoalViewModel.saveGoal()
+                    createGoalViewModel.saveGoal(
+                        onNavigateToViewGoals = navigateToViewGoals,
+                        onNavigateToManageReusableGoals = navigateToManageReusableGoals
+                    )
                 }
             },
             onSaveGoalAndAddToDateClicked = {
@@ -233,29 +239,42 @@ fun AddGoalButtons(
         horizontalAlignment = Alignment.CenterHorizontally
     ){
         //Save Goal and Add to Date Button (only show if eventId exists in view model)
-        if(showSaveGoalAndAddToDateButton || goalUiState.isGoalRecurring){
-            FilledTonalButton(
-                onClick = onSaveGoalAndAddToDateClicked,
-                enabled = goalUiState.isEntryValid,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 48.dp)
-            ) {
-                selectedDate?.let {date ->
+
+        when {
+            goalUiState.isGoalRecurring -> {
+                FilledTonalButton(
+                    onClick = onSaveGoalClicked,
+                    enabled = goalUiState.isEntryValid,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp)
+                ) {
                     Text(
-                        text = if (!goalUiState.isGoalRecurring){
-                            stringResource(
-                                R.string.save_goal_and_add_to_date,
-                                formatLocalDateToShorthandDate(date, "Today")
-                            )
-                        } else {
-                            stringResource(R.string.save_and_schedule)
-                        },
+                        text = stringResource(R.string.save_and_schedule),
                         fontSize = 16.sp,
                     )
                 }
             }
+            showSaveGoalAndAddToDateButton && selectedDate != null -> {
+                FilledTonalButton(
+                    onClick = onSaveGoalAndAddToDateClicked,
+                    enabled = goalUiState.isEntryValid,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp)
+                ) {
+                    Text(
+                        text = stringResource(
+                            R.string.save_goal_and_add_to_date,
+                            formatLocalDateToShorthandDate(selectedDate, "Today")
+                        ),
+                        fontSize = 16.sp,
+                    )
+
+                }
+            }
         }
+
         if(!goalUiState.isGoalRecurring){
             //Save As Template Goal Button
             OutlinedButton(

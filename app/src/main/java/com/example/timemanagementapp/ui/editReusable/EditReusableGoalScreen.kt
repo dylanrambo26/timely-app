@@ -26,6 +26,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -34,6 +35,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
+import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.recurrenceRule2
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.TimelyScaffold
@@ -61,6 +63,7 @@ fun EditReusableGoalScreen(
     modifier: Modifier = Modifier,
     viewModel: EditReusableGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
 
+    navigateToCreateGoalWithGoalId: (Int) -> Unit,
     navigateBack: () -> Unit,
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit,
@@ -99,6 +102,11 @@ fun EditReusableGoalScreen(
             onEndDateEnabledChanged = viewModel::updateHasRecurrenceEndDate,
             updateRecurrenceEndDate = viewModel::updateRecurrenceEndDate,
             onRecurringChange = viewModel::updateIsGoalRecurring,
+            onCreateNonRecurringCopyClicked = {
+                navigateToCreateGoalWithGoalId(
+                    viewModel.goalUiState.goalDetails.id
+                )
+            },
             modifier = modifier.padding(innerPadding)
         )
     }
@@ -109,6 +117,7 @@ fun EditReusableGoalBody(
     goalUiState: GoalUiState,
     onGoalValueChange: (GoalDetails) -> Unit,
     onSaveAndUpdateScheduledGoalsClicked: () -> Unit,
+    onCreateNonRecurringCopyClicked: () -> Unit,
     onSaveGoal: () -> Unit,
     navigateBack: () -> Unit,
 
@@ -201,6 +210,17 @@ fun EditReusableGoalBody(
                 )
             }
 
+            if(goalUiState.wasOriginallyRecurring){
+                OutlinedButton(
+                    onClick = onCreateNonRecurringCopyClicked,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "Create Non-recurring copy",
+                        fontSize = 16.sp
+                    )
+                }
+            }
             //Cancel Edit Button
             TextButton(
                 onClick = navigateBack,
@@ -330,6 +350,7 @@ fun EditReusableGoalBodyPreview(){
             onDailyChange = {},
             onRecurringChange = {},
             onRecurringDayChange = {_,_->},
+            onCreateNonRecurringCopyClicked = {},
             onEndDateEnabledChanged = {}
         )
     }

@@ -148,6 +148,10 @@ fun TimelyNavHost(
                     navArgument(CreateGoalDestination.eventIdArg){
                         type = NavType.IntType
                         defaultValue = -1
+                    },
+                    navArgument(CreateGoalDestination.copyFromGoalIdArg){
+                        type = NavType.IntType
+                        defaultValue = -1
                     }
                 )
             ){
@@ -161,7 +165,20 @@ fun TimelyNavHost(
                     createGoalViewModel = createGoalViewModel,
                     goalListViewModel = goalListViewModel,
                     navigateToViewGoals = {eventId ->
-                        navController.navigate("${ViewGoalsDestination.route}/$eventId")},
+                        navController.popBackStack()
+
+                        navController.navigate("${ViewGoalsDestination.route}/$eventId"){
+                            launchSingleTop = true
+                        }
+                    },
+                    navigateToManageReusableGoals = {
+                        navController.popBackStack()
+                        navController.navigate(
+                            ManageReusableGoalsDestination.route
+                        ){
+                            launchSingleTop = true
+                        }
+                    },
                     navigateBack = {navController.popBackStack()}
                 )
             }
@@ -293,6 +310,11 @@ fun TimelyNavHost(
                     navigateToHome = { navController.navigate(HomeDestination.route) },
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
+                    navigateToCreateGoalWithGoalId = {goalId ->
+                        navController.navigate(
+                            CreateGoalDestination.route + "?${CreateGoalDestination.copyFromGoalIdArg}=$goalId"
+                        )
+                    },
                     viewModel = viewModel
                 )
             }
