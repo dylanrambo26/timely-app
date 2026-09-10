@@ -6,6 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.timemanagementapp.data.CreateRecurrenceUseCase
 import com.example.timemanagementapp.data.goal.GoalsRepository
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 import com.example.timemanagementapp.ui.createGoal.GoalDetails
@@ -25,7 +26,8 @@ import java.time.LocalDate
 class EditReusableGoalViewModel(
     savedStateHandle: SavedStateHandle,
     private val goalsRepository: GoalsRepository,
-    private val scheduledGoalsRepository: ScheduledGoalsRepository
+    private val scheduledGoalsRepository: ScheduledGoalsRepository,
+    private val createRecurrenceUseCase: CreateRecurrenceUseCase
 ) : ViewModel() {
 
     var goalUiState by mutableStateOf(GoalUiState())
@@ -120,6 +122,13 @@ class EditReusableGoalViewModel(
             )
         }
 
+        if (!goalUiState.wasOriginallyRecurring && goalUiState.isGoalRecurring){
+            createRecurrenceUseCase(
+                recurringDays = goalUiState.recurringDays,
+                goal = goal,
+                endDate = goalUiState.recurrenceEndDate
+            )
+        }
         onNavigate()
     }
 }

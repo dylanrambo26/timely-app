@@ -34,7 +34,8 @@ object AppViewModelProvider{
                 this.createSavedStateHandle(),
                 timelyApplication().container.goalsRepository,
                 timelyApplication().container.scheduledGoalsRepository,
-                timelyApplication().container.calendarEventsRepository
+                timelyApplication().container.calendarEventsRepository,
+                timelyApplication().container.createRecurrenceUseCase
             )
         }
 
@@ -78,7 +79,8 @@ object AppViewModelProvider{
             EditReusableGoalViewModel(
                 this.createSavedStateHandle(),
                 timelyApplication().container.goalsRepository,
-                timelyApplication().container.scheduledGoalsRepository
+                timelyApplication().container.scheduledGoalsRepository,
+                timelyApplication().container.createRecurrenceUseCase
             )
         }
         initializer {

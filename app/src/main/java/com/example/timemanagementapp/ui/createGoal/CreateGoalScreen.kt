@@ -233,7 +233,7 @@ fun AddGoalButtons(
         horizontalAlignment = Alignment.CenterHorizontally
     ){
         //Save Goal and Add to Date Button (only show if eventId exists in view model)
-        if(showSaveGoalAndAddToDateButton){
+        if(showSaveGoalAndAddToDateButton || goalUiState.isGoalRecurring){
             FilledTonalButton(
                 onClick = onSaveGoalAndAddToDateClicked,
                 enabled = goalUiState.isEntryValid,
@@ -256,19 +256,22 @@ fun AddGoalButtons(
                 }
             }
         }
-        //Save Goal Button
-        OutlinedButton(
-            onClick = onSaveGoalClicked,
-            enabled = goalUiState.isEntryValid,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 48.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.save_goal),
-                fontSize = 16.sp,
-            )
+        if(!goalUiState.isGoalRecurring){
+            //Save As Template Goal Button
+            OutlinedButton(
+                onClick = onSaveGoalClicked,
+                enabled = goalUiState.isEntryValid,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.save_as_template_goal),
+                    fontSize = 16.sp,
+                )
+            }
         }
+
         //Cancel Button
         OutlinedButton(
             onClick = onCancelButtonClicked,
@@ -346,7 +349,7 @@ fun AddGoalInputForm(
 }
 
 //Preview the AddLogScreen
-@Preview(showBackground = true)
+@Preview(showBackground = true, heightDp = 2000)
 @Composable
 fun CreateGoalScreenPreview(){
     TimeManagementAppTheme {

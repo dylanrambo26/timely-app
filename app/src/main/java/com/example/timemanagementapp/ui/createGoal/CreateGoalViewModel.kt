@@ -7,6 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.timemanagementapp.R
+import com.example.timemanagementapp.data.CreateRecurrenceUseCase
 import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
 import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.goal.GoalsRepository
@@ -29,7 +30,8 @@ class CreateGoalViewModel(
     savedStateHandle: SavedStateHandle,
     private val goalsRepository: GoalsRepository,
     private val scheduledGoalsRepository: ScheduledGoalsRepository,
-    private val calendarEventsRepository: CalendarEventsRepository
+    private val calendarEventsRepository: CalendarEventsRepository,
+    private val createRecurrenceUseCase: CreateRecurrenceUseCase
 ) : ViewModel(){
 
     var goalUiState by mutableStateOf(GoalUiState())
@@ -108,19 +110,7 @@ class CreateGoalViewModel(
             return
         }
 
-        val goal = goalUiState.goalDetails.toGoal()
-        val goalId = goalsRepository.insertGoal(goal)
-
-        if(goalUiState.isGoalRecurring){
-            createRecurrenceRule(
-                recurringDays = goalUiState.recurringDays,
-                endDate = goalUiState.recurrenceEndDate,
-                goal = goal,
-                goalId = goalId
-            )
-        }
-
-
+        goalsRepository.insertGoal(goalUiState.goalDetails.toGoal())
     }
 
     suspend fun saveGoalAndAddToDate(onNavigate: (Int) -> Unit = {}){
@@ -155,11 +145,10 @@ class CreateGoalViewModel(
         val goalId = goalsRepository.insertGoal(goal)
 
         if(goalUiState.isGoalRecurring){
-            createRecurrenceRule(
+            createRecurrenceUseCase(
                 recurringDays = goalUiState.recurringDays,
-                endDate = goalUiState.recurrenceEndDate,
                 goal = goal,
-                goalId = goalId
+                endDate = goalUiState.recurrenceEndDate
             )
         }
         else {
@@ -179,7 +168,7 @@ class CreateGoalViewModel(
         onNavigate(eventId)
     }
 
-    private suspend fun createRecurrenceRule(
+    /*private suspend fun createRecurrenceRule(
         recurringDays: Set<DayOfWeek>,
         goalId: Int,
         endDate: LocalDate?,
@@ -238,7 +227,7 @@ class CreateGoalViewModel(
         }
 
         return date
-    }
+    }*/
 }
 
 
