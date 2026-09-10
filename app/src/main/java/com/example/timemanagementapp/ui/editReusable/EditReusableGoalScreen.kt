@@ -100,6 +100,7 @@ fun EditReusableGoalScreen(
             onDailyChange = viewModel::updateAllRecurringDays,
             onRecurringDayChange = viewModel::onRecurringDayChange,
             onEndDateEnabledChanged = viewModel::updateHasRecurrenceEndDate,
+            updateRecurrenceStartDate = viewModel::updateRecurrenceStartDate,
             updateRecurrenceEndDate = viewModel::updateRecurrenceEndDate,
             onRecurringChange = viewModel::updateIsGoalRecurring,
             onCreateNonRecurringCopyClicked = {
@@ -124,6 +125,7 @@ fun EditReusableGoalBody(
     onDailyChange: (Boolean) -> Unit,
     onRecurringDayChange: (DayOfWeek, Boolean) -> Unit,
     onEndDateEnabledChanged: (Boolean) -> Unit,
+    updateRecurrenceStartDate: (LocalDate) -> Unit,
     updateRecurrenceEndDate: (LocalDate?) -> Unit,
     onRecurringChange: (Boolean) -> Unit,
     modifier: Modifier = Modifier
@@ -169,6 +171,7 @@ fun EditReusableGoalBody(
             onRecurringDayChange = onRecurringDayChange,
             onEndDateEnabledChanged = onEndDateEnabledChanged,
             updateRecurrenceEndDate = updateRecurrenceEndDate,
+            updateRecurrenceStartDate = updateRecurrenceStartDate,
             onRecurringChange = onRecurringChange
         )
 
@@ -242,6 +245,7 @@ fun EditRecurrenceRuleBody(
     onDailyChange: (Boolean) -> Unit,
     onRecurringDayChange: (DayOfWeek, Boolean) -> Unit,
     onEndDateEnabledChanged: (Boolean) -> Unit,
+    updateRecurrenceStartDate: (LocalDate) -> Unit,
     updateRecurrenceEndDate: (LocalDate?) -> Unit,
     onRecurringChange: (Boolean) -> Unit
 ){
@@ -249,17 +253,20 @@ fun EditRecurrenceRuleBody(
         Column {
             RecurrenceOptions(
                 recurrenceEndDate = goalUiState.recurrenceEndDate,
+                recurrenceStartDate = goalUiState.recurrenceStartDate,
                 hasRecurrenceEndDate = goalUiState.hasRecurrenceEndDate,
                 recurringDays = goalUiState.recurringDays,
                 onRecurringDayChange = onRecurringDayChange,
                 onEndDateEnabledChanged = onEndDateEnabledChanged,
                 updateRecurrenceEndDate = updateRecurrenceEndDate,
+                updateRecurrenceStartDate = updateRecurrenceStartDate,
                 onDailyChange = onDailyChange
             )
         }
     } else {
         RecurringGoalBody(
             recurringDays = goalUiState.recurringDays,
+            recurrenceStartDate = goalUiState.recurrenceStartDate,
             recurrenceEndDate = goalUiState.recurrenceEndDate,
             hasRecurrenceEndDate = goalUiState.hasRecurrenceEndDate,
             isGoalRecurring = goalUiState.isGoalRecurring,
@@ -267,6 +274,7 @@ fun EditRecurrenceRuleBody(
             onDailyChange = onDailyChange,
             onRecurringDayChange = onRecurringDayChange,
             onEndDateEnabledChanged = onEndDateEnabledChanged,
+            updateRecurrenceStartDate = updateRecurrenceStartDate,
             updateRecurrenceEndDate = updateRecurrenceEndDate
         )
     }
@@ -351,6 +359,7 @@ fun EditReusableGoalBodyPreview(){
             onRecurringChange = {},
             onRecurringDayChange = {_,_->},
             onCreateNonRecurringCopyClicked = {},
+            updateRecurrenceStartDate = {},
             onEndDateEnabledChanged = {}
         )
     }

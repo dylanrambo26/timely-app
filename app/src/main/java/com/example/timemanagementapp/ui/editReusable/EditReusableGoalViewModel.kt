@@ -86,6 +86,10 @@ class EditReusableGoalViewModel(
         goalUiState = goalUiState.withRecurrenceEndDateEnabled(hasRecurrenceEndDate)
     }
 
+    fun updateRecurrenceStartDate(recurrenceStartDate: LocalDate){
+        goalUiState = goalUiState.withRecurrenceEndDate(recurrenceStartDate)
+    }
+
     fun updateRecurrenceEndDate(recurrenceEndDate: LocalDate?){
         goalUiState = goalUiState.withRecurrenceEndDate(recurrenceEndDate)
     }
@@ -126,6 +130,7 @@ class EditReusableGoalViewModel(
             createRecurrenceUseCase(
                 recurringDays = goalUiState.recurringDays,
                 goal = goal,
+                startDate = goalUiState.recurrenceStartDate,
                 endDate = goalUiState.recurrenceEndDate
             )
         }

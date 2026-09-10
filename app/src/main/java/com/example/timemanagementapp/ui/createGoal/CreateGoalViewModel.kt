@@ -14,10 +14,12 @@ import com.example.timemanagementapp.data.goal.GoalsRepository
 import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRule
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
+import com.example.timemanagementapp.ui.goal.validateRecurrence
 import com.example.timemanagementapp.ui.goal.withAllRecurringDays
 import com.example.timemanagementapp.ui.goal.withGoalRecurring
 import com.example.timemanagementapp.ui.goal.withRecurrenceEndDate
 import com.example.timemanagementapp.ui.goal.withRecurrenceEndDateEnabled
+import com.example.timemanagementapp.ui.goal.withRecurrenceStartDate
 import com.example.timemanagementapp.ui.goal.withRecurringDay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -81,6 +83,10 @@ class CreateGoalViewModel(
         goalUiState = goalUiState.withRecurrenceEndDateEnabled(hasRecurrenceEndDate)
     }
 
+    fun updateRecurrenceStartDate(recurrenceStartDate: LocalDate){
+        goalUiState = goalUiState.withRecurrenceStartDate(recurrenceStartDate)
+    }
+
     fun updateRecurrenceEndDate(recurrenceEndDate: LocalDate?){
         goalUiState = goalUiState.withRecurrenceEndDate(recurrenceEndDate)
     }
@@ -123,11 +129,11 @@ class CreateGoalViewModel(
         onNavigateToManageReusableGoals: () -> Unit = {},
     ){
 
-        val error = validateInput(goalUiState.goalDetails)
+        val error = validateInput(goalUiState.goalDetails) ?: goalUiState.validateRecurrence()
         if(error != null){
             goalUiState = goalUiState.copy(
                 errorMessage = error,
-                isEntryValid = false
+                //isEntryValid = false
             )
             return
         }
@@ -143,6 +149,7 @@ class CreateGoalViewModel(
             createRecurrenceUseCase(
                 recurringDays = goalUiState.recurringDays,
                 goal = insertedGoal,
+                startDate = goalUiState.recurrenceStartDate,
                 endDate = goalUiState.recurrenceEndDate
             )
         }
@@ -269,6 +276,8 @@ data class GoalUiState(
     val wasOriginallyRecurring: Boolean = false,
     val recurringDays: Set<DayOfWeek> = emptySet(),
     val originalRecurringDays: Set<DayOfWeek> = emptySet(),
+
+    val recurrenceStartDate: LocalDate = LocalDate.now(),
     val recurrenceEndDate: LocalDate? = null,
     val hasRecurrenceEndDate: Boolean = false
 )

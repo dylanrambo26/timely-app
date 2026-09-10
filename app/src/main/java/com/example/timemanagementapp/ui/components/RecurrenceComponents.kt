@@ -1,9 +1,11 @@
 package com.example.timemanagementapp.ui.components
 
+import androidx.collection.mutableIntListOf
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.Checkbox
@@ -23,7 +25,9 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.ui.createGoal.GoalDetails
 import com.example.timemanagementapp.ui.createGoal.GoalUiState
@@ -39,6 +43,8 @@ import java.util.Locale
 @Composable
 fun RecurringGoalBody(
     recurringDays: Set<DayOfWeek>,
+
+    recurrenceStartDate: LocalDate,
     recurrenceEndDate: LocalDate?,
     hasRecurrenceEndDate: Boolean,
     isGoalRecurring: Boolean,
@@ -46,6 +52,8 @@ fun RecurringGoalBody(
     onDailyChange: (Boolean) -> Unit,
     onRecurringDayChange: (DayOfWeek, Boolean) -> Unit,
     onEndDateEnabledChanged: (Boolean) -> Unit,
+
+    updateRecurrenceStartDate: (LocalDate) -> Unit,
     updateRecurrenceEndDate: (LocalDate?) -> Unit
 ){
     Column(){
@@ -68,11 +76,13 @@ fun RecurringGoalBody(
         if (isGoalRecurring){
             RecurrenceOptions(
                 recurringDays = recurringDays,
+                recurrenceStartDate = recurrenceStartDate,
                 recurrenceEndDate = recurrenceEndDate,
                 hasRecurrenceEndDate = hasRecurrenceEndDate,
                 onDailyChange = onDailyChange,
                 onRecurringDayChange = onRecurringDayChange,
                 updateRecurrenceEndDate = updateRecurrenceEndDate,
+                updateRecurrenceStartDate = updateRecurrenceStartDate,
                 onEndDateEnabledChanged = onEndDateEnabledChanged
             )
         }
@@ -81,11 +91,15 @@ fun RecurringGoalBody(
 
 @Composable
 fun RecurrenceOptions(
+    recurrenceStartDate: LocalDate,
     recurrenceEndDate: LocalDate?,
+
     hasRecurrenceEndDate: Boolean,
     recurringDays: Set<DayOfWeek>,
     onRecurringDayChange: (DayOfWeek, Boolean) -> Unit,
     onEndDateEnabledChanged: (Boolean) -> Unit,
+
+    updateRecurrenceStartDate: (LocalDate) -> Unit,
     updateRecurrenceEndDate: (LocalDate?) -> Unit,
     onDailyChange: (Boolean) -> Unit,
 ){
@@ -111,8 +125,13 @@ fun RecurrenceOptions(
         recurringDays = recurringDays,
         onRecurringDayChange = onRecurringDayChange
     )
+    StartDateBody(
+        recurrenceStartDate = recurrenceStartDate,
+        updateRecurrenceStartDate = updateRecurrenceStartDate
+    )
     EndDateBody(
         recurringDays = recurringDays,
+        recurrenceStartDate = recurrenceStartDate,
         recurrenceEndDate = recurrenceEndDate,
         hasRecurrenceEndDate = hasRecurrenceEndDate,
         updateRecurrenceEndDate = updateRecurrenceEndDate,
@@ -121,8 +140,56 @@ fun RecurrenceOptions(
 }
 
 @Composable
+fun StartDateBody(
+    recurrenceStartDate: LocalDate,
+    updateRecurrenceStartDate: (LocalDate) -> Unit
+){
+    var showDatePicker by rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+        verticalAlignment = Alignment.CenterVertically
+    ){
+        Text(text = "Starts:")
+
+        TextButton(
+            onClick = {
+                showDatePicker = true
+            }
+        ) {
+            Text(
+                text = formatLocalDateToExtendedShorthandDate(
+                    recurrenceStartDate
+                )
+            )
+
+            Icon(
+                imageVector = Icons.Default.DateRange,
+                contentDescription = "Calendar Icon"
+            )
+        }
+    }
+    if(showDatePicker){
+        RecurrenceDatePicker(
+            selectedDate = recurrenceStartDate,
+            onDateSelected = updateRecurrenceStartDate,
+            invalidDateMessage = stringResource(R.string.recurrence_start_date_cannot_be_in_past),
+            minimumDate = LocalDate.now(),
+            onDismissRequest = {
+                showDatePicker = false
+            }
+        )
+    }
+
+}
+
+@Composable
 fun EndDateBody(
     hasRecurrenceEndDate: Boolean,
+    recurrenceStartDate: LocalDate,
     recurrenceEndDate: LocalDate?,
     recurringDays: Set<DayOfWeek>,
     onEndDateEnabledChanged: (Boolean) -> Unit,
@@ -152,8 +219,11 @@ fun EndDateBody(
     if(hasRecurrenceEndDate){
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
         ){
+            Text(text = "Ends:")
+
             TextButton(
                 onClick = {
                     showDatePicker = true
@@ -175,8 +245,11 @@ fun EndDateBody(
     }
 
     if(showDatePicker){
-        EndDatePicker(
-            updateRecurrenceEndDate = updateRecurrenceEndDate,
+        RecurrenceDatePicker(
+            selectedDate = recurrenceEndDate,
+            onDateSelected = updateRecurrenceEndDate,
+            minimumDate = recurrenceStartDate,
+            invalidDateMessage = stringResource(R.string.recurrence_end_date_must_be_after_start_date),
             onDismissRequest = {
                 showDatePicker = false
             }
@@ -186,29 +259,54 @@ fun EndDateBody(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EndDatePicker(
-    updateRecurrenceEndDate: (LocalDate?) -> Unit,
+fun RecurrenceDatePicker(
+    selectedDate: LocalDate?,
+    minimumDate: LocalDate,
+    invalidDateMessage: String,
+    onDateSelected: (LocalDate) -> Unit,
     onDismissRequest: () -> Unit,
 ){
-    val datePickerState = rememberDatePickerState()
+    var errorMessage by rememberSaveable {
+        mutableStateOf<String?>(null)
+    }
+
+    val initialSelectedDateMillis = selectedDate
+        ?.atStartOfDay(ZoneOffset.UTC)
+        ?.toInstant()
+        ?.toEpochMilli()
+
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = initialSelectedDateMillis
+    )
+
+    val selectedLocalDate = datePickerState.selectedDateMillis?.let { millis ->
+        Instant
+            .ofEpochMilli(millis)
+            .atZone(ZoneOffset.UTC)
+            .toLocalDate()
+    }
+
+    val isSelectedDateValid = selectedLocalDate?.let { date ->
+        !date.isBefore(minimumDate)
+    } == true
+
+    errorMessage = if (!isSelectedDateValid){
+        invalidDateMessage
+    } else {
+        null
+    }
+
     DatePickerDialog(
         onDismissRequest = onDismissRequest,
         confirmButton = {
             TextButton(
                 onClick = {
-                    val selectedMillis = datePickerState.selectedDateMillis
-
-                    if (selectedMillis != null){
-                        val selectedDate = Instant
-                            .ofEpochMilli(selectedMillis)
-                            .atZone(ZoneOffset.UTC)
-                            .toLocalDate()
-
-                        updateRecurrenceEndDate(selectedDate)
+                    selectedLocalDate?.let { date ->
+                        onDateSelected(date)
+                        onDismissRequest()
                     }
-
-                    onDismissRequest()
-                }
+                },
+                enabled = datePickerState.selectedDateMillis != null
             ){
                 Text("OK")
             }
@@ -221,7 +319,20 @@ fun EndDatePicker(
             }
         }
     ){
-        DatePicker(state = datePickerState)
+        Column {
+            DatePicker(state = datePickerState)
+
+            errorMessage?.let { message ->
+                Text(
+                    text = message,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(
+                        horizontal = 24.dp,
+                        vertical = 8.dp
+                    )
+                )
+            }
+        }
     }
 }
 
@@ -275,12 +386,14 @@ fun RecurringGoalBodyPreview(){
         RecurringGoalBody(
             recurringDays = goalUiState.recurringDays,
             recurrenceEndDate = goalUiState.recurrenceEndDate,
+            recurrenceStartDate = goalUiState.recurrenceStartDate,
             hasRecurrenceEndDate = goalUiState.hasRecurrenceEndDate,
             isGoalRecurring = goalUiState.isGoalRecurring,
             onRecurringChange = {},
             onRecurringDayChange = {_,_ ->},
             onDailyChange = {},
             onEndDateEnabledChanged = {},
+            updateRecurrenceStartDate = {},
             updateRecurrenceEndDate = {}
         )
     }

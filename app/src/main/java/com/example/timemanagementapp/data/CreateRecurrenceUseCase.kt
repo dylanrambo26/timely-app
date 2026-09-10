@@ -17,10 +17,11 @@ class CreateRecurrenceUseCase(
 
     suspend operator fun invoke(
         recurringDays: Set<DayOfWeek>,
+        startDate: LocalDate,
         endDate: LocalDate?,
         goal: Goal,
     ){
-        val startDate = calculateRecurrenceStartDate(recurringDays)
+        //val startDate = calculateRecurrenceStartDate(recurringDays)
 
         val newRecurrenceRule = RecurrenceRule(
             goalId = goal.goalID,
@@ -42,10 +43,15 @@ class CreateRecurrenceUseCase(
         recurrenceRule: RecurrenceRule,
         goal: Goal
     ){
-        val lazyGenerationEnd = recurrenceRule.startDate.plusMonths(3)
+        val lazyGenerationEnd = LocalDate.now().plusMonths(3)
         val schedulingEndDate = recurrenceRule.endDate?.coerceAtMost(lazyGenerationEnd) ?: lazyGenerationEnd
 
-        val dates = recurrenceRule.startDate.datesUntil(schedulingEndDate)
+        if (recurrenceRule.startDate.isAfter(schedulingEndDate)){
+            return
+        }
+
+        //end date is inclusive
+        val dates = recurrenceRule.startDate.datesUntil(schedulingEndDate.plusDays(1))
 
         for (date in dates){
             if (date.dayOfWeek in recurrenceRule.recurringDays){
@@ -62,17 +68,5 @@ class CreateRecurrenceUseCase(
                 scheduledGoalsRepository.insertScheduledGoal(scheduledGoal)
             }
         }
-    }
-
-    private fun calculateRecurrenceStartDate(
-        recurringDays: Set<DayOfWeek>
-    ): LocalDate{
-        var date = LocalDate.now()
-
-        while(date.dayOfWeek !in recurringDays){
-            date = date.plusDays(1)
-        }
-
-        return date
     }
 }

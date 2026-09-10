@@ -57,6 +57,7 @@ import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.components.RecurringGoalBody
 import com.example.timemanagementapp.ui.components.lists.GoalTemplateCard
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
+import com.example.timemanagementapp.ui.goal.canSave
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.util.formatLocalDateToExtendedShorthandDate
@@ -129,6 +130,7 @@ fun CreateGoalScreen(
             onRecurringDayChange = createGoalViewModel::onRecurringDayChange,
             onEndDateEnabledChanged = createGoalViewModel::updateHasRecurrenceEndDate,
             updateRecurrenceEndDate = createGoalViewModel::updateRecurrenceEndDate,
+            updateRecurrenceStartDate = createGoalViewModel::updateRecurrenceStartDate,
             selectedDate = selectedDate
         )
     }
@@ -144,6 +146,7 @@ fun CreateGoalBody(
     onDailyChange: (Boolean) -> Unit,
     onRecurringDayChange: (DayOfWeek, Boolean) -> Unit,
     onEndDateEnabledChanged: (Boolean) -> Unit,
+    updateRecurrenceStartDate: (LocalDate) -> Unit,
     updateRecurrenceEndDate: (LocalDate?) -> Unit,
     onCancelButtonClicked: () -> Unit,
     showSaveGoalAndAddToDateButton: Boolean,
@@ -185,12 +188,14 @@ fun CreateGoalBody(
 
         RecurringGoalBody(
             recurringDays = goalUiState.recurringDays,
+            recurrenceStartDate = goalUiState.recurrenceStartDate,
             recurrenceEndDate = goalUiState.recurrenceEndDate,
             hasRecurrenceEndDate = goalUiState.hasRecurrenceEndDate,
             isGoalRecurring = goalUiState.isGoalRecurring,
             onRecurringChange = onRecurringChange,
             onDailyChange = onDailyChange,
             onRecurringDayChange = onRecurringDayChange,
+            updateRecurrenceStartDate = updateRecurrenceStartDate,
             updateRecurrenceEndDate = updateRecurrenceEndDate,
             onEndDateEnabledChanged = onEndDateEnabledChanged
         )
@@ -258,7 +263,7 @@ fun AddGoalButtons(
             showSaveGoalAndAddToDateButton && selectedDate != null -> {
                 FilledTonalButton(
                     onClick = onSaveGoalAndAddToDateClicked,
-                    enabled = goalUiState.isEntryValid,
+                    enabled = goalUiState.canSave,
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 48.dp)
@@ -279,7 +284,7 @@ fun AddGoalButtons(
             //Save As Template Goal Button
             OutlinedButton(
                 onClick = onSaveGoalClicked,
-                enabled = goalUiState.isEntryValid,
+                enabled = goalUiState.canSave,
                 modifier = Modifier
                     .fillMaxWidth()
                     .heightIn(min = 48.dp)
@@ -393,6 +398,7 @@ fun CreateGoalScreenPreview(){
             onDailyChange = {},
             onRecurringDayChange = {_,_ ->},
             onEndDateEnabledChanged = {},
+            updateRecurrenceStartDate = {},
             updateRecurrenceEndDate = {}
         )
     }
