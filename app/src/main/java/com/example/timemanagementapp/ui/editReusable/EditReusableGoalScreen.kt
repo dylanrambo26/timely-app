@@ -133,9 +133,6 @@ fun EditReusableGoalBody(
         verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_medium)),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        //TimeRemaining(remaining = goalUiState.remainingMinutesInDay)
-        //DisplayTime(duration = goalUiState.remainingMinutesInDay, title = stringResource(R.string.available_time_in_full_day))
-
         val oldGoalDetails = remember(goalUiState.goalDetails.id){
             goalUiState.goalDetails
         }
@@ -181,7 +178,7 @@ fun EditReusableGoalBody(
                     .height(52.dp),
             ) {
                 Text(
-                    text = "Save Changes Only",
+                    text = "Save Changes to Template Only",
                     fontSize = 16.sp,
                 )
             }
