@@ -33,6 +33,7 @@ interface AppContainer{
     val calendarEventsRepository: CalendarEventsRepository
     val analyticsRepository: AnalyticsRepository
     val createRecurrenceUseCase: CreateRecurrenceUseCase
+    val updateRecurrenceUseCase: UpdateRecurrenceUseCase
 }
 
 class AppDataContainer(private val context: Context) : AppContainer {
@@ -77,8 +78,14 @@ class AppDataContainer(private val context: Context) : AppContainer {
     override val createRecurrenceUseCase: CreateRecurrenceUseCase by lazy {
         CreateRecurrenceUseCase(
             goalsRepository = goalsRepository,
-            scheduledGoalsRepository = scheduledGoalsRepository,
-            calendarEventsRepository = calendarEventsRepository
+            scheduledGoalsRepository = scheduledGoalsRepository
+        )
+    }
+
+    override val updateRecurrenceUseCase: UpdateRecurrenceUseCase by lazy {
+        UpdateRecurrenceUseCase(
+            goalsRepository = goalsRepository,
+            scheduledGoalsRepository = scheduledGoalsRepository
         )
     }
 }

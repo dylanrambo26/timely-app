@@ -29,6 +29,24 @@ interface ScheduledGoalDao {
     """)
     suspend fun deleteScheduledGoalsByGoalId(goalId: Int)
 
+    @Query("""
+        DELETE FROM scheduled_goals
+        WHERE scheduledGoalId IN (
+            SELECT sg.scheduledGoalId
+            FROM scheduled_goals AS sg
+            INNER JOIN calendar_events AS ce
+                ON sg.eventId = ce.eventId
+            WHERE sg.recurrenceRuleId = :recurrenceRuleId
+                AND ce.date >= :startDate
+                AND sg.status != :completedStatus
+        )
+    """)
+    suspend fun deleteFutureIncompleteRecurringGoalsByRecurrenceId(
+        recurrenceRuleId: Int,
+        startDate: LocalDate,
+        completedStatus: GoalStatus = GoalStatus.COMPLETED
+    )
+
 
     @Query("SELECT * from scheduled_goals WHERE scheduledGoalId = :id")
     suspend fun getScheduledGoalOnce(id: Int): ScheduledGoal

@@ -80,7 +80,8 @@ object AppViewModelProvider{
                 this.createSavedStateHandle(),
                 timelyApplication().container.goalsRepository,
                 timelyApplication().container.scheduledGoalsRepository,
-                timelyApplication().container.createRecurrenceUseCase
+                timelyApplication().container.createRecurrenceUseCase,
+                timelyApplication().container.updateRecurrenceUseCase
             )
         }
         initializer {

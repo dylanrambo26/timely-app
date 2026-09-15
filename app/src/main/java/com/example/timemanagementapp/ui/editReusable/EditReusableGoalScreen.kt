@@ -188,7 +188,7 @@ fun EditReusableGoalBody(
                     .height(52.dp),
             ) {
                 Text(
-                    text = stringResource(R.string.save_edit_one_goal),
+                    text = "Save Changes Only",
                     fontSize = 16.sp,
                 )
             }
@@ -208,7 +208,7 @@ fun EditReusableGoalBody(
                     .fillMaxWidth(),
             ) {
                 Text(
-                    text = stringResource(R.string.save_and_overwrite_future_scheduled_goals),
+                    text = "Apply changes to future goals",
                     fontSize = 16.sp,
                 )
             }
@@ -335,7 +335,7 @@ fun EditGoalInputForm(
     )
 }
 
-@Preview(showBackground = true, heightDp = 1000)
+@Preview(showBackground = true, heightDp = 2000)
 @Composable
 fun EditReusableGoalBodyPreview(){
     TimeManagementAppTheme {

@@ -7,7 +7,10 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.timemanagementapp.data.CreateRecurrenceUseCase
+import com.example.timemanagementapp.data.UpdateRecurrenceUseCase
 import com.example.timemanagementapp.data.goal.GoalsRepository
+import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRule
+import com.example.timemanagementapp.data.recurrenceRule2
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 import com.example.timemanagementapp.ui.createGoal.GoalDetails
 import com.example.timemanagementapp.ui.createGoal.GoalUiState
@@ -16,6 +19,7 @@ import com.example.timemanagementapp.ui.goal.withAllRecurringDays
 import com.example.timemanagementapp.ui.goal.withGoalRecurring
 import com.example.timemanagementapp.ui.goal.withRecurrenceEndDate
 import com.example.timemanagementapp.ui.goal.withRecurrenceEndDateEnabled
+import com.example.timemanagementapp.ui.goal.withRecurrenceStartDate
 import com.example.timemanagementapp.ui.goal.withRecurringDay
 import com.example.timemanagementapp.util.validate
 import kotlinx.coroutines.flow.filterNotNull
@@ -27,13 +31,16 @@ class EditReusableGoalViewModel(
     savedStateHandle: SavedStateHandle,
     private val goalsRepository: GoalsRepository,
     private val scheduledGoalsRepository: ScheduledGoalsRepository,
-    private val createRecurrenceUseCase: CreateRecurrenceUseCase
+    private val createRecurrenceUseCase: CreateRecurrenceUseCase,
+    private val updateRecurrenceUseCase: UpdateRecurrenceUseCase,
 ) : ViewModel() {
 
     var goalUiState by mutableStateOf(GoalUiState())
         private set
 
     private val goalId: Int = checkNotNull(savedStateHandle[EditReusableGoalDestination.goalIdArg])
+
+    private var originalRecurrenceRule: RecurrenceRule? = null
 
     init {
         viewModelScope.launch {
@@ -42,6 +49,7 @@ class EditReusableGoalViewModel(
                 .collect {goalWithRecurrence ->
                     val goal = goalWithRecurrence.goal
                     val recurrenceRule = goalWithRecurrence.recurrenceRule
+                    originalRecurrenceRule = recurrenceRule
                     val isRecurring = recurrenceRule != null
 
                     val details = GoalDetails(
@@ -87,7 +95,7 @@ class EditReusableGoalViewModel(
     }
 
     fun updateRecurrenceStartDate(recurrenceStartDate: LocalDate){
-        goalUiState = goalUiState.withRecurrenceEndDate(recurrenceStartDate)
+        goalUiState = goalUiState.withRecurrenceStartDate(recurrenceStartDate)
     }
 
     fun updateRecurrenceEndDate(recurrenceEndDate: LocalDate?){
@@ -116,6 +124,7 @@ class EditReusableGoalViewModel(
         val goal = goalUiState.goalDetails.toGoal()
         goalsRepository.updateGoal(goal)
 
+        //Updates goal values to the new ones, does not depend on recurring status
         if(updateFutureScheduledGoals){
             scheduledGoalsRepository.updateFutureScheduledGoalsFromEditedTemplate(
                 goalId = goal.goalID,
@@ -123,6 +132,20 @@ class EditReusableGoalViewModel(
                 hours = goal.hours,
                 minutes = goal.minutes,
                 startDate = LocalDate.now()
+            )
+        }
+
+        //Recurring to Recurring case
+        if(goalUiState.wasOriginallyRecurring){
+
+            val existingRule = originalRecurrenceRule ?: return
+
+            updateRecurrenceUseCase(
+                originalRule = existingRule,
+                recurringDays = goalUiState.recurringDays,
+                startDate = goalUiState.recurrenceStartDate,
+                endDate = goalUiState.recurrenceEndDate,
+                deleteOldScheduledGoals = updateFutureScheduledGoals
             )
         }
 
