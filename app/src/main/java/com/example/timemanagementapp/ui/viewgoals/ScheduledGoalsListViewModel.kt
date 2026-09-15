@@ -2,11 +2,9 @@ package com.example.timemanagementapp.ui.viewgoals
 
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.asLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
 import com.example.timemanagementapp.data.goal.GoalStatus
-import com.example.timemanagementapp.data.goal.GoalsRepository
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 import com.example.timemanagementapp.util.MINUTES_IN_24_HOUR_DAY

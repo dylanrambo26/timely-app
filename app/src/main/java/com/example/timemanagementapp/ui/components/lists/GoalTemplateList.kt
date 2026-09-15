@@ -25,10 +25,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.timemanagementapp.data.goal.Goal
-import java.time.format.TextStyle as DateTextStyle;
-import java.util.Locale;
 import com.example.timemanagementapp.data.goal.recurrence.GoalWithRecurrence
-import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRule
 import com.example.timemanagementapp.data.testGoalsWithRecurrenceSizeThree
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.util.toShortLabel

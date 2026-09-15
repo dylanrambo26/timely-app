@@ -13,34 +13,20 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.pager.PageSize
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.DateRange
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxDefaults
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -60,15 +46,10 @@ import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.goal.canSave
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
-import com.example.timemanagementapp.util.formatLocalDateToExtendedShorthandDate
 import com.example.timemanagementapp.util.formatLocalDateToShorthandDate
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
-import java.time.Instant
 import java.time.LocalDate
-import java.time.ZoneOffset
-import java.util.Locale
-import java.time.format.TextStyle as DateTextStyle
 
 
 object CreateGoalDestination : NavigationDest{

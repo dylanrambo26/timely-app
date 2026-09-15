@@ -10,7 +10,6 @@ import com.example.timemanagementapp.data.CreateRecurrenceUseCase
 import com.example.timemanagementapp.data.UpdateRecurrenceUseCase
 import com.example.timemanagementapp.data.goal.GoalsRepository
 import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRule
-import com.example.timemanagementapp.data.recurrenceRule2
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 import com.example.timemanagementapp.ui.createGoal.GoalDetails
 import com.example.timemanagementapp.ui.createGoal.GoalUiState

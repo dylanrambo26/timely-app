@@ -1,7 +1,6 @@
 package com.example.timemanagementapp.ui.goal
 
 import com.example.timemanagementapp.R
-import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.ui.createGoal.GoalUiState
 import com.example.timemanagementapp.util.validate
 import java.time.DayOfWeek

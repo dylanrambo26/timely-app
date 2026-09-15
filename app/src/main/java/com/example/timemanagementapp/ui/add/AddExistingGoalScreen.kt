@@ -35,7 +35,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
-import com.example.timemanagementapp.data.testGoalsSizeThree
 import com.example.timemanagementapp.data.testGoalsWithRecurrenceSizeThree
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.components.AddGoalButton

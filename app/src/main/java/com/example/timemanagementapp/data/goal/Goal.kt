@@ -1,6 +1,5 @@
 package com.example.timemanagementapp.data.goal
 
-import androidx.room.Embedded
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 

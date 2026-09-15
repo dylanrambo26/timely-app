@@ -1,6 +1,5 @@
 package com.example.timemanagementapp.ui.editReusable
 
-import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,7 +15,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -26,17 +24,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
-import com.example.timemanagementapp.TimelyBottomAppBar
-import com.example.timemanagementapp.TimelySmallTopAppBar
-import com.example.timemanagementapp.data.goal.Goal
-import com.example.timemanagementapp.data.recurrenceRule2
 import com.example.timemanagementapp.ui.AppViewModelProvider
 import com.example.timemanagementapp.ui.TimelyScaffold
 import com.example.timemanagementapp.ui.components.RecurrenceOptions

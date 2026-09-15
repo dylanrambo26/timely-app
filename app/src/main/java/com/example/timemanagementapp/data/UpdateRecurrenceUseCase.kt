@@ -1,7 +1,5 @@
 package com.example.timemanagementapp.data
 
-import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
-import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.goal.GoalsRepository
 import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRule
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository

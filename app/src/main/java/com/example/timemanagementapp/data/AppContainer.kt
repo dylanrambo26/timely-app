@@ -9,7 +9,6 @@ import com.example.timemanagementapp.data.analytics.AnalyticsRepository
 import com.example.timemanagementapp.data.analytics.OfflineAnalyticsRepository
 import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
 import com.example.timemanagementapp.data.calendar.OfflineCalendarEventsRepository
-import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.goal.GoalsDatabase
 import com.example.timemanagementapp.data.goal.GoalsRepository
 import com.example.timemanagementapp.data.goal.OfflineGoalsRepository

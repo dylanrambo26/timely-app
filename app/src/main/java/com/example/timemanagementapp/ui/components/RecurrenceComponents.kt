@@ -1,6 +1,5 @@
 package com.example.timemanagementapp.ui.components
 
-import androidx.collection.mutableIntListOf
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,8 +36,8 @@ import java.time.DayOfWeek
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
-import java.time.format.TextStyle as DateTextStyle
 import java.util.Locale
+import java.time.format.TextStyle as DateTextStyle
 
 @Composable
 fun RecurringGoalBody(
