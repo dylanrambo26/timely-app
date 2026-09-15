@@ -12,6 +12,8 @@ import com.example.timemanagementapp.data.calendar.OfflineCalendarEventsReposito
 import com.example.timemanagementapp.data.goal.GoalsDatabase
 import com.example.timemanagementapp.data.goal.GoalsRepository
 import com.example.timemanagementapp.data.goal.OfflineGoalsRepository
+import com.example.timemanagementapp.data.goal.recurrence.CreateRecurrenceUseCase
+import com.example.timemanagementapp.data.goal.recurrence.UpdateRecurrenceUseCase
 import com.example.timemanagementapp.data.scheduledgoal.OfflineScheduledGoalsRepository
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 
@@ -31,11 +33,23 @@ interface AppContainer{
     val scheduledGoalsRepository: ScheduledGoalsRepository
     val calendarEventsRepository: CalendarEventsRepository
     val analyticsRepository: AnalyticsRepository
+    val createRecurrenceUseCase: CreateRecurrenceUseCase
+    val updateRecurrenceUseCase: UpdateRecurrenceUseCase
 }
 
 class AppDataContainer(private val context: Context) : AppContainer {
+
+    private val database: GoalsDatabase by lazy {
+        GoalsDatabase.getDatabase(context)
+    }
+
     override val goalsRepository: GoalsRepository by lazy {
-        OfflineGoalsRepository(GoalsDatabase.getDatabase(context).goalDao())
+        OfflineGoalsRepository(
+            goalDao = database.goalDao(),
+            recurrenceRuleDao = database.recurrenceRuleDao(),
+            scheduledGoalDao = database.scheduledGoalDao(),
+            database = database
+        )
     }
 
     override val userPreferencesRepository: UserPreferencesRepository by lazy {
@@ -46,16 +60,33 @@ class AppDataContainer(private val context: Context) : AppContainer {
         AlarmManagerGoalsRepository(context)
     }
 
-    override val scheduledGoalsRepository: ScheduledGoalsRepository by lazy {
-        OfflineScheduledGoalsRepository(GoalsDatabase.getDatabase(context).scheduledGoalDao(),
-            GoalsDatabase.getDatabase(context).goalDao())
-    }
-
     override val calendarEventsRepository: CalendarEventsRepository by lazy {
-        OfflineCalendarEventsRepository(GoalsDatabase.getDatabase(context).calendarEventDao())
+        OfflineCalendarEventsRepository(database.calendarEventDao())
     }
 
+    override val scheduledGoalsRepository: ScheduledGoalsRepository by lazy {
+        OfflineScheduledGoalsRepository(
+            database.scheduledGoalDao(),
+            database.goalDao(),
+            database.recurrenceRuleDao(),
+            calendarEventsRepository = calendarEventsRepository,
+        )
+    }
     override val analyticsRepository: AnalyticsRepository by lazy {
-        OfflineAnalyticsRepository(GoalsDatabase.getDatabase(context).analyticsDao())
+        OfflineAnalyticsRepository(database.analyticsDao())
+    }
+
+    override val createRecurrenceUseCase: CreateRecurrenceUseCase by lazy {
+        CreateRecurrenceUseCase(
+            goalsRepository = goalsRepository,
+            scheduledGoalsRepository = scheduledGoalsRepository
+        )
+    }
+
+    override val updateRecurrenceUseCase: UpdateRecurrenceUseCase by lazy {
+        UpdateRecurrenceUseCase(
+            goalsRepository = goalsRepository,
+            scheduledGoalsRepository = scheduledGoalsRepository
+        )
     }
 }

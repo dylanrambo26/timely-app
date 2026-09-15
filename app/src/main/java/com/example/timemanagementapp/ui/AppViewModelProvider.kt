@@ -14,6 +14,7 @@ import com.example.timemanagementapp.ui.currenttask.CurrentTaskViewModel
 import com.example.timemanagementapp.ui.editReusable.EditReusableGoalViewModel
 import com.example.timemanagementapp.ui.editScheduled.EditScheduledGoalViewModel
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
+import com.example.timemanagementapp.ui.goal.ManageReusableGoalsViewModel
 import com.example.timemanagementapp.ui.home.HomeViewModel
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
 
@@ -33,7 +34,8 @@ object AppViewModelProvider{
                 this.createSavedStateHandle(),
                 timelyApplication().container.goalsRepository,
                 timelyApplication().container.scheduledGoalsRepository,
-                timelyApplication().container.calendarEventsRepository
+                timelyApplication().container.calendarEventsRepository,
+                timelyApplication().container.createRecurrenceUseCase
             )
         }
 
@@ -54,7 +56,8 @@ object AppViewModelProvider{
 
         initializer {
             CalendarViewModel(
-                timelyApplication().container.calendarEventsRepository
+                timelyApplication().container.calendarEventsRepository,
+                timelyApplication().container.scheduledGoalsRepository
             )
         }
 
@@ -76,12 +79,20 @@ object AppViewModelProvider{
             EditReusableGoalViewModel(
                 this.createSavedStateHandle(),
                 timelyApplication().container.goalsRepository,
-                timelyApplication().container.scheduledGoalsRepository
+                timelyApplication().container.scheduledGoalsRepository,
+                timelyApplication().container.createRecurrenceUseCase,
+                timelyApplication().container.updateRecurrenceUseCase
             )
         }
         initializer {
             AnalyticsViewModel(
                 timelyApplication().container.analyticsRepository
+            )
+        }
+
+        initializer {
+            ManageReusableGoalsViewModel(
+                goalsRepository = timelyApplication().container.goalsRepository
             )
         }
     }

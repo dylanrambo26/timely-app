@@ -1,10 +1,13 @@
 package com.example.timemanagementapp.util
 
+import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
 import java.time.format.DateTimeFormatter
 
 private val shorthandDateFormatter = DateTimeFormatter.ofPattern("M/d")
+
+private val shorthandDateExtendedFormatter = DateTimeFormatter.ofPattern("MM/dd/YYYY")
 
 private val calendarDateFormatter = DateTimeFormatter.ofPattern("MMMM d, yyyy")
 
@@ -15,9 +18,9 @@ private val monthYearFormatter = DateTimeFormatter.ofPattern("MMMM yyyy")
  * @return String formatted as the mm/dd shorthand,
  * ex. (Local Date of 2026-07-15 -> String of "7/15")
  */
-fun formatLocalDateToShorthandDate(date: LocalDate): String {
+fun formatLocalDateToShorthandDate(date: LocalDate, todayString: String): String {
     if (date == LocalDate.now()){
-        return "Today's"
+        return todayString
     }
 
     return date.format(shorthandDateFormatter)
@@ -47,4 +50,20 @@ fun formatLocalDateToAnalyticsRange(startDate: LocalDate, endDate: LocalDate): S
     val endDateFormatter = DateTimeFormatter.ofPattern("MMM d yyyy")
 
     return "${startDate.format(startDateFormatter)} - ${endDate.format(endDateFormatter)}"
+}
+
+fun formatLocalDateToExtendedShorthandDate(date: LocalDate): String {
+    return date.format(shorthandDateExtendedFormatter)
+}
+
+fun DayOfWeek.toShortLabel(): String {
+    return when(this){
+        DayOfWeek.SUNDAY -> "Su"
+        DayOfWeek.MONDAY -> "M"
+        DayOfWeek.TUESDAY -> "Tu"
+        DayOfWeek.WEDNESDAY -> "W"
+        DayOfWeek.THURSDAY -> "Th"
+        DayOfWeek.FRIDAY -> "F"
+        DayOfWeek.SATURDAY -> "Sa"
+    }
 }

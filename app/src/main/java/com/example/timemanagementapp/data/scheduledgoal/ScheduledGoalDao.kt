@@ -23,20 +23,60 @@ interface ScheduledGoalDao {
     @Delete
     suspend fun delete(scheduledGoal: ScheduledGoal)
 
+    @Query("""
+        DELETE FROM scheduled_goals
+        WHERE goalId = :goalId
+    """)
+    suspend fun deleteScheduledGoalsByGoalId(goalId: Int)
+
+    @Query("""
+        DELETE FROM scheduled_goals
+        WHERE scheduledGoalId IN (
+            SELECT sg.scheduledGoalId
+            FROM scheduled_goals AS sg
+            INNER JOIN calendar_events AS ce
+                ON sg.eventId = ce.eventId
+            WHERE sg.recurrenceRuleId = :recurrenceRuleId
+                AND ce.date >= :startDate
+                AND sg.status != :completedStatus
+        )
+    """)
+    suspend fun deleteFutureIncompleteRecurringGoalsByRecurrenceId(
+        recurrenceRuleId: Int,
+        startDate: LocalDate,
+        completedStatus: GoalStatus = GoalStatus.COMPLETED
+    )
+
 
     @Query("SELECT * from scheduled_goals WHERE scheduledGoalId = :id")
     suspend fun getScheduledGoalOnce(id: Int): ScheduledGoal
 
-    @Transaction
+    //Select dates in the date range that have at least one scheduled goal
+    @Query(
+        """
+            SELECT ce.date
+            FROM calendar_events ce
+            WHERE ce.date BETWEEN :startDate AND :endDate
+                AND EXISTS(
+                    SELECT 1
+                    FROM scheduled_goals sg
+                    WHERE sg.eventId = ce.eventId
+                )
+            """
+    )
+    fun getDatesWithScheduledGoals(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Flow<List<LocalDate>>
+
     @Query(
         """
             SELECT * FROM scheduled_goals
             WHERE eventId = :eventId
         """
     )
-    fun getScheduledGoals(eventId: Int): Flow<List<ScheduledGoal>>
+    fun getScheduledGoalsForDate(eventId: Int): Flow<List<ScheduledGoal>>
 
-    @Transaction
     @Query(
         """
             SELECT * FROM scheduled_goals
@@ -45,7 +85,6 @@ interface ScheduledGoalDao {
     )
     fun getScheduledGoal(id: Int): Flow<ScheduledGoal>
 
-    @Transaction
     @Query(
         """
             SELECT * FROM scheduled_goals
@@ -123,4 +162,31 @@ interface ScheduledGoalDao {
             notStartedStatus = GoalStatus.NOT_STARTED
         )
     }
+
+    @Query("""
+        SELECT EXISTS(
+            SELECT 1
+            FROM scheduled_goals
+            WHERE recurrenceRuleId = :recurrenceRuleId
+            AND eventId = :eventId
+        )
+    """)
+    suspend fun recurringScheduledGoalExists(
+        recurrenceRuleId: Int,
+        eventId: Int
+    ): Boolean
+
+    @Query("""
+        SELECT ce.date
+        FROM scheduled_goals sg
+        INNER JOIN calendar_events ce
+            ON sg.eventId = ce.eventId
+        WHERE sg.recurrenceRuleId = :recurrenceRuleId
+        AND ce.date BETWEEN :startDate AND :endDate
+    """)
+    suspend fun getExistingRecurringDates(
+        recurrenceRuleId: Int,
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): List<LocalDate>
 }

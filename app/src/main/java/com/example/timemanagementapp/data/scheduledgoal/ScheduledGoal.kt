@@ -43,8 +43,5 @@ data class ScheduledGoal(
     val scheduledHours: Int,
     val scheduledMinutes: Int,
 
-    //Optional overrides for user when editing scheduled goal for a specific day
-    /*val customTitle: String? = null,
-    val customHours: Int? = null,
-    val customMinutes: Int? = null*/
+    val recurrenceRuleId: Int? = null
 )

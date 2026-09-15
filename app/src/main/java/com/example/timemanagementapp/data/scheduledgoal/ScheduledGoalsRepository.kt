@@ -1,5 +1,7 @@
 package com.example.timemanagementapp.data.scheduledgoal
 
+import com.example.timemanagementapp.data.goal.GoalStatus
+import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRule
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -10,15 +12,11 @@ interface ScheduledGoalsRepository{
 
     suspend fun deleteScheduledGoal(scheduledGoal: ScheduledGoal)
 
+    suspend fun deleteScheduledGoalsByGoalId(goalId: Int)
+
+    suspend fun deleteFutureIncompleteRecurringGoalsByRecurrenceId(recurrenceRuleId: Int, startDate: LocalDate, completedStatus: GoalStatus = GoalStatus.COMPLETED)
+
     suspend fun getScheduledGoalOnce(id: Int): ScheduledGoal
-
-    /*suspend fun getScheduledGoalsByEvent(eventId: Int): Flow<List<ScheduledGoal>>
-
-    suspend fun getScheduledGoalById(goalId: Int): ScheduledGoal?
-
-    suspend fun updateScheduledGoalStatus(id: Int, status: GoalStatus)
-
-    suspend fun updateCompletedMillis(id: Int, millis: Long)*/
 
     fun getScheduledGoals(eventId: Int): Flow<List<ScheduledGoal>>
 
@@ -31,4 +29,12 @@ interface ScheduledGoalsRepository{
     suspend fun isValidDurationForDate(goalTotalMinutes: Int, eventId: Int, excludedScheduledGoalId: Int?): Boolean
 
     suspend fun updateFutureScheduledGoalsFromEditedTemplate(goalId: Int, title: String, hours: Int, minutes: Int, startDate: LocalDate)
+
+    fun getDatesWithScheduledGoals(startDate: LocalDate, endDate: LocalDate): Flow<List<LocalDate>>
+
+    suspend fun ensureRecurringGoalsScheduledForRange(startDate: LocalDate, endDate: LocalDate)
+
+    suspend fun scheduleRuleForRange(rule: RecurrenceRule, startDate: LocalDate, endDate: LocalDate)
+
+    suspend fun insertRecurrenceException(recurrenceRuleId: Int, date: LocalDate)
 }

@@ -39,15 +39,16 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
 import com.example.timemanagementapp.TimelySmallTopAppBar
-import com.example.timemanagementapp.data.testGoalsSizeThree
 import com.example.timemanagementapp.ui.AppViewModelProvider
+import com.example.timemanagementapp.ui.components.RecurringGoalBody
 import com.example.timemanagementapp.ui.components.lists.GoalTemplateCard
-import com.example.timemanagementapp.ui.goal.GoalListUiState
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
+import com.example.timemanagementapp.ui.goal.canSave
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
 import com.example.timemanagementapp.util.formatLocalDateToShorthandDate
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
 import java.time.LocalDate
 
 
@@ -56,7 +57,8 @@ object CreateGoalDestination : NavigationDest{
     override val titleRes = R.string.create_a_goal_from_scratch
 
     const val eventIdArg = "eventId"
-    val routeWithArgs = "$route?$eventIdArg={$eventIdArg}"
+    const val copyFromGoalIdArg = "copyFromGoalId"
+    val routeWithArgs = "$route?$eventIdArg={$eventIdArg}" + "&$copyFromGoalIdArg={$copyFromGoalIdArg}"
 }
 
 @Composable
@@ -65,12 +67,12 @@ fun CreateGoalScreen(
     goalListViewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateBack: () -> Unit,
     navigateToViewGoals: (Int) -> Unit,
+    navigateToManageReusableGoals: () -> Unit,
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val coroutineScope = rememberCoroutineScope()
-    val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
     val selectedDate by createGoalViewModel.date.collectAsState()
     Scaffold(
         topBar = { TimelySmallTopAppBar(stringResource(R.string.create_a_goal_from_scratch)) },
@@ -84,11 +86,13 @@ fun CreateGoalScreen(
     ) { innerPadding ->
         CreateGoalBody(
             goalUiState = createGoalViewModel.goalUiState,
-            goalListUiState = goalListUiState,
             onGoalValueChange = createGoalViewModel::updateUiState,
             onSaveGoalClicked = {
                 coroutineScope.launch {
-                    createGoalViewModel.saveGoal()
+                    createGoalViewModel.saveGoal(
+                        onNavigateToViewGoals = navigateToViewGoals,
+                        onNavigateToManageReusableGoals = navigateToManageReusableGoals
+                    )
                 }
             },
             onSaveGoalAndAddToDateClicked = {
@@ -102,6 +106,12 @@ fun CreateGoalScreen(
             onCancelButtonClicked = navigateBack,
             showSaveGoalAndAddToDateButton = createGoalViewModel.canAddGoalToDate,
             modifier = Modifier.padding(innerPadding),
+            onRecurringChange = createGoalViewModel::updateIsGoalRecurring,
+            onDailyChange = createGoalViewModel::updateAllRecurringDays,
+            onRecurringDayChange = createGoalViewModel::onRecurringDayChange,
+            onEndDateEnabledChanged = createGoalViewModel::updateHasRecurrenceEndDate,
+            updateRecurrenceEndDate = createGoalViewModel::updateRecurrenceEndDate,
+            updateRecurrenceStartDate = createGoalViewModel::updateRecurrenceStartDate,
             selectedDate = selectedDate
         )
     }
@@ -110,10 +120,15 @@ fun CreateGoalScreen(
 @Composable
 fun CreateGoalBody(
     goalUiState: GoalUiState,
-    goalListUiState: GoalListUiState,
     onGoalValueChange: (GoalDetails) -> Unit,
     onSaveGoalClicked: () -> Unit,
     onSaveGoalAndAddToDateClicked: () -> Unit,
+    onRecurringChange: (Boolean) -> Unit,
+    onDailyChange: (Boolean) -> Unit,
+    onRecurringDayChange: (DayOfWeek, Boolean) -> Unit,
+    onEndDateEnabledChanged: (Boolean) -> Unit,
+    updateRecurrenceStartDate: (LocalDate) -> Unit,
+    updateRecurrenceEndDate: (LocalDate?) -> Unit,
     onCancelButtonClicked: () -> Unit,
     showSaveGoalAndAddToDateButton: Boolean,
     modifier: Modifier = Modifier,
@@ -137,6 +152,11 @@ fun CreateGoalBody(
         Spacer(modifier = Modifier.height(8.dp))
         GoalTemplateCard(
             goal = goalUiState.goalDetails.toGoal(),
+            recurringDays = if (goalUiState.isGoalRecurring){
+                goalUiState.recurringDays
+            } else {
+                null
+            }
         )
 
         Spacer(modifier = Modifier.height(64.dp))
@@ -146,6 +166,21 @@ fun CreateGoalBody(
             onValueChange = onGoalValueChange,
             modifier = Modifier.fillMaxWidth()
         )
+
+        RecurringGoalBody(
+            recurringDays = goalUiState.recurringDays,
+            recurrenceStartDate = goalUiState.recurrenceStartDate,
+            recurrenceEndDate = goalUiState.recurrenceEndDate,
+            hasRecurrenceEndDate = goalUiState.hasRecurrenceEndDate,
+            isGoalRecurring = goalUiState.isGoalRecurring,
+            onRecurringChange = onRecurringChange,
+            onDailyChange = onDailyChange,
+            onRecurringDayChange = onRecurringDayChange,
+            updateRecurrenceStartDate = updateRecurrenceStartDate,
+            updateRecurrenceEndDate = updateRecurrenceEndDate,
+            onEndDateEnabledChanged = onEndDateEnabledChanged
+        )
+
         //Error Message Space
         Box(
             modifier = Modifier
@@ -190,38 +225,58 @@ fun AddGoalButtons(
         horizontalAlignment = Alignment.CenterHorizontally
     ){
         //Save Goal and Add to Date Button (only show if eventId exists in view model)
-        if(showSaveGoalAndAddToDateButton){
-            FilledTonalButton(
-                onClick = onSaveGoalAndAddToDateClicked,
-                enabled = goalUiState.isEntryValid,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .heightIn(min = 48.dp)
-            ) {
-                selectedDate?.let {date ->
+
+        when {
+            goalUiState.isGoalRecurring -> {
+                FilledTonalButton(
+                    onClick = onSaveGoalClicked,
+                    enabled = goalUiState.isEntryValid,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp)
+                ) {
                     Text(
-                        text = stringResource(
-                            R.string.save_goal_and_add_to_date,
-                            formatLocalDateToShorthandDate(date)
-                        ),
+                        text = stringResource(R.string.save_and_schedule),
                         fontSize = 16.sp,
                     )
                 }
             }
+            showSaveGoalAndAddToDateButton && selectedDate != null -> {
+                FilledTonalButton(
+                    onClick = onSaveGoalAndAddToDateClicked,
+                    enabled = goalUiState.canSave,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp)
+                ) {
+                    Text(
+                        text = stringResource(
+                            R.string.save_goal_and_add_to_date,
+                            formatLocalDateToShorthandDate(selectedDate, "Today")
+                        ),
+                        fontSize = 16.sp,
+                    )
+
+                }
+            }
         }
-        //Save Goal Button
-        OutlinedButton(
-            onClick = onSaveGoalClicked,
-            enabled = goalUiState.isEntryValid,
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 48.dp)
-        ) {
-            Text(
-                text = stringResource(R.string.save_goal),
-                fontSize = 16.sp,
-            )
+
+        if(!goalUiState.isGoalRecurring){
+            //Save As Template Goal Button
+            OutlinedButton(
+                onClick = onSaveGoalClicked,
+                enabled = goalUiState.canSave,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(min = 48.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.save_as_template_goal),
+                    fontSize = 16.sp,
+                )
+            }
         }
+
         //Cancel Button
         OutlinedButton(
             onClick = onCancelButtonClicked,
@@ -299,27 +354,33 @@ fun AddGoalInputForm(
 }
 
 //Preview the AddLogScreen
-@Preview(showBackground = true)
+@Preview(showBackground = true, heightDp = 2000)
 @Composable
 fun CreateGoalScreenPreview(){
     TimeManagementAppTheme {
         CreateGoalBody(
             goalUiState = GoalUiState(
                 GoalDetails(
-                    title = "Title", hours = "1", minutes = "30"
+                    title = "test", hours = "1", minutes = "30"
                 ),
                 isEntryValid = false,
-                errorMessage = R.string.invalid_title
+                errorMessage = R.string.invalid_title,
+                isGoalRecurring = true,
+                hasRecurrenceEndDate = true,
+                recurrenceEndDate = LocalDate.of(2026, 10, 3)
             ),
             onGoalValueChange = {},
             onSaveGoalClicked = {},
             onCancelButtonClicked = {},
             onSaveGoalAndAddToDateClicked = {},
-            goalListUiState = GoalListUiState(
-                goalList = testGoalsSizeThree,
-            ),
-            showSaveGoalAndAddToDateButton = false,
-            selectedDate = LocalDate.now()
+            showSaveGoalAndAddToDateButton = true,
+            selectedDate = LocalDate.now(),
+            onRecurringChange = {},
+            onDailyChange = {},
+            onRecurringDayChange = {_,_ ->},
+            onEndDateEnabledChanged = {},
+            updateRecurrenceStartDate = {},
+            updateRecurrenceEndDate = {}
         )
     }
 }

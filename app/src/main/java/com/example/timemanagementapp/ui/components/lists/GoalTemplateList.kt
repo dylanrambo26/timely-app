@@ -2,11 +2,10 @@ package com.example.timemanagementapp.ui.components.lists
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -26,15 +25,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.timemanagementapp.data.goal.Goal
-import com.example.timemanagementapp.data.testGoalsSizeThree
+import com.example.timemanagementapp.data.goal.recurrence.GoalWithRecurrence
+import com.example.timemanagementapp.data.testGoalsWithRecurrenceSizeThree
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
+import com.example.timemanagementapp.util.toShortLabel
+import java.time.DayOfWeek
 
 @Composable
 fun GoalTemplateList(
-    goals: List<Goal>,
+    goals: List<GoalWithRecurrence>,
     onGoalClick: ((Goal) -> Unit)? = null,
     onEditGoal: ((Goal) -> Unit)? = null,
-    onDeleteGoal: ((Goal) -> Unit)? = null,
+    onDeleteGoal: ((GoalWithRecurrence) -> Unit)? = null,
     modifier: Modifier = Modifier,
     selectedGoalId: Int? = null,
 ){
@@ -55,14 +57,17 @@ fun GoalTemplateList(
     ) {
         items(
             goals
-        ) { goal ->
-            val isSelected = goal.goalID == selectedGoalId
+        ) { goalWithRecurrence ->
+            val isSelected = goalWithRecurrence.goal.goalID == selectedGoalId
             GoalTemplateCard(
-                goal = goal,
+                goal = goalWithRecurrence.goal,
+                recurringDays = goalWithRecurrence.recurrenceRule?.recurringDays,
                 isSelected = isSelected,
                 onGoalClick = onGoalClick,
                 onEditGoal = onEditGoal,
-                onDeleteGoal = onDeleteGoal
+                onDeleteGoal = {
+                    onDeleteGoal?.invoke(goalWithRecurrence)
+                }
             )
         }
     }
@@ -71,6 +76,7 @@ fun GoalTemplateList(
 @Composable
 fun GoalTemplateCard(
     goal: Goal,
+    recurringDays: Set<DayOfWeek>? = null,
     isSelected: Boolean = false,
     onDeleteGoal: ((Goal) -> Unit)? = null,
     onEditGoal: ((Goal) -> Unit)? = null,
@@ -81,8 +87,8 @@ fun GoalTemplateCard(
             .fillMaxWidth()
             .padding(8.dp)
             .then(
-                if(onGoalClick != null){
-                    Modifier.clickable { onGoalClick(goal)}
+                if (onGoalClick != null) {
+                    Modifier.clickable { onGoalClick(goal) }
                 } else {
                     Modifier
                 }
@@ -101,15 +107,40 @@ fun GoalTemplateCard(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
         ) {
-            Row {
-                Text(text = goal.goalID.toString()) //TODO delete later
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = goal.goalTitle)
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(text = "${goal.hours}h ${goal.minutes}m")
-            }
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ){
+                Text(
+                    text = goal.goalTitle,
+                    style = MaterialTheme.typography.titleMedium
+                )
 
-            Spacer(modifier = Modifier.weight(1f))
+                Text(
+                    text = "Duration: ${goal.hours}h ${goal.minutes}m",
+                    style = MaterialTheme.typography.bodyMedium
+                )
+
+                val isRecurring = recurringDays != null
+
+                if(isRecurring){
+                    Text(
+                        text = "Recurring: " + recurringDays
+                            .sortedBy { it.value % 7}
+                            .joinToString(", ") {day ->
+                                day.toShortLabel()
+                            },
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+                else{
+                    Text(
+                        text = "",
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+
+            }
 
             if (onDeleteGoal != null || onEditGoal != null){
                 Row {
@@ -136,8 +167,10 @@ fun GoalTemplateCard(
 fun GoalTemplateListPreview(){
     TimeManagementAppTheme {
         GoalTemplateList(
-            goals = testGoalsSizeThree,
-            onGoalClick = {}
+            goals = testGoalsWithRecurrenceSizeThree,
+            onGoalClick = {},
+            onDeleteGoal = {},
+            onEditGoal = {}
         )
     }
 }

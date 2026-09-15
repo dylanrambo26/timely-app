@@ -64,4 +64,10 @@
     <string name="total_completed_time_in_date_range">Total Completed Time:</string>
     <string name="average_completed_time_in_date_range">Average Completed Time per Completed Goal:</string>
     <string name="scheduled_time_utilized">Scheduled Time Utilized: %.1f%%</string>
+    <string name="save_and_schedule">Save &amp; Schedule</string>
+    <string name="save_as_template_goal">Save As Template Goal</string>
+    <string name="select_at_least_one_recurring_day">Select at least one recurring day or uncheck make recurring.</string>
+    <string name="recurrence_start_date_cannot_be_in_past">Recurrence start date cannot be in past.</string>
+    <string name="select_recurrence_end_date">Please select recurrence end date or uncheck set end date.</string>
+    <string name="recurrence_end_date_must_be_after_start_date">Recurrence end date must be after start date.</string>
 </resources>

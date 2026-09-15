@@ -2,6 +2,7 @@ package com.example.timemanagementapp.data
 
 import androidx.room.TypeConverter
 import com.example.timemanagementapp.data.goal.GoalStatus
+import java.time.DayOfWeek
 import java.time.LocalDate
 
 class Converters {
@@ -26,5 +27,23 @@ class Converters {
     @TypeConverter
     fun toLocalDate(epochDay: Long): LocalDate {
         return epochDay.let {LocalDate.ofEpochDay(it)}
+    }
+
+    //Type converters to use DayOfWeek in Room
+    @TypeConverter
+    fun fromDayOfWeekSet(days: Set<DayOfWeek>): String {
+        return days.joinToString(",") {it.name}
+    }
+
+    @TypeConverter
+    fun toDayOfWeekSet(value: String): Set<DayOfWeek> {
+        if(value.isBlank()){
+            return emptySet()
+        }
+
+        return value
+            .split(",")
+            .map { DayOfWeek.valueOf(it) }
+            .toSet()
     }
 }

@@ -69,7 +69,7 @@ fun ViewGoalsScreen(
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
-    val formattedDate = formatLocalDateToShorthandDate(scheduledGoalsListUiState.date)
+    val formattedDate = formatLocalDateToShorthandDate(scheduledGoalsListUiState.date, "Today's")
     Scaffold(
         topBar = {
             TimelySmallTopAppBar(
@@ -325,7 +325,7 @@ fun ViewGoalsBodyPreview(){
             ),
             onAddGoal = {},
             onEditGoalsClicked = {},
-            formattedDate = formatLocalDateToShorthandDate(selectedDate),
+            formattedDate = formatLocalDateToShorthandDate(selectedDate, "Today's"),
             navigateToCalendar = {},
             nextDayClicked = {},
             previousDayClicked = {},

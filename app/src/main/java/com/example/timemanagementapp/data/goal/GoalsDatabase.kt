@@ -9,6 +9,9 @@ import com.example.timemanagementapp.data.Converters
 import com.example.timemanagementapp.data.analytics.AnalyticsDao
 import com.example.timemanagementapp.data.calendar.CalendarEvent
 import com.example.timemanagementapp.data.calendar.CalendarEventDao
+import com.example.timemanagementapp.data.goal.recurrence.RecurrenceException
+import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRule
+import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRuleDao
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalDao
 
@@ -16,9 +19,11 @@ import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalDao
     entities = [
         Goal::class,
         CalendarEvent::class,
-        ScheduledGoal::class
+        ScheduledGoal::class,
+        RecurrenceRule::class,
+        RecurrenceException::class
     ],
-    version = 13,
+    version = 17,
     exportSchema = false
 )
 @TypeConverters(Converters::class)
@@ -27,6 +32,7 @@ abstract class GoalsDatabase : RoomDatabase(){
     abstract fun calendarEventDao(): CalendarEventDao
     abstract fun scheduledGoalDao(): ScheduledGoalDao
     abstract fun analyticsDao(): AnalyticsDao
+    abstract fun recurrenceRuleDao(): RecurrenceRuleDao
     companion object {
 
         @Volatile

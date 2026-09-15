@@ -21,7 +21,7 @@ import java.time.LocalDate
 class ScheduledGoalsListViewModel(
     savedStateHandle: SavedStateHandle,
     private val scheduledGoalsRepository: ScheduledGoalsRepository,
-    private val calendarEventsRepository: CalendarEventsRepository
+    private val calendarEventsRepository: CalendarEventsRepository,
 ): ViewModel() {
 
     companion object {
@@ -78,6 +78,9 @@ class ScheduledGoalsListViewModel(
 
     fun deleteScheduledGoal(scheduledGoal: ScheduledGoal){
         viewModelScope.launch {
+            if(scheduledGoal.recurrenceRuleId != null){
+                scheduledGoalsRepository.insertRecurrenceException(scheduledGoal.recurrenceRuleId, scheduledGoalsListUiState.value.date)
+            }
             scheduledGoalsRepository.deleteScheduledGoal(scheduledGoal = scheduledGoal)
         }
     }
