@@ -16,21 +16,27 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
@@ -62,6 +68,30 @@ fun CurrentTaskScreen(
 ){
     val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
     val currentTaskUiState by currentTaskViewModel.currentTaskUiState.collectAsState()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver{_, event ->
+            if (event == Lifecycle.Event.ON_RESUME){
+                currentTaskViewModel.onAppResumed()
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    LaunchedEffect(currentTaskUiState.taskStartState) {
+        if (currentTaskUiState.taskStartState == TaskStartState.STARTED){
+            currentTaskViewModel.resetTaskStartState()
+            navigateToHome()
+        }
+    }
+
     Scaffold(
         topBar = {
             TimelySmallTopAppBar(stringResource(R.string.change_current_task))
@@ -98,12 +128,19 @@ fun CurrentTaskBody(
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ){
+    var goalWaitingForNoticationPermission by remember {
+        mutableStateOf<ScheduledGoal?>(null)
+    }
     val context = LocalContext.current
     val notificationPermissionLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission()
-        ) { isGranted ->
+        ) {
+            goalWaitingForNoticationPermission?.let { goal ->
+                onSaveCurrentTaskPressed(goal)
+            }
 
+            goalWaitingForNoticationPermission = null
         }
 
     Column(
@@ -160,20 +197,21 @@ fun CurrentTaskBody(
             OutlinedButton(
                 onClick = {
                     selectedGoal?.let {goal ->
-                        if (
+                        val needsNotificationPermission =
                             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                            ContextCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.POST_NOTIFICATIONS
-                            ) != PackageManager.PERMISSION_GRANTED
-                        ){
+                                    ContextCompat.checkSelfPermission(
+                                        context,
+                                        Manifest.permission.POST_NOTIFICATIONS
+                                    ) != PackageManager.PERMISSION_GRANTED
+                        if(needsNotificationPermission){
+                            goalWaitingForNoticationPermission = goal
+
                             notificationPermissionLauncher.launch(
                                 Manifest.permission.POST_NOTIFICATIONS
                             )
+                        } else {
+                            onSaveCurrentTaskPressed(goal)
                         }
-
-                        onSaveCurrentTaskPressed(goal)
-                        navigateToHome()
                     }
                 },
                 enabled = selectedGoal != null,

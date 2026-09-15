@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
@@ -22,11 +23,28 @@ class AlarmManagerGoalsRepository(
         Context.ALARM_SERVICE
     ) as AlarmManager
 
+    fun canScheduleExactAlarms(): Boolean {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+                alarmManager.canScheduleExactAlarms()
+    }
+
+    fun requestExactAlarmPermission() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+            val intent = Intent(
+                Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                Uri.parse("package:${context.packageName}")
+            ).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        }
+    }
+
     override fun scheduleTimer(scheduledGoal: ScheduledGoal) {
 
         val durationMillis = ((scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60_000L) - scheduledGoal.completedMillis
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()){
+        /*if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()){
             val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
@@ -39,7 +57,7 @@ class AlarmManagerGoalsRepository(
                     alarmManager.canScheduleExactAlarms()
 
         val notificationsEnabled =
-            NotificationManagerCompat.from(context).areNotificationsEnabled()
+            NotificationManagerCompat.from(context).areNotificationsEnabled()*/
 
 
         val intent = Intent(
@@ -60,7 +78,7 @@ class AlarmManagerGoalsRepository(
 
         val triggerTime = System.currentTimeMillis() + durationMillis
 
-        Log.d(
+        /*Log.d(
             CURRENT_TASK_TIMER,
             """
         Exact alarm permission: $canScheduleExactAlarms
@@ -68,7 +86,7 @@ class AlarmManagerGoalsRepository(
         Duration millis: $durationMillis
         Trigger time: $triggerTime
         """.trimIndent()
-        )
+        )*/
 
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
