@@ -12,6 +12,8 @@ import com.example.timemanagementapp.data.calendar.OfflineCalendarEventsReposito
 import com.example.timemanagementapp.data.goal.GoalsDatabase
 import com.example.timemanagementapp.data.goal.GoalsRepository
 import com.example.timemanagementapp.data.goal.OfflineGoalsRepository
+import com.example.timemanagementapp.data.goal.recurrence.CreateRecurrenceUseCase
+import com.example.timemanagementapp.data.goal.recurrence.UpdateRecurrenceUseCase
 import com.example.timemanagementapp.data.scheduledgoal.OfflineScheduledGoalsRepository
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 

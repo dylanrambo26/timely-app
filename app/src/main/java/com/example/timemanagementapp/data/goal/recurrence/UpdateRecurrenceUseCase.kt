@@ -1,7 +1,6 @@
-package com.example.timemanagementapp.data
+package com.example.timemanagementapp.data.goal.recurrence
 
 import com.example.timemanagementapp.data.goal.GoalsRepository
-import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRule
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 import java.time.DayOfWeek
 import java.time.LocalDate

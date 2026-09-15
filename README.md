@@ -17,6 +17,7 @@ Have you ever found yourself wondering where all your time went? It's easy to sp
 - Edit scheduled goals
 - Delete scheduled goals
 - Schedule goals for specific dates
+- Schedule/edit recurring goals
 - Analytics Dashboard
 - View daily schedule
 - Navigate between days
@@ -29,9 +30,9 @@ Have you ever found yourself wondering where all your time went? It's easy to sp
 ### Planned Features
 
 - [ ] Custom themes
+- [ ] Current task expiration
 - [ ] Notifications & reminders
 - [ ] Goal completion history
-- [ ] Recurring goals
 - [ ] Cloud backup
 
 ---
@@ -46,9 +47,9 @@ Have you ever found yourself wondering where all your time went? It's easy to sp
 |----------------------------------------|---------------------------------|
 | ![View Goals Screen](images/view_goals_screen.jpg) | ![Edit Goals Screen](images/edit_goals_screen.jpg) |
 
-| Create Goal                            | Current Task                    |
+| Create Goal                            | Create Recurring Goal                    |
 |----------------------------------------|---------------------------------|
-| ![Create Goal Screen](images/create_goal_screen.jpg) | ![Current Task Screen](images/current_task_screen.jpg) |
+| ![Create Goal Screen](images/create_goal_screen.jpg) | ![Current Task Screen](images/create_recurring_goal.jpg) |
 
 | Analytics Part 1                       | Analytics Part 2                |
 |----------------------------------------|---------------------------------|
@@ -62,9 +63,13 @@ Have you ever found yourself wondering where all your time went? It's easy to sp
 ## Analytics Demo
 ![Timely Analytics Demo GIF](images/timely_analytics_demo.gif)
 
-Link To Full Demo Video
+### Link To Full Demo Video
 [Timely Demo Video (Youtube)](https://youtu.be/0Wy609OTCPI)
----
+
+### Link To Recurring Goals Demo Video
+[Timely Recurring Goals Demo (Youtube)](https://youtu.be/PaSeEHSdMRw)
+
+
 
 ## 🛠️ Built With
 
@@ -108,6 +113,7 @@ app/src/main/java/com/example/timemanagementapp
 │   ├── analytics/
 │   ├── calendar/
 │   └── goal/
+│       └── recurrence/
 │   └── scheduledgoal/
 │   └── AppContainer.kt
 │   └── Converters.kt
@@ -144,13 +150,13 @@ app/src/main/java/com/example/timemanagementapp
 ├── TimelyApp.kt
 └── TimelyApplication.kt 
 ```
-* **data/** - Contains Room entities, DAOs, repositories, alarm logic, dependency providers, and user .preferences
+* **data/** - Contains Room entities, DAOs, repositories, alarm logic, dependency providers, and user preferences.
 
 * **receiver/** - Contains Android broadcast receivers used for current task alarm events.
 
 * **ui/** - Contains Jetpack Compose Screens, reusable composable components, ViewModels, navigation, and theme components.
 
-* **util/** - Contains shared utility functions and helper classes
+* **util/** - Contains shared utility functions and helper classes.
 
 * **MainActivity.kt** - Hosts the Compose application.
 
@@ -204,16 +210,16 @@ Open the project in Android Studio and run it on an emulator or Android device.
 - [x] Remaining time calculation
 - [x] Navigation between screens
 - [x] Analytics page
+- [x] Recurring goals
 
 ### 🚧 In Progress
 
-- [ ] Goal completion history 
+- [ ] Notification reminders  
 
 ### 📅 Planned
 
 - [ ] Custom themes
 - [ ] Notification reminders
-- [ ] Recurring goals
 - [ ] Goal completion history
 - [ ] Cloud sync & backup
 

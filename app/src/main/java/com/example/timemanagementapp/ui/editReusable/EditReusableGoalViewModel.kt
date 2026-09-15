@@ -6,8 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.timemanagementapp.data.CreateRecurrenceUseCase
-import com.example.timemanagementapp.data.UpdateRecurrenceUseCase
+import com.example.timemanagementapp.data.goal.recurrence.CreateRecurrenceUseCase
+import com.example.timemanagementapp.data.goal.recurrence.UpdateRecurrenceUseCase
 import com.example.timemanagementapp.data.goal.GoalsRepository
 import com.example.timemanagementapp.data.goal.recurrence.RecurrenceRule
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository

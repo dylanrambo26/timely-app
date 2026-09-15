@@ -7,7 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.timemanagementapp.R
-import com.example.timemanagementapp.data.CreateRecurrenceUseCase
+import com.example.timemanagementapp.data.goal.recurrence.CreateRecurrenceUseCase
 import com.example.timemanagementapp.data.calendar.CalendarEventsRepository
 import com.example.timemanagementapp.data.goal.Goal
 import com.example.timemanagementapp.data.goal.GoalsRepository
