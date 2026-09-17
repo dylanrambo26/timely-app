@@ -44,6 +44,7 @@ import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
 import com.example.timemanagementapp.ui.AppViewModelProvider
+import com.example.timemanagementapp.ui.components.PermissionsDialog
 import com.example.timemanagementapp.ui.components.lists.ScheduledGoalList
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
@@ -111,7 +112,7 @@ fun CurrentTaskScreen(
             onSaveCurrentTaskPressed = {scheduledGoal ->
                 currentTaskViewModel.startTaskTimer(scheduledGoal)
             },
-            navigateToHome = navigateToHome,
+            needsExactAlarmPermission = currentTaskViewModel::needsExactAlarmPermission,
             navigateBack = navigateBack,
             modifier = Modifier.padding(innerPadding)
         )
@@ -120,28 +121,62 @@ fun CurrentTaskScreen(
 
 @Composable
 fun CurrentTaskBody(
-    //goalListUiState: GoalListUiState,
     scheduledGoalsListUiState: ScheduledGoalsListUiState,
-    //currentTaskUiState: CurrentTaskUiState,
     onSaveCurrentTaskPressed: (ScheduledGoal) -> Unit,
-    navigateToHome: () -> Unit,
+    needsExactAlarmPermission: () -> Boolean,
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ){
-    var goalWaitingForNoticationPermission by remember {
+    var goalWaitingForPermissions by remember {
         mutableStateOf<ScheduledGoal?>(null)
     }
+
+    var showPermissionsDialog by remember {
+        mutableStateOf(false)
+    }
+
     val context = LocalContext.current
     val notificationPermissionLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission()
-        ) {
-            goalWaitingForNoticationPermission?.let { goal ->
+        ) { _ ->
+            goalWaitingForPermissions?.let { goal ->
                 onSaveCurrentTaskPressed(goal)
             }
 
-            goalWaitingForNoticationPermission = null
+            goalWaitingForPermissions = null
         }
+
+    if(showPermissionsDialog){
+        PermissionsDialog(
+            onDismiss = {
+                showPermissionsDialog = false
+                goalWaitingForPermissions = null
+            },
+            onContinue = {
+                showPermissionsDialog = false
+
+                val goal = goalWaitingForPermissions
+
+                if (goal != null){
+                    val needsNotificationPermission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                            ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.POST_NOTIFICATIONS
+                            ) != PackageManager.PERMISSION_GRANTED
+
+                    if(needsNotificationPermission){
+                        notificationPermissionLauncher.launch(
+                            Manifest.permission.POST_NOTIFICATIONS
+                        )
+                    } else {
+                        goalWaitingForPermissions = null
+                        onSaveCurrentTaskPressed(goal)
+                    }
+                }
+            }
+        )
+    }
 
     Column(
         modifier = modifier
@@ -203,12 +238,15 @@ fun CurrentTaskBody(
                                         context,
                                         Manifest.permission.POST_NOTIFICATIONS
                                     ) != PackageManager.PERMISSION_GRANTED
-                        if(needsNotificationPermission){
-                            goalWaitingForNoticationPermission = goal
 
-                            notificationPermissionLauncher.launch(
+                        val requiresExactAlarmPermission = needsExactAlarmPermission()
+                        if(needsNotificationPermission || requiresExactAlarmPermission){
+                            goalWaitingForPermissions = goal
+                            showPermissionsDialog = true
+
+                            /*notificationPermissionLauncher.launch(
                                 Manifest.permission.POST_NOTIFICATIONS
-                            )
+                            )*/
                         } else {
                             onSaveCurrentTaskPressed(goal)
                         }
@@ -242,7 +280,7 @@ fun CurrentTaskBodyPreview(){
             modifier = Modifier
                 .fillMaxSize()
                 .padding(dimensionResource(R.dimen.padding_medium)),
-            navigateToHome = {},
+            needsExactAlarmPermission = {false},
             navigateBack = {}
         )
     }

@@ -71,7 +71,7 @@ class CurrentTaskViewModel(
         beginTaskTimer(scheduledGoal)
     }
 
-    fun beginTaskTimer(scheduledGoal: ScheduledGoal){
+    private fun beginTaskTimer(scheduledGoal: ScheduledGoal){
         _taskStartState.value = TaskStartState.STARTING
 
         viewModelScope.launch {
@@ -103,6 +103,9 @@ class CurrentTaskViewModel(
         if(alarmManagerGoalsRepository.canScheduleExactAlarms()){
             pendingTask = null
             beginTaskTimer(task)
+        } else {
+            pendingTask = null
+            _taskStartState.value = TaskStartState.IDLE
         }
     }
 
@@ -142,6 +145,10 @@ class CurrentTaskViewModel(
         viewModelScope.launch {
             stopTaskTimer(goalStatus = GoalStatus.COMPLETED)
         }
+    }
+
+    fun needsExactAlarmPermission(): Boolean{
+        return !alarmManagerGoalsRepository.canScheduleExactAlarms()
     }
 }
 

@@ -70,4 +70,10 @@
     <string name="recurrence_start_date_cannot_be_in_past">Recurrence start date cannot be in past.</string>
     <string name="select_recurrence_end_date">Please select recurrence end date or uncheck set end date.</string>
     <string name="recurrence_end_date_must_be_after_start_date">Recurrence end date must be after start date.</string>
+    <string name="permissions_dialog_body">
+        Timely uses notifications to let you know when a task is complete.
+        It also needs the Alarms &amp; reminders permission to finish timers at
+        the correct time, even when the app is not open.\n\n
+        After continuing, allow notifications. You may then be taken to
+        Settings to enable Alarms &amp; reminders for Timely.</string>
 </resources>
