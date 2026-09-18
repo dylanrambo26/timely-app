@@ -68,8 +68,6 @@ object HomeDestination : NavigationDest {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-
-    //TODO add navigation and screens for Calendar, Analytics, and Settings
     navigateToViewGoals: (Int) -> Unit,
     navigateToCalendar: () -> Unit,
     navigateToAnalytics: () -> Unit,
@@ -100,7 +98,9 @@ fun HomeScreen(
                 actions = {
                     //Settings Button
                     IconButton(
-                        onClick = ({ /*TODO: Add settings functionality*/ })) {
+                        onClick = navigateToSettings
+                    )
+                        {
                         Icon(
                             imageVector = Icons.Filled.Settings,
                             contentDescription = "Settings Button"

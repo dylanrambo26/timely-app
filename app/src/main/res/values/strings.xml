@@ -76,4 +76,6 @@
         the correct time, even when the app is not open.\n\n
         After continuing, allow notifications. You may then be taken to
         Settings to enable Alarms &amp; reminders for Timely.</string>
+    <string name="task_completion_notifications">Task Completion Notifications</string>
+    <string name="countdown_reminders_on_off">Countdown reminders On/Off</string>
 </resources>

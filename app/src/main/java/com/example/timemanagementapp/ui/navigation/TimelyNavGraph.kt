@@ -39,6 +39,9 @@ import com.example.timemanagementapp.ui.goal.ManageReusableGoalsScreen
 import com.example.timemanagementapp.ui.home.HomeDestination
 import com.example.timemanagementapp.ui.home.HomeScreen
 import com.example.timemanagementapp.ui.home.HomeViewModel
+import com.example.timemanagementapp.ui.settings.SettingsDestination
+import com.example.timemanagementapp.ui.settings.SettingsScreen
+import com.example.timemanagementapp.ui.settings.SettingsViewModel
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
 import com.example.timemanagementapp.ui.viewgoals.ViewGoalsDestination
 import com.example.timemanagementapp.ui.viewgoals.ViewGoalsScreen
@@ -69,7 +72,7 @@ fun TimelyNavHost(
 
                 HomeScreen(
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
-                    navigateToSettings = {/*TODO*/},
+                    navigateToSettings = {navController.navigate(SettingsDestination.route)},
                     navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                     navigateToViewGoals = {eventId ->
                         navController.navigate("${ViewGoalsDestination.route}/$eventId")
@@ -79,6 +82,18 @@ fun TimelyNavHost(
                         ManageReusableGoalsDestination.route)},
                     homeViewModel = homeViewModel,
                     currentTaskViewModel = currentTaskViewModel
+                )
+            }
+            composable(
+                route = SettingsDestination.route
+            ){
+                val settingsViewModel: SettingsViewModel = viewModel(factory = AppViewModelProvider.Factory)
+
+                SettingsScreen(
+                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
+                    navigateToHome = {navController.navigate(HomeDestination.route)},
+                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
+                    settingsViewModel = settingsViewModel
                 )
             }
             composable(route = CalendarDestination.route){ backStackEntry ->
@@ -101,7 +116,6 @@ fun TimelyNavHost(
                 AnalyticsScreen(
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
-                    navigateToSettings = {/*TODO*/},
                     analyticsViewModel = viewModel
                 )
             }
@@ -136,7 +150,7 @@ fun TimelyNavHost(
                         navController.navigate("${EditScheduledGoalsDestination.route}/$eventId")
                     },
                     navigateToHome = {navController.navigate(HomeDestination.route)},
-                    navigateToCalendar = {/*TODO*/},
+                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                 )
             }
