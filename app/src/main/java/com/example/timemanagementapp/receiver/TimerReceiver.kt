@@ -12,10 +12,13 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import com.example.timemanagementapp.R
+import com.example.timemanagementapp.TimelyApplication
 import com.example.timemanagementapp.data.goal.GoalStatus
 import com.example.timemanagementapp.data.goal.GoalsDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 class TimerReceiver : BroadcastReceiver(){
@@ -27,28 +30,62 @@ class TimerReceiver : BroadcastReceiver(){
         val scheduledGoalId = intent.getIntExtra("scheduledGoalId", -1)
         val goalTitle = intent.getStringExtra("scheduledGoalTitle") ?: return
 
-        Log.d("TimerReceiver", "Timer finished for $goalTitle")
-
-        CoroutineScope(Dispatchers.IO).launch{
-            val db = GoalsDatabase.getDatabase(context)
-            val scheduledGoal = db.scheduledGoalDao().getScheduledGoalOnce(scheduledGoalId)
-            //val goal = db.goalDao().getGoalOnce(scheduledGoal.goalId)
-            db.scheduledGoalDao().update(scheduledGoal.copy(
-                completedMillis = (scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60_000L,
-                startTimeMillis = 0L,
-                status = GoalStatus.COMPLETED
-            ))
+        if(scheduledGoalId == -1){
+            return
         }
 
-        val canPostNotifications =
-            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-                    ContextCompat.checkSelfPermission(
-                        context,
-                        Manifest.permission.POST_NOTIFICATIONS
-                    ) == PackageManager.PERMISSION_GRANTED
+        Log.d("TimerReceiver", "Timer finished for $goalTitle")
 
-        if(canPostNotifications){
-            showTaskFinishedNotification(scheduledGoalId = scheduledGoalId, goalTitle = goalTitle, context = context)
+        //Ensure room update finishes before onReceive finishes
+        val pendingResult = goAsync()
+
+        CoroutineScope(Dispatchers.IO).launch{
+            try{
+                val db = GoalsDatabase.getDatabase(context)
+                val scheduledGoal = db.scheduledGoalDao().getScheduledGoalOnce(scheduledGoalId) ?: return@launch
+
+                db.scheduledGoalDao()
+                    .update(
+                        scheduledGoal.copy(
+                            completedMillis = (scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60_000L,
+                            startTimeMillis = 0L,
+                            status = GoalStatus.COMPLETED
+                        )
+                    )
+
+                val application = context.applicationContext as TimelyApplication
+
+                val completionNotificationsEnabled = application.container.userPreferencesRepository.taskCompletionNotificationsEnabled.first()
+
+                val hasNotificationPermission =
+                    Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                        ContextCompat.checkSelfPermission(
+                            context,
+                            Manifest.permission.POST_NOTIFICATIONS
+                        ) == PackageManager.PERMISSION_GRANTED
+
+                val systemNotificationsEnabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
+
+                if(
+                    completionNotificationsEnabled
+                    && hasNotificationPermission
+                    && systemNotificationsEnabled
+                ){
+                    showTaskFinishedNotification(
+                        scheduledGoalId = scheduledGoalId,
+                        goalTitle = goalTitle,
+                        context = context
+                    )
+                }
+            } catch (exception: Exception){
+                Log.e(
+                    "TimerReceiver",
+                    "Failed to complete task timer",
+                    exception
+                )
+            } finally {
+                pendingResult.finish()
+            }
         }
     }
 
