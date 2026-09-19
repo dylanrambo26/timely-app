@@ -18,9 +18,9 @@ import com.example.timemanagementapp.data.scheduledgoal.OfflineScheduledGoalsRep
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
 
 
-private const val CURRENT_TASK_PREFERENCE_NAME = "current_task_preferences"
+private const val USER_PREFERENCES_NAME = "user_preferences"
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
-    name = CURRENT_TASK_PREFERENCE_NAME
+    name = USER_PREFERENCES_NAME
 )
 
 /**
@@ -37,7 +37,9 @@ interface AppContainer{
     val updateRecurrenceUseCase: UpdateRecurrenceUseCase
 }
 
-class AppDataContainer(private val context: Context) : AppContainer {
+class AppDataContainer(
+    private val context: Context
+) : AppContainer {
 
     private val database: GoalsDatabase by lazy {
         GoalsDatabase.getDatabase(context)

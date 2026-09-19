@@ -51,8 +51,10 @@ fun SettingsScreen(
         SettingsBody(
             settingsUiState = settingsUiState,
             reminderEditorUiState = reminderEditorUiState,
+
             onTaskCompletionNotificationCheckedChange = settingsViewModel::setTaskCompletionNotificationsEnabled,
             onCountdownRemindersCheckedChange = settingsViewModel::setCountdownRemindersEnabled,
+            onTaskNotificationSoundChanged = settingsViewModel::setTaskNotificationSoundEnabled,
 
             onAddReminder = settingsViewModel::openAddReminderDialog,
             openEditReminder = settingsViewModel::openEditReminderDialog,
@@ -79,6 +81,8 @@ fun SettingsBody(
     onSaveReminder: () -> Unit,
     onDismissReminderDialog: () -> Unit,
 
+    onTaskNotificationSoundChanged: (Boolean) -> Unit,
+
     modifier: Modifier = Modifier
 ){
     Column(
@@ -90,6 +94,11 @@ fun SettingsBody(
         Text(
             text = "Notification Settings",
             style = MaterialTheme.typography.headlineMedium,
+        )
+        SettingsSwitch(
+            text = stringResource(R.string.play_sounds_for_task_alerts),
+            checked = settingsUiState.taskNotificationSoundEnabled,
+            onCheckedChange = onTaskNotificationSoundChanged
         )
         SettingsSwitch(
             text = stringResource(R.string.task_completion_notifications),
@@ -159,6 +168,7 @@ fun SettingsBodyPreview(){
             onReminderInputChanged = {},
             onDismissReminderDialog = {},
             reminderEditorUiState = ReminderEditorUiState(),
+            onTaskNotificationSoundChanged = {},
             openEditReminder = {}
         )
     }

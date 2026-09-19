@@ -32,6 +32,10 @@ class UserPreferencesRepository(
             "countdown_reminders_minutes"
         )
 
+        val TASK_NOTIFICATION_SOUND_ENABLED = booleanPreferencesKey(
+            "task_notification_sound_enabled"
+        )
+
         const val TAG = "UserPreferencesRepo"
     }
 
@@ -68,6 +72,11 @@ class UserPreferencesRepository(
                 ?: setOf(10, 5, 1)
         }
 
+    val taskNotificationSoundEnabled: Flow<Boolean> =
+        preferencesFlow.map { preferences ->
+            preferences[TASK_NOTIFICATION_SOUND_ENABLED] ?: true
+        }
+
     suspend fun saveCurrentTaskID(currentTaskID: Int){
         dataStore.edit { preferences ->
             preferences[CURRENT_TASK_ID] = currentTaskID
@@ -95,6 +104,12 @@ class UserPreferencesRepository(
                     .filter { it > 0 }
                     .map { it.toString() }
                     .toSet()
+        }
+    }
+
+    suspend fun setTaskNotificationSoundEnabled(enabled: Boolean){
+        dataStore.edit { preferences ->
+            preferences[TASK_NOTIFICATION_SOUND_ENABLED] = enabled
         }
     }
 }

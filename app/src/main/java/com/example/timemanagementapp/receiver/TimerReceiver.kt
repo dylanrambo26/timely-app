@@ -15,9 +15,9 @@ import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyApplication
 import com.example.timemanagementapp.data.goal.GoalStatus
 import com.example.timemanagementapp.data.goal.GoalsDatabase
+import com.example.timemanagementapp.data.notification.TimelyNotificationChannels
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -54,8 +54,9 @@ class TimerReceiver : BroadcastReceiver(){
                     )
 
                 val application = context.applicationContext as TimelyApplication
+                val userPreferencesRepository = application.container.userPreferencesRepository
 
-                val completionNotificationsEnabled = application.container.userPreferencesRepository.taskCompletionNotificationsEnabled.first()
+                val completionNotificationsEnabled = userPreferencesRepository.taskCompletionNotificationsEnabled.first()
 
                 val hasNotificationPermission =
                     Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
@@ -66,6 +67,20 @@ class TimerReceiver : BroadcastReceiver(){
 
                 val systemNotificationsEnabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
 
+                val soundEnabled = userPreferencesRepository.taskNotificationSoundEnabled.first()
+
+                val channelId = if(soundEnabled){
+                    TimelyNotificationChannels.TASK_ALERTS_SOUND
+                } else {
+                    TimelyNotificationChannels.TASK_ALERTS_SILENT
+                }
+
+                val priority = if(soundEnabled){
+                    NotificationCompat.PRIORITY_HIGH
+                } else {
+                    NotificationCompat.PRIORITY_LOW
+                }
+
                 if(
                     completionNotificationsEnabled
                     && hasNotificationPermission
@@ -74,7 +89,10 @@ class TimerReceiver : BroadcastReceiver(){
                     showTaskFinishedNotification(
                         scheduledGoalId = scheduledGoalId,
                         goalTitle = goalTitle,
-                        context = context
+                        context = context,
+                        channelId = channelId,
+                        priority = priority,
+                        setSilent = !soundEnabled
                     )
                 }
             } catch (exception: Exception){
@@ -93,17 +111,21 @@ class TimerReceiver : BroadcastReceiver(){
     private fun showTaskFinishedNotification(
         scheduledGoalId: Int,
         goalTitle: String,
-        context: Context
+        context: Context,
+        channelId: String,
+        priority: Int,
+        setSilent: Boolean
     ){
         val notification = NotificationCompat.Builder(
             context,
-            "task_timer_channel"
+            channelId
         )
             .setSmallIcon(R.drawable.outline_calendar_check_24)
             .setContentTitle("Task Complete")
             .setContentText("Your \"$goalTitle\" task is done.")
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setPriority(priority)
             .setAutoCancel(true)
+            .setSilent(setSilent)
             .build()
 
         NotificationManagerCompat.from(context)

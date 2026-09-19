@@ -110,9 +110,9 @@ class SettingsViewModel(
         }
     }
 
-    fun setCountdownRemindersMinutes(minutes: Set<Int>){
+    fun setTaskNotificationSoundEnabled(enabled: Boolean){
         viewModelScope.launch {
-            userPreferencesRepository.setCountdownRemindersMinutes(minutes)
+            userPreferencesRepository.setTaskNotificationSoundEnabled(enabled)
         }
     }
 
@@ -120,12 +120,14 @@ class SettingsViewModel(
         combine(
             userPreferencesRepository.taskCompletionNotificationsEnabled,
             userPreferencesRepository.countdownRemindersEnabled,
-            userPreferencesRepository.countdownRemindersMinutes
-        ){ completionNotificationsEnabled, countdownRemindersEnabled, countdownRemindersMinutes ->
+            userPreferencesRepository.countdownRemindersMinutes,
+            userPreferencesRepository.taskNotificationSoundEnabled
+        ){ completionNotificationsEnabled, countdownRemindersEnabled, countdownRemindersMinutes, taskNotificationSoundEnabled->
             SettingsUiState(
                 taskCompletionNotificationsEnabled = completionNotificationsEnabled,
                 countdownRemindersEnabled = countdownRemindersEnabled,
-                countdownRemindersMinutes = countdownRemindersMinutes
+                countdownRemindersMinutes = countdownRemindersMinutes,
+                taskNotificationSoundEnabled = taskNotificationSoundEnabled
             )
         }.stateIn(
             scope = viewModelScope,
@@ -139,7 +141,8 @@ class SettingsViewModel(
 data class SettingsUiState(
     val taskCompletionNotificationsEnabled: Boolean = true,
     val countdownRemindersEnabled: Boolean = false,
-    val countdownRemindersMinutes: Set<Int> = setOf(10,5,1)
+    val countdownRemindersMinutes: Set<Int> = setOf(10,5,1),
+    val taskNotificationSoundEnabled: Boolean = true,
 )
 
 data class ReminderEditorUiState(

@@ -78,4 +78,5 @@
         Settings to enable Alarms &amp; reminders for Timely.</string>
     <string name="task_completion_notifications">Task Completion Notifications</string>
     <string name="countdown_reminders_on_off">Countdown reminders On/Off</string>
+    <string name="play_sounds_for_task_alerts">Play sounds for task alerts</string>
 </resources>

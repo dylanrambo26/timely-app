@@ -11,35 +11,52 @@ import androidx.datastore.preferences.preferencesDataStore
 import com.example.timemanagementapp.data.AppContainer
 import com.example.timemanagementapp.data.AppDataContainer
 import com.example.timemanagementapp.data.UserPreferencesRepository
-
-
-private const val CURRENT_TASK_PREFERENCE_NAME = "current_task_preferences"
-private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(
-    name = CURRENT_TASK_PREFERENCE_NAME
-)
+import com.example.timemanagementapp.data.notification.TimelyNotificationChannels
 
 class TimelyApplication : Application() {
     lateinit var container: AppContainer
-    lateinit var userPreferencesRepository: UserPreferencesRepository
 
     override fun onCreate() {
         super.onCreate()
-        container = AppDataContainer(this)
-        userPreferencesRepository = UserPreferencesRepository(dataStore)
-        createNotificationChannel()
+        container = AppDataContainer(
+            context = this,
+        )
+        createNotificationChannels()
     }
 
-    private fun createNotificationChannel() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-            val channel = NotificationChannel(
-                "task_timer_channel",
-                "Task Timer",
-                NotificationManager.IMPORTANCE_HIGH
-            )
-
-            val manager = getSystemService(NotificationManager::class.java)
-            manager.createNotificationChannel(channel)
+    private fun createNotificationChannels() {
+        if(Build.VERSION.SDK_INT < Build.VERSION_CODES.O){
+            return
         }
+
+        val soundChannel = NotificationChannel(
+            TimelyNotificationChannels.TASK_ALERTS_SOUND,
+            "Task alerts with sound",
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            description = "Task countdown reminders and completion alerts with sound"
+        }
+
+        val silentChannel = NotificationChannel(
+            TimelyNotificationChannels.TASK_ALERTS_SILENT,
+            "Silent task alerts",
+            NotificationManager.IMPORTANCE_DEFAULT,
+        ).apply {
+            description = "Task countdown reminders and completion alerts without sound"
+
+            setSound(null, null)
+            enableVibration(false)
+        }
+
+        val notificationManager = getSystemService(
+            NotificationManager::class.java
+        )
+
+        notificationManager.createNotificationChannels(
+            listOf(
+                soundChannel,
+                silentChannel
+            )
+        )
     }
 }
