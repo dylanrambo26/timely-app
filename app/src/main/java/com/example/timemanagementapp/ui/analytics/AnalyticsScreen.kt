@@ -55,7 +55,6 @@ fun AnalyticsScreen(
     modifier: Modifier = Modifier,
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit,
-    navigateToSettings: () -> Unit,
     analyticsViewModel: AnalyticsViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ){
     val analyticsUiState by analyticsViewModel.analyticsUiState.collectAsState()

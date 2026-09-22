@@ -4,12 +4,13 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.util.Log
-import androidx.core.app.NotificationManagerCompat
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.receiver.TimerReceiver
+import kotlin.math.min
 
 //Used by CurrentTaskViewModel to schedule alarm notifications when the task is done
 class AlarmManagerGoalsRepository(
@@ -22,53 +23,45 @@ class AlarmManagerGoalsRepository(
         Context.ALARM_SERVICE
     ) as AlarmManager
 
-    override fun scheduleTimer(scheduledGoal: ScheduledGoal) {
+    fun canScheduleExactAlarms(): Boolean {
+        return Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+                alarmManager.canScheduleExactAlarms()
+    }
 
-        val durationMillis = ((scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60_000L) - scheduledGoal.completedMillis
-
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()){
-            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
+    fun requestExactAlarmPermission() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+            val intent = Intent(
+                Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                Uri.parse("package:${context.packageName}")
+            ).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             context.startActivity(intent)
-            return
         }
+    }
 
-        val canScheduleExactAlarms =
-            Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
-                    alarmManager.canScheduleExactAlarms()
-
-        val notificationsEnabled =
-            NotificationManagerCompat.from(context).areNotificationsEnabled()
-
-
+    fun scheduleExactAlarm(
+        scheduledGoal: ScheduledGoal,
+        triggerTime: Long,
+        requestCode: Int,
+        reminderMinutes: Int? = null
+    ) {
         val intent = Intent(
             context,
             TimerReceiver::class.java
         ).apply{
             putExtra("scheduledGoalId", scheduledGoal.scheduledGoalId)
             putExtra("scheduledGoalTitle", scheduledGoal.scheduledGoalTitle)
+            putExtra("reminderMinutes", reminderMinutes)
         }
 
         val pendingIntent =
             PendingIntent.getBroadcast(
                 context,
-                scheduledGoal.scheduledGoalId,
+                requestCode,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
-
-        val triggerTime = System.currentTimeMillis() + durationMillis
-
-        Log.d(
-            CURRENT_TASK_TIMER,
-            """
-        Exact alarm permission: $canScheduleExactAlarms
-        Notifications enabled: $notificationsEnabled
-        Duration millis: $durationMillis
-        Trigger time: $triggerTime
-        """.trimIndent()
-        )
 
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
@@ -76,11 +69,16 @@ class AlarmManagerGoalsRepository(
             pendingIntent
         )
 
-        Log.d(CURRENT_TASK_TIMER, "Duration: ${durationMillis / 1000}s (${durationMillis / 60000} min)")
+        Log.d(
+            "TaskAlarm",
+            "Scheduling requestCode=$requestCode at $triggerTime"
+        )
     }
 
     //Cancel the alarm broadcast
-    override fun cancelTimer(scheduledGoalId: Int){
+    fun cancelExactAlarm(
+        requestCode: Int
+    ){
         val alarmManager = context.getSystemService(
             Context.ALARM_SERVICE
         ) as AlarmManager
@@ -93,13 +91,114 @@ class AlarmManagerGoalsRepository(
         val pendingIntent =
             PendingIntent.getBroadcast(
                 context,
-                scheduledGoalId,
+                requestCode,
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
 
         alarmManager.cancel(pendingIntent)
 
-        Log.d(CURRENT_TASK_TIMER, "timer canceled")
+        Log.d("TaskAlarm",
+            "Cancelling requestCode=$requestCode"
+        )
+    }
+
+    override fun scheduleCompletionAlarm(
+        scheduledGoal: ScheduledGoal
+    ){
+        val completionTime = calculateCompletionTimeMillis(scheduledGoal)
+        scheduleExactAlarm(
+            scheduledGoal = scheduledGoal,
+            triggerTime = completionTime,
+            requestCode = completionRequestCode(
+                scheduledGoal.scheduledGoalId
+            )
+        )
+    }
+
+    override fun cancelCompletionAlarm(
+        scheduledGoalId: Int
+    ){
+        cancelExactAlarm(
+            completionRequestCode(
+                scheduledGoalId
+            )
+        )
+    }
+
+    override fun scheduleCountdownReminders(
+        scheduledGoal: ScheduledGoal,
+        reminderMinutes: List<Int>
+    ) {
+        val completionTime = calculateCompletionTimeMillis(scheduledGoal)
+
+        reminderMinutes.forEachIndexed {index, minutes ->
+            val triggerTime = calculateCountdownReminderTimeMillis(
+                completionTime,
+                minutes
+            )
+
+            if(triggerTime <= System.currentTimeMillis()){
+                return@forEachIndexed
+            }
+
+            scheduleExactAlarm(
+                scheduledGoal,
+                triggerTime,
+                requestCode = countdownReminderRequestCode(
+                    scheduledGoal.scheduledGoalId,
+                    minutes
+                ),
+                reminderMinutes = minutes
+            )
+        }
+    }
+
+
+
+    override fun cancelCountdownReminders(
+        scheduledGoalId: Int,
+        reminderMinutes: List<Int>
+    ){
+        reminderMinutes.forEach{minutes->
+            cancelExactAlarm(
+                countdownReminderRequestCode(
+                    scheduledGoalId,
+                    minutes
+                )
+            )
+        }
+    }
+
+    private fun completionRequestCode(
+        scheduledGoalId: Int
+    ): Int{
+        return "$scheduledGoalId-completion".hashCode()
+    }
+
+    private fun countdownReminderRequestCode(
+        scheduledGoalId: Int,
+        reminderMinutes: Int
+    ): Int{
+        return "$scheduledGoalId-reminder-$reminderMinutes".hashCode()
+    }
+
+    private fun calculateRemainingDurationMillis(
+        scheduledGoal: ScheduledGoal
+    ): Long {
+        return ((scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60_000L) - scheduledGoal.completedMillis
+    }
+
+    private fun calculateCompletionTimeMillis(
+        scheduledGoal: ScheduledGoal
+    ): Long{
+        return System.currentTimeMillis() + calculateRemainingDurationMillis(scheduledGoal)
+    }
+
+    private fun calculateCountdownReminderTimeMillis(
+        completionTimeMillis: Long,
+        reminderMinutes: Int
+    ): Long{
+        return completionTimeMillis - reminderMinutes * 60_000L
     }
 }

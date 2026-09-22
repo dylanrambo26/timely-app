@@ -16,6 +16,7 @@ import com.example.timemanagementapp.ui.editScheduled.EditScheduledGoalViewModel
 import com.example.timemanagementapp.ui.goal.GoalListViewModel
 import com.example.timemanagementapp.ui.goal.ManageReusableGoalsViewModel
 import com.example.timemanagementapp.ui.home.HomeViewModel
+import com.example.timemanagementapp.ui.settings.SettingsViewModel
 import com.example.timemanagementapp.ui.viewgoals.ScheduledGoalsListViewModel
 
 
@@ -93,6 +94,12 @@ object AppViewModelProvider{
         initializer {
             ManageReusableGoalsViewModel(
                 goalsRepository = timelyApplication().container.goalsRepository
+            )
+        }
+
+        initializer {
+            SettingsViewModel(
+                userPreferencesRepository = timelyApplication().container.userPreferencesRepository
             )
         }
     }

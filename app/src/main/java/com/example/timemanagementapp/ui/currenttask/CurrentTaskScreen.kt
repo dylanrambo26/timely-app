@@ -16,21 +16,27 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.timemanagementapp.R
 import com.example.timemanagementapp.TimelyBottomAppBar
@@ -38,6 +44,7 @@ import com.example.timemanagementapp.TimelySmallTopAppBar
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.testScheduledGoalsSizeThree
 import com.example.timemanagementapp.ui.AppViewModelProvider
+import com.example.timemanagementapp.ui.components.PermissionsDialog
 import com.example.timemanagementapp.ui.components.lists.ScheduledGoalList
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
@@ -62,6 +69,30 @@ fun CurrentTaskScreen(
 ){
     val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
     val currentTaskUiState by currentTaskViewModel.currentTaskUiState.collectAsState()
+
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver{_, event ->
+            if (event == Lifecycle.Event.ON_RESUME){
+                currentTaskViewModel.onAppResumed()
+            }
+        }
+
+        lifecycleOwner.lifecycle.addObserver(observer)
+
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+        }
+    }
+
+    LaunchedEffect(currentTaskUiState.taskStartState) {
+        if (currentTaskUiState.taskStartState == TaskStartState.STARTED){
+            currentTaskViewModel.resetTaskStartState()
+            navigateToHome()
+        }
+    }
+
     Scaffold(
         topBar = {
             TimelySmallTopAppBar(stringResource(R.string.change_current_task))
@@ -81,7 +112,7 @@ fun CurrentTaskScreen(
             onSaveCurrentTaskPressed = {scheduledGoal ->
                 currentTaskViewModel.startTaskTimer(scheduledGoal)
             },
-            navigateToHome = navigateToHome,
+            needsExactAlarmPermission = currentTaskViewModel::needsExactAlarmPermission,
             navigateBack = navigateBack,
             modifier = Modifier.padding(innerPadding)
         )
@@ -90,21 +121,62 @@ fun CurrentTaskScreen(
 
 @Composable
 fun CurrentTaskBody(
-    //goalListUiState: GoalListUiState,
     scheduledGoalsListUiState: ScheduledGoalsListUiState,
-    //currentTaskUiState: CurrentTaskUiState,
     onSaveCurrentTaskPressed: (ScheduledGoal) -> Unit,
-    navigateToHome: () -> Unit,
+    needsExactAlarmPermission: () -> Boolean,
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ){
+    var goalWaitingForPermissions by remember {
+        mutableStateOf<ScheduledGoal?>(null)
+    }
+
+    var showPermissionsDialog by remember {
+        mutableStateOf(false)
+    }
+
     val context = LocalContext.current
     val notificationPermissionLauncher =
         rememberLauncherForActivityResult(
             contract = ActivityResultContracts.RequestPermission()
-        ) { isGranted ->
+        ) { _ ->
+            goalWaitingForPermissions?.let { goal ->
+                onSaveCurrentTaskPressed(goal)
+            }
 
+            goalWaitingForPermissions = null
         }
+
+    if(showPermissionsDialog){
+        PermissionsDialog(
+            onDismiss = {
+                showPermissionsDialog = false
+                goalWaitingForPermissions = null
+            },
+            onContinue = {
+                showPermissionsDialog = false
+
+                val goal = goalWaitingForPermissions
+
+                if (goal != null){
+                    val needsNotificationPermission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                            ContextCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.POST_NOTIFICATIONS
+                            ) != PackageManager.PERMISSION_GRANTED
+
+                    if(needsNotificationPermission){
+                        notificationPermissionLauncher.launch(
+                            Manifest.permission.POST_NOTIFICATIONS
+                        )
+                    } else {
+                        goalWaitingForPermissions = null
+                        onSaveCurrentTaskPressed(goal)
+                    }
+                }
+            }
+        )
+    }
 
     Column(
         modifier = modifier
@@ -160,20 +232,24 @@ fun CurrentTaskBody(
             OutlinedButton(
                 onClick = {
                     selectedGoal?.let {goal ->
-                        if (
+                        val needsNotificationPermission =
                             Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                            ContextCompat.checkSelfPermission(
-                                context,
-                                Manifest.permission.POST_NOTIFICATIONS
-                            ) != PackageManager.PERMISSION_GRANTED
-                        ){
-                            notificationPermissionLauncher.launch(
-                                Manifest.permission.POST_NOTIFICATIONS
-                            )
-                        }
+                                    ContextCompat.checkSelfPermission(
+                                        context,
+                                        Manifest.permission.POST_NOTIFICATIONS
+                                    ) != PackageManager.PERMISSION_GRANTED
 
-                        onSaveCurrentTaskPressed(goal)
-                        navigateToHome()
+                        val requiresExactAlarmPermission = needsExactAlarmPermission()
+                        if(needsNotificationPermission || requiresExactAlarmPermission){
+                            goalWaitingForPermissions = goal
+                            showPermissionsDialog = true
+
+                            /*notificationPermissionLauncher.launch(
+                                Manifest.permission.POST_NOTIFICATIONS
+                            )*/
+                        } else {
+                            onSaveCurrentTaskPressed(goal)
+                        }
                     }
                 },
                 enabled = selectedGoal != null,
@@ -204,7 +280,7 @@ fun CurrentTaskBodyPreview(){
             modifier = Modifier
                 .fillMaxSize()
                 .padding(dimensionResource(R.dimen.padding_medium)),
-            navigateToHome = {},
+            needsExactAlarmPermission = {false},
             navigateBack = {}
         )
     }

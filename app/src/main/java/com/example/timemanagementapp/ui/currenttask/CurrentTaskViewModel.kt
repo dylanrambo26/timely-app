@@ -8,11 +8,14 @@ import com.example.timemanagementapp.data.alarm.AlarmManagerGoalsRepository
 import com.example.timemanagementapp.data.goal.GoalStatus
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoal
 import com.example.timemanagementapp.data.scheduledgoal.ScheduledGoalsRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -25,42 +28,63 @@ class CurrentTaskViewModel(
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
     }
-    val currentTaskUiState: StateFlow<CurrentTaskUiState> =
+
+    private var pendingTask: ScheduledGoal? = null
+    private var scheduledCountdownReminders: List<Int> = emptyList()
+
+    private val _taskStartState = MutableStateFlow(TaskStartState.IDLE)
+
+    private val currentTask: Flow<ScheduledGoal?> =
         userPreferencesRepository.currentTaskID
             .flatMapLatest { currentTaskId ->
-
-                if (currentTaskId == null) {
-                    flowOf(CurrentTaskUiState())
+                if (currentTaskId == null){
+                    flowOf(null)
                 } else {
                     scheduledGoalsRepository.getScheduledGoal(currentTaskId)
-                        .map { combinedGoal ->
-                            CurrentTaskUiState(
-                                currentTask = combinedGoal
-                            )
-                        }
                 }
             }
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-                initialValue = CurrentTaskUiState()
+
+    val currentTaskUiState: StateFlow<CurrentTaskUiState> =
+        combine(
+            currentTask,
+            _taskStartState
+        ){currentTask, taskStartState ->
+            CurrentTaskUiState(
+                currentTask = currentTask,
+                taskStartState = taskStartState
             )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+            initialValue = CurrentTaskUiState()
+        )
 
     fun startTaskTimer(scheduledGoal: ScheduledGoal){
+        if (!alarmManagerGoalsRepository.canScheduleExactAlarms()){
+            pendingTask = scheduledGoal
+            _taskStartState.value = TaskStartState.WAITING_FOR_ALARM_PERMISSION
+
+            alarmManagerGoalsRepository.requestExactAlarmPermission()
+            return
+        }
+
+        pendingTask = null
+        beginTaskTimer(scheduledGoal)
+    }
+
+    private fun beginTaskTimer(scheduledGoal: ScheduledGoal){
+        _taskStartState.value = TaskStartState.STARTING
+
         viewModelScope.launch {
             val currentTask = currentTaskUiState.value.currentTask
 
-            //Only stop the timer if the previous task was still running and is a different task than the incoming task
-            //This is used when the user changes the task while the task is running
             if(currentTask != null && currentTask.scheduledGoalId != scheduledGoal.scheduledGoalId && currentTask.status == GoalStatus.RUNNING){
                 Log.d("CurrentTaskViewModel", "Stop Current Task, Switch to new Current Task")
                 stopTaskTimer(goalStatus = GoalStatus.PAUSED)
             }
 
-            val startTime = System.currentTimeMillis()
-
             val updatedScheduledGoal = scheduledGoal.copy(
-                startTimeMillis = startTime,
+                startTimeMillis = System.currentTimeMillis(),
                 status = GoalStatus.RUNNING
             )
 
@@ -68,14 +92,50 @@ class CurrentTaskViewModel(
 
             userPreferencesRepository.saveCurrentTaskID(updatedScheduledGoal.scheduledGoalId)
 
-            alarmManagerGoalsRepository.scheduleTimer(updatedScheduledGoal)
+            alarmManagerGoalsRepository.scheduleCompletionAlarm(updatedScheduledGoal)
+
+            scheduledCountdownReminders = userPreferencesRepository.countdownRemindersMinutes.first().toList()
+
+            if(userPreferencesRepository.countdownRemindersMinutes.first().isNotEmpty()){
+                alarmManagerGoalsRepository.scheduleCountdownReminders(
+                    scheduledGoal = scheduledGoal,
+                    reminderMinutes = scheduledCountdownReminders
+                )
+            }
+
+            _taskStartState.value = TaskStartState.STARTED
         }
+    }
+
+    fun onAppResumed(){
+        val task = pendingTask ?: return
+
+        if(alarmManagerGoalsRepository.canScheduleExactAlarms()){
+            pendingTask = null
+            beginTaskTimer(task)
+        } else {
+            pendingTask = null
+            _taskStartState.value = TaskStartState.IDLE
+        }
+    }
+
+    fun resetTaskStartState() {
+        _taskStartState.value = TaskStartState.IDLE
     }
 
     suspend fun stopTaskTimer(goalStatus: GoalStatus){
         val currentTask = currentTaskUiState.value.currentTask ?: return
 
-        alarmManagerGoalsRepository.cancelTimer(currentTask.scheduledGoalId)
+        alarmManagerGoalsRepository.cancelCompletionAlarm(currentTask.scheduledGoalId)
+
+        if(scheduledCountdownReminders.isNotEmpty()){
+            alarmManagerGoalsRepository.cancelCountdownReminders(
+                scheduledGoalId = currentTask.scheduledGoalId,
+                reminderMinutes = scheduledCountdownReminders
+            )
+        }
+
+        scheduledCountdownReminders = emptyList()
 
         val isRunning = currentTask.status == GoalStatus.RUNNING && currentTask.startTimeMillis > 0L
 
@@ -105,8 +165,20 @@ class CurrentTaskViewModel(
             stopTaskTimer(goalStatus = GoalStatus.COMPLETED)
         }
     }
+
+    fun needsExactAlarmPermission(): Boolean{
+        return !alarmManagerGoalsRepository.canScheduleExactAlarms()
+    }
 }
 
 data class CurrentTaskUiState(
-    val currentTask: ScheduledGoal? = null
+    val currentTask: ScheduledGoal? = null,
+    val taskStartState: TaskStartState = TaskStartState.IDLE
 )
+
+enum class TaskStartState{
+    IDLE,
+    WAITING_FOR_ALARM_PERMISSION,
+    STARTING,
+    STARTED
+}
