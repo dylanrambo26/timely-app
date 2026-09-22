@@ -13,9 +13,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -30,6 +30,7 @@ class CurrentTaskViewModel(
     }
 
     private var pendingTask: ScheduledGoal? = null
+    private var scheduledCountdownReminders: List<Int> = emptyList()
 
     private val _taskStartState = MutableStateFlow(TaskStartState.IDLE)
 
@@ -91,7 +92,16 @@ class CurrentTaskViewModel(
 
             userPreferencesRepository.saveCurrentTaskID(updatedScheduledGoal.scheduledGoalId)
 
-            alarmManagerGoalsRepository.scheduleTimer(updatedScheduledGoal)
+            alarmManagerGoalsRepository.scheduleCompletionAlarm(updatedScheduledGoal)
+
+            scheduledCountdownReminders = userPreferencesRepository.countdownRemindersMinutes.first().toList()
+
+            if(userPreferencesRepository.countdownRemindersMinutes.first().isNotEmpty()){
+                alarmManagerGoalsRepository.scheduleCountdownReminders(
+                    scheduledGoal = scheduledGoal,
+                    reminderMinutes = scheduledCountdownReminders
+                )
+            }
 
             _taskStartState.value = TaskStartState.STARTED
         }
@@ -116,7 +126,16 @@ class CurrentTaskViewModel(
     suspend fun stopTaskTimer(goalStatus: GoalStatus){
         val currentTask = currentTaskUiState.value.currentTask ?: return
 
-        alarmManagerGoalsRepository.cancelTimer(currentTask.scheduledGoalId)
+        alarmManagerGoalsRepository.cancelCompletionAlarm(currentTask.scheduledGoalId)
+
+        if(scheduledCountdownReminders.isNotEmpty()){
+            alarmManagerGoalsRepository.cancelCountdownReminders(
+                scheduledGoalId = currentTask.scheduledGoalId,
+                reminderMinutes = scheduledCountdownReminders
+            )
+        }
+
+        scheduledCountdownReminders = emptyList()
 
         val isRunning = currentTask.status == GoalStatus.RUNNING && currentTask.startTimeMillis > 0L
 

@@ -1,10 +1,13 @@
 package com.example.timemanagementapp.ui.settings
 
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -25,6 +28,7 @@ import com.example.timemanagementapp.ui.components.settings.ReminderEditorDialog
 import com.example.timemanagementapp.ui.components.settings.ReminderTimes
 import com.example.timemanagementapp.ui.navigation.NavigationDest
 import com.example.timemanagementapp.ui.theme.TimeManagementAppTheme
+import com.example.timemanagementapp.util.MAX_NUMBER_OF_COUNTDOWN_REMINDERS
 
 object SettingsDestination : NavigationDest {
     override val route = "settings"
@@ -85,11 +89,14 @@ fun SettingsBody(
 
     modifier: Modifier = Modifier
 ){
+
+    val scrollState = rememberScrollState()
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp),
         modifier = modifier
             .fillMaxWidth()
             .padding(dimensionResource(R.dimen.padding_medium))
+            .verticalScroll(scrollState)
     ) {
         Text(
             text = "Notification Settings",
@@ -115,7 +122,8 @@ fun SettingsBody(
                 selectedMinutes = settingsUiState.countdownRemindersMinutes,
                 onEditReminder = openEditReminder,
                 onAddReminder = onAddReminder,
-                onDeleteReminder = onDeleteReminder
+                onDeleteReminder = onDeleteReminder,
+                maxSizeReached = settingsUiState.countdownRemindersMinutes.size >= MAX_NUMBER_OF_COUNTDOWN_REMINDERS
             )
         }
     }

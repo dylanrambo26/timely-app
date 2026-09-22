@@ -81,7 +81,8 @@ fun ReminderTimes(
     selectedMinutes: Set<Int>,
     onEditReminder: (Int) -> Unit,
     onAddReminder: () -> Unit,
-    onDeleteReminder: (Int) -> Unit
+    onDeleteReminder: (Int) -> Unit,
+    maxSizeReached: Boolean
 ){
     Column(
         verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -128,16 +129,26 @@ fun ReminderTimes(
                 )
             }
         TextButton(
-            onClick = onAddReminder
+            onClick = onAddReminder,
+            enabled = !maxSizeReached
         ) {
-            Icon(
-                imageVector = Icons.Default.Add,
-                contentDescription = null
+            if(!maxSizeReached){
+                Icon(
+                    imageVector = Icons.Default.Add,
+                    contentDescription = null
+                )
+
+                Spacer(Modifier.width(8.dp))
+
+            }
+
+            Text(
+                text = if (maxSizeReached){
+                    "Max number of countdown reminders reached. Delete one to add another."
+                } else {
+                    "Add reminder"
+                }
             )
-
-            Spacer(Modifier.width(8.dp))
-
-            Text("Add reminder")
         }
     }
 }

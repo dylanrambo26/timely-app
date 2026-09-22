@@ -29,6 +29,8 @@ class TimerReceiver : BroadcastReceiver(){
     ) {
         val scheduledGoalId = intent.getIntExtra("scheduledGoalId", -1)
         val goalTitle = intent.getStringExtra("scheduledGoalTitle") ?: return
+        val reminderMinutes = intent.getIntExtra("reminderMinutes", -1)
+
 
         if(scheduledGoalId == -1){
             return
@@ -41,58 +43,18 @@ class TimerReceiver : BroadcastReceiver(){
 
         CoroutineScope(Dispatchers.IO).launch{
             try{
-                val db = GoalsDatabase.getDatabase(context)
-                val scheduledGoal = db.scheduledGoalDao().getScheduledGoalOnce(scheduledGoalId) ?: return@launch
-
-                db.scheduledGoalDao()
-                    .update(
-                        scheduledGoal.copy(
-                            completedMillis = (scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60_000L,
-                            startTimeMillis = 0L,
-                            status = GoalStatus.COMPLETED
-                        )
+                if (reminderMinutes == -1){
+                    handleCompletion(
+                        context = context,
+                        scheduledGoalId = scheduledGoalId,
+                        goalTitle = goalTitle
                     )
-
-                val application = context.applicationContext as TimelyApplication
-                val userPreferencesRepository = application.container.userPreferencesRepository
-
-                val completionNotificationsEnabled = userPreferencesRepository.taskCompletionNotificationsEnabled.first()
-
-                val hasNotificationPermission =
-                    Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-                        ContextCompat.checkSelfPermission(
-                            context,
-                            Manifest.permission.POST_NOTIFICATIONS
-                        ) == PackageManager.PERMISSION_GRANTED
-
-                val systemNotificationsEnabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
-
-                val soundEnabled = userPreferencesRepository.taskNotificationSoundEnabled.first()
-
-                val channelId = if(soundEnabled){
-                    TimelyNotificationChannels.TASK_ALERTS_SOUND
                 } else {
-                    TimelyNotificationChannels.TASK_ALERTS_SILENT
-                }
-
-                val priority = if(soundEnabled){
-                    NotificationCompat.PRIORITY_HIGH
-                } else {
-                    NotificationCompat.PRIORITY_LOW
-                }
-
-                if(
-                    completionNotificationsEnabled
-                    && hasNotificationPermission
-                    && systemNotificationsEnabled
-                ){
-                    showTaskFinishedNotification(
+                    handleCountdownReminder(
+                        context = context,
                         scheduledGoalId = scheduledGoalId,
                         goalTitle = goalTitle,
-                        context = context,
-                        channelId = channelId,
-                        priority = priority,
-                        setSilent = !soundEnabled
+                        reminderMinutes = reminderMinutes
                     )
                 }
             } catch (exception: Exception){
@@ -108,21 +70,132 @@ class TimerReceiver : BroadcastReceiver(){
     }
 
     @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
-    private fun showTaskFinishedNotification(
+    private suspend fun handleCompletion(
+        context: Context,
+        scheduledGoalId: Int,
+        goalTitle: String
+    ){
+        val db = GoalsDatabase.getDatabase(context)
+        val scheduledGoal = db.scheduledGoalDao().getScheduledGoalOnce(scheduledGoalId) ?: return
+
+        db.scheduledGoalDao()
+            .update(
+                scheduledGoal.copy(
+                    completedMillis = (scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60_000L,
+                    startTimeMillis = 0L,
+                    status = GoalStatus.COMPLETED
+                )
+            )
+
+        val application = context.applicationContext as TimelyApplication
+
+        val completionNotificationsEnabled = application.container.userPreferencesRepository.taskCompletionNotificationsEnabled.first()
+
+        val notificationSettings = getNotificationSettings(context)
+        if(
+            completionNotificationsEnabled
+            && notificationSettings.notificationsAllowed
+        ){
+            showNotification(
+                scheduledGoalId = scheduledGoalId,
+                context = context,
+                channelId = notificationSettings.channelId,
+                priority = notificationSettings.priority,
+                setSilent = !notificationSettings.soundEnabled,
+                iconResource = R.drawable.outline_calendar_check_24,
+                contentTitle = "Task Complete",
+                contentText = "Your \"$goalTitle\" task is done."
+            )
+        }
+    }
+
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+    private suspend fun handleCountdownReminder(
+        context: Context,
         scheduledGoalId: Int,
         goalTitle: String,
+        reminderMinutes: Int
+    ){
+        val notificationSettings = getNotificationSettings(context)
+
+        if(!notificationSettings.notificationsAllowed){
+            return
+        }
+
+        showNotification(
+            scheduledGoalId = scheduledGoalId,
+            context = context,
+            channelId = notificationSettings.channelId,
+            priority = notificationSettings.priority,
+            setSilent = !notificationSettings.soundEnabled,
+            iconResource = R.drawable.outline_hourglass,
+            contentTitle = "Task Reminder",
+            contentText = "$reminderMinutes minutes remaining on task: \"$goalTitle\""
+        )
+    }
+
+    private suspend fun getNotificationSettings(
+        context: Context
+    ): NotificationSettings {
+        val application = context.applicationContext as TimelyApplication
+        val userPreferencesRepository = application.container.userPreferencesRepository
+
+        val hasNotificationPermission =
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                    ContextCompat.checkSelfPermission(
+                        context,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) == PackageManager.PERMISSION_GRANTED
+
+        val systemNotificationsEnabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
+
+        val soundEnabled = userPreferencesRepository.taskNotificationSoundEnabled.first()
+
+        val channelId = if(soundEnabled){
+            TimelyNotificationChannels.TASK_ALERTS_SOUND
+        } else {
+            TimelyNotificationChannels.TASK_ALERTS_SILENT
+        }
+
+        val priority = if(soundEnabled){
+            NotificationCompat.PRIORITY_HIGH
+        } else {
+            NotificationCompat.PRIORITY_LOW
+        }
+
+        return NotificationSettings(
+            notificationsAllowed = hasNotificationPermission && systemNotificationsEnabled,
+            soundEnabled = soundEnabled,
+            channelId = channelId,
+            priority = priority
+        )
+    }
+
+    private data class NotificationSettings(
+        val notificationsAllowed: Boolean,
+        val soundEnabled: Boolean,
+        val channelId: String,
+        val priority: Int
+    )
+
+    @RequiresPermission(Manifest.permission.POST_NOTIFICATIONS)
+    private fun showNotification(
+        scheduledGoalId: Int,
         context: Context,
         channelId: String,
         priority: Int,
-        setSilent: Boolean
+        setSilent: Boolean,
+        iconResource: Int,
+        contentTitle: String,
+        contentText: String
     ){
         val notification = NotificationCompat.Builder(
             context,
             channelId
         )
-            .setSmallIcon(R.drawable.outline_calendar_check_24)
-            .setContentTitle("Task Complete")
-            .setContentText("Your \"$goalTitle\" task is done.")
+            .setSmallIcon(iconResource)
+            .setContentTitle(contentTitle)
+            .setContentText(contentText)
             .setPriority(priority)
             .setAutoCancel(true)
             .setSilent(setSilent)
