@@ -6,11 +6,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.timemanagementapp"
+    namespace = "com.timelyproductivity.app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.timemanagementapp"
+        applicationId = "com.timelyproductivity.app"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
@@ -23,6 +23,11 @@ android {
     }
 
     buildTypes {
+        debug {
+            applicationIdSuffix = ".dev"
+            versionNameSuffix = "-dev"
+        }
+
         release {
             isMinifyEnabled = false
             proguardFiles(
@@ -50,7 +55,6 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    namespace = "com.example.timemanagementapp"
 }
 
 dependencies {

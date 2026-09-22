@@ -1,13 +1,13 @@
-package com.example.timemanagementapp
+package com.timelyproductivity.app
 
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.example.timemanagementapp.data.goal.Goal
-import com.example.timemanagementapp.data.goal.GoalDao
-import com.example.timemanagementapp.data.goal.GoalsDatabase
-import com.example.timemanagementapp.util.GOALDAOTEST_TOTAL_MINUTES
+import com.timelyproductivity.app.data.goal.Goal
+import com.timelyproductivity.app.data.goal.GoalDao
+import com.timelyproductivity.app.data.goal.GoalsDatabase
+import com.timelyproductivity.app.util.GOALDAOTEST_TOTAL_MINUTES
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After

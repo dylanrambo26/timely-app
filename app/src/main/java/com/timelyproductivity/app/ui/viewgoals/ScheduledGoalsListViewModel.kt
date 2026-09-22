@@ -1,0 +1,165 @@
+package com.timelyproductivity.app.ui.viewgoals
+
+import androidx.lifecycle.SavedStateHandle
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.timelyproductivity.app.data.calendar.CalendarEventsRepository
+import com.timelyproductivity.app.data.goal.GoalStatus
+import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
+import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalsRepository
+import com.timelyproductivity.app.util.MINUTES_IN_24_HOUR_DAY
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import java.time.LocalDate
+
+class ScheduledGoalsListViewModel(
+    savedStateHandle: SavedStateHandle,
+    private val scheduledGoalsRepository: ScheduledGoalsRepository,
+    private val calendarEventsRepository: CalendarEventsRepository,
+): ViewModel() {
+
+    companion object {
+        private const val TIMEOUT_MILLIS = 5_000L
+    }
+
+    private val eventIdFromRoute: Int? = savedStateHandle[ViewGoalsDestination.eventIdArg]
+    var calendarEventId: Int = 0
+        private set
+    private val _calendarEventId = MutableStateFlow<Int?>(null)
+    private val _date = MutableStateFlow<LocalDate?>(null)
+    private val _showDurationError = MutableStateFlow(false)
+    val showDurationError = _showDurationError.asStateFlow()
+
+    init{
+        viewModelScope.launch {
+            calendarEventId = eventIdFromRoute ?: calendarEventsRepository.getOrCreateEventIdForDate(LocalDate.now())
+
+            _calendarEventId.value = calendarEventId
+            _date.value = calendarEventsRepository.getEventById(calendarEventId)?.date
+        }
+    }
+
+    val scheduledGoalsListUiState =
+        _calendarEventId
+            .filterNotNull()
+            .flatMapLatest { eventId ->
+                combine(
+                    scheduledGoalsRepository.getScheduledGoals(eventId),
+                    _date.filterNotNull()
+                ){scheduledGoals, date ->
+                    val totalMinutes = scheduledGoals.sumOf {
+                        val hours = it.scheduledHours
+                        val minutes = it.scheduledMinutes
+
+                        hours * 60 + minutes
+                    }
+
+                    ScheduledGoalsListUiState(
+                        scheduledGoalsList = scheduledGoals,
+                        calendarEventId = eventId,
+                        date = date,
+                        totalMinutes = totalMinutes,
+                        remainingMinutesInDay = MINUTES_IN_24_HOUR_DAY - totalMinutes
+                    )
+
+                }
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+                initialValue = ScheduledGoalsListUiState()
+            )
+
+    fun deleteScheduledGoal(scheduledGoal: ScheduledGoal){
+        viewModelScope.launch {
+            if(scheduledGoal.recurrenceRuleId != null){
+                scheduledGoalsRepository.insertRecurrenceException(scheduledGoal.recurrenceRuleId, scheduledGoalsListUiState.value.date)
+            }
+            scheduledGoalsRepository.deleteScheduledGoal(scheduledGoal = scheduledGoal)
+        }
+    }
+
+    suspend fun addScheduledGoalFromExistingGoal(
+        goalId: Int,
+        onNavigate: (Int) -> Unit = {}
+    ){
+        val success = scheduledGoalsRepository.validInsertScheduledGoal(
+            goalId = goalId,
+            eventId = calendarEventId
+        )
+
+        _showDurationError.value = !success
+
+        if(success){
+            onNavigate(calendarEventId)
+        }
+    }
+
+    fun isPastDate(): Boolean{
+        return _date.value?.isBefore(LocalDate.now()) ?: false
+    }
+
+    fun viewPreviousDay(onNavigate: (Int) -> Unit){
+        viewModelScope.launch {
+            val currentDate = scheduledGoalsListUiState.value.date ?: return@launch
+
+            val previousDate = currentDate.minusDays(1)
+
+            val previousEventId = calendarEventsRepository.getOrCreateEventIdForDate(previousDate)
+
+            onNavigate(previousEventId)
+        }
+    }
+
+    fun viewNextDay(onNavigate: (Int) -> Unit){
+        viewModelScope.launch {
+            val currentDate = scheduledGoalsListUiState.value.date ?: return@launch
+
+            val nextDate = currentDate.plusDays(1)
+
+            val previousEventId = calendarEventsRepository.getOrCreateEventIdForDate(nextDate)
+
+            onNavigate(previousEventId)
+        }
+    }
+
+    fun setComplete(scheduledGoal: ScheduledGoal, isCompleted: Boolean){
+        viewModelScope.launch {
+            val scheduledDurationMillis = (scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60000L
+
+            val completedDuration = scheduledGoal.completedMillis >= scheduledDurationMillis
+
+            //Naturally finished task that cannot be reactivated with checkbox
+            if (!isCompleted && completedDuration){
+                return@launch
+            }
+
+            val newStatus = if (isCompleted) {
+                GoalStatus.COMPLETED
+            } else {
+                if (scheduledGoal.completedMillis > 0L) {
+                    GoalStatus.PAUSED
+                } else {
+                    GoalStatus.NOT_STARTED
+                }
+            }
+
+            scheduledGoalsRepository.updateScheduledGoal(scheduledGoal.copy(status = newStatus))
+        }
+    }
+}
+
+data class ScheduledGoalsListUiState(
+    val scheduledGoalsList: List<ScheduledGoal> = emptyList(),
+    val calendarEventId: Int? = null,
+    val date: LocalDate = LocalDate.now(),
+    val totalMinutes: Int = 0,
+    val remainingMinutesInDay: Int = MINUTES_IN_24_HOUR_DAY - totalMinutes,
+    val remainingTimeError: Boolean = false
+)
