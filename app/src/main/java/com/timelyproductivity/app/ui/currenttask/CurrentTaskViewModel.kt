@@ -33,6 +33,8 @@ class CurrentTaskViewModel(
     private var scheduledCountdownReminders: List<Int> = emptyList()
 
     private val _taskStartState = MutableStateFlow(TaskStartState.IDLE)
+    private val _selectedCountdownReminders = MutableStateFlow<List<Int>?>(null)
+    private val _selectedGoalId = MutableStateFlow<Int?>(null)
 
     private val currentTask: Flow<ScheduledGoal?> =
         userPreferencesRepository.currentTaskID
@@ -47,11 +49,16 @@ class CurrentTaskViewModel(
     val currentTaskUiState: StateFlow<CurrentTaskUiState> =
         combine(
             currentTask,
-            _taskStartState
-        ){currentTask, taskStartState ->
+            _taskStartState,
+            userPreferencesRepository.countdownRemindersMinutes,
+            _selectedCountdownReminders,
+            _selectedGoalId
+        ){currentTask, taskStartState, countdownReminders, override, selectedGoalId->
             CurrentTaskUiState(
                 currentTask = currentTask,
-                taskStartState = taskStartState
+                taskStartState = taskStartState,
+                selectedGoalId = selectedGoalId,
+                countdownReminders = override ?: countdownReminders.toList()
             )
         }.stateIn(
             scope = viewModelScope,
@@ -94,9 +101,9 @@ class CurrentTaskViewModel(
 
             alarmManagerGoalsRepository.scheduleCompletionAlarm(updatedScheduledGoal)
 
-            scheduledCountdownReminders = userPreferencesRepository.countdownRemindersMinutes.first().toList()
+            scheduledCountdownReminders = currentTaskUiState.value.countdownReminders
 
-            if(userPreferencesRepository.countdownRemindersMinutes.first().isNotEmpty()){
+            if(scheduledCountdownReminders.isNotEmpty()){
                 alarmManagerGoalsRepository.scheduleCountdownReminders(
                     scheduledGoal = scheduledGoal,
                     reminderMinutes = scheduledCountdownReminders
@@ -169,11 +176,21 @@ class CurrentTaskViewModel(
     fun needsExactAlarmPermission(): Boolean{
         return !alarmManagerGoalsRepository.canScheduleExactAlarms()
     }
+
+    fun selectGoal(scheduledGoalId: Int){
+        if(_selectedGoalId.value != scheduledGoalId){
+            _selectedGoalId.value = null
+        }
+
+        _selectedGoalId.value = scheduledGoalId
+    }
 }
 
 data class CurrentTaskUiState(
     val currentTask: ScheduledGoal? = null,
-    val taskStartState: TaskStartState = TaskStartState.IDLE
+    val selectedGoalId: Int? = null,
+    val taskStartState: TaskStartState = TaskStartState.IDLE,
+    val countdownReminders: List<Int> = emptyList()
 )
 
 enum class TaskStartState{

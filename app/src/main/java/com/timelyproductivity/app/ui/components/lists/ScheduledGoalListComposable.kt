@@ -1,5 +1,6 @@
 package com.timelyproductivity.app.ui.components.lists
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -15,11 +16,13 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +40,7 @@ import com.timelyproductivity.app.data.testScheduledGoalsSizeThree
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 import com.timelyproductivity.app.ui.theme.checkbox
 import com.timelyproductivity.app.ui.theme.completedGoal
+import com.timelyproductivity.app.util.incompleteGoals
 
 @Composable
 fun ScheduledGoalList(
@@ -49,6 +53,9 @@ fun ScheduledGoalList(
     addColors: Boolean = false,
     addCheckboxes: Boolean = false,
     onCompleteChange: ((ScheduledGoal, Boolean) -> Unit)? = null,
+    showCountdownReminders: Boolean = false,
+    countdownReminders: List<Int> = emptyList(),
+    onCustomizeReminders: (() -> Unit)? = null
 ) {
     val listState = rememberLazyListState()
     val previousSize = rememberPreviousLazyColumn(goals.size)
@@ -88,7 +95,10 @@ fun ScheduledGoalList(
                     onGoalClick = onGoalClick,
                     addColors = addColors,
                     addCheckboxes = addCheckboxes && scheduledGoal.status != GoalStatus.RUNNING,
-                    onCompleteChange = onCompleteChange
+                    onCompleteChange = onCompleteChange,
+                    showCountdownReminders = showCountdownReminders,
+                    countdownReminders = countdownReminders,
+                    onCustomizeReminders = onCustomizeReminders
                 )
             }
         }
@@ -104,7 +114,10 @@ fun GoalCard(
     onDeleteGoal: ((ScheduledGoal) -> Unit)? = null,
     onEditGoal: ((ScheduledGoal) -> Unit)? = null,
     onGoalClick: ((ScheduledGoal) -> Unit)? = null,
-    onCompleteChange: ((ScheduledGoal, Boolean) -> Unit)? = null
+    onCompleteChange: ((ScheduledGoal, Boolean) -> Unit)? = null,
+    showCountdownReminders: Boolean = false,
+    countdownReminders: List<Int> = emptyList(),
+    onCustomizeReminders: (() -> Unit)? = null
 ){
     val goalStatus = scheduledGoal.status
     val scheduledDurationMillis = (scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60000L
@@ -116,7 +129,9 @@ fun GoalCard(
             .padding(8.dp)
             .then(
                 if(onGoalClick != null){
-                    Modifier.clickable { onGoalClick(scheduledGoal)}
+                    Modifier.clickable {
+                        onGoalClick(scheduledGoal)
+                    }
                 } else {
                     Modifier
                 }
@@ -130,60 +145,93 @@ fun GoalCard(
             MaterialTheme.colorScheme.secondaryContainer
         }
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            //horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            Column(
+                .padding(16.dp)
+        ){
+            Row(
                 modifier = Modifier
-                    .weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ){
-                Text(
-                    text = scheduledGoal.scheduledGoalTitle,
-                    style = MaterialTheme.typography.titleMedium
-                )
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                //horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column(
+                    modifier = Modifier
+                        .weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ){
+                    Text(
+                        text = scheduledGoal.scheduledGoalTitle,
+                        style = MaterialTheme.typography.titleMedium
+                    )
 
-                Text(
-                    text = "Goal: ${scheduledGoal.scheduledHours}h ${scheduledGoal.scheduledMinutes}m",
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                    Text(
+                        text = "Goal: ${scheduledGoal.scheduledHours}h ${scheduledGoal.scheduledMinutes}m",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
 
-                GoalStatusText(scheduledGoal = scheduledGoal)
+                    GoalStatusText(scheduledGoal = scheduledGoal)
 
-            }
-            if (onDeleteGoal != null || onEditGoal != null){
-                Row {
-                    if (onDeleteGoal != null) {
-                        IconButton(onClick = {onDeleteGoal(scheduledGoal)})
-                        {
-                            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+                }
+                if (onDeleteGoal != null || onEditGoal != null){
+                    Row {
+                        if (onDeleteGoal != null) {
+                            IconButton(onClick = {onDeleteGoal(scheduledGoal)})
+                            {
+                                Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+                            }
                         }
-                    }
-                    if (onEditGoal != null){
-                        IconButton(onClick = {onEditGoal(scheduledGoal) })
-                        {
-                            Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
+                        if (onEditGoal != null){
+                            IconButton(onClick = {onEditGoal(scheduledGoal) })
+                            {
+                                Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
+                            }
                         }
                     }
                 }
-            }
 
-            if (addCheckboxes){
+                if (addCheckboxes){
 
-                Checkbox(
-                    checked = goalStatus == GoalStatus.COMPLETED,
-                    enabled = !completedDuration,
-                    onCheckedChange = {isChecked ->
-                        onCompleteChange?.invoke(scheduledGoal, isChecked)
-                    },
-                    colors = CheckboxDefaults.colors(
-                        checkedColor = MaterialTheme.colorScheme.checkbox
+                    Checkbox(
+                        checked = goalStatus == GoalStatus.COMPLETED,
+                        enabled = !completedDuration,
+                        onCheckedChange = {isChecked ->
+                            onCompleteChange?.invoke(scheduledGoal, isChecked)
+                        },
+                        colors = CheckboxDefaults.colors(
+                            checkedColor = MaterialTheme.colorScheme.checkbox
+                        )
                     )
-                )
+                }
+            }
+            AnimatedVisibility(
+                visible = isSelected && showCountdownReminders
+            ) {
+                Column {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top= 8.dp)
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ){
+                        Text(
+                            text = "Reminders: ${
+                                countdownReminders.joinToString(", ") { "$it min" }
+                            }",
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.weight(1f)
+                        )
+
+                        TextButton(
+                            onClick = { onCustomizeReminders?.invoke() }
+                        ) {
+                            Text("Customize")
+                        }
+                    }
+                }
             }
         }
     }
@@ -245,7 +293,7 @@ fun rememberPreviousLazyColumn(value: Int): Int? {
 @Composable
 fun ScheduledGoalListPreview(){
     TimeManagementAppTheme {
-        val previewGoals = testScheduledGoalsSizeThree.toMutableList().apply {
+        val previewGoalsWithProgress = testScheduledGoalsSizeThree.toMutableList().apply {
             this[0] = this[0].copy(
                 scheduledHours = 0,
                 scheduledMinutes = 1,
@@ -253,10 +301,16 @@ fun ScheduledGoalListPreview(){
                 status = GoalStatus.COMPLETED
             )
         }
+
+        val currentTaskGoals = testScheduledGoalsSizeThree.incompleteGoals()
+
         ScheduledGoalList(
-            goals = previewGoals,
-            addColors = true,
-            addCheckboxes = true,
+            goals = currentTaskGoals,
+            addColors = false,
+            addCheckboxes = false,
+            selectedGoalId = 0,
+            showCountdownReminders = true,
+            countdownReminders = listOf(1,5,10)
             /*onDeleteGoal = {},
             onEditGoal = {}*/
             )

@@ -59,7 +59,6 @@ object CurrentTaskDestination : NavigationDest{
 
 @Composable
 fun CurrentTaskScreen(
-    //goalListViewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     scheduledGoalsListViewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     currentTaskViewModel: CurrentTaskViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToHome: () -> Unit,
@@ -106,14 +105,14 @@ fun CurrentTaskScreen(
         }
     ) { innerPadding ->
         CurrentTaskBody(
-            //goalListUiState = goalListUiState,
             scheduledGoalsListUiState = scheduledGoalsListUiState,
-            //currentTaskUiState = currentTaskUiState,
             onSaveCurrentTaskPressed = {scheduledGoal ->
                 currentTaskViewModel.startTaskTimer(scheduledGoal)
             },
             needsExactAlarmPermission = currentTaskViewModel::needsExactAlarmPermission,
             navigateBack = navigateBack,
+            onGoalSelected = currentTaskViewModel::selectGoal,
+            currentTaskUiState = currentTaskUiState,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -121,6 +120,8 @@ fun CurrentTaskScreen(
 
 @Composable
 fun CurrentTaskBody(
+    currentTaskUiState: CurrentTaskUiState,
+    onGoalSelected: (Int) -> Unit,
     scheduledGoalsListUiState: ScheduledGoalsListUiState,
     onSaveCurrentTaskPressed: (ScheduledGoal) -> Unit,
     needsExactAlarmPermission: () -> Boolean,
@@ -183,21 +184,21 @@ fun CurrentTaskBody(
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        var selectedGoalId by rememberSaveable { mutableStateOf<Int?>(null) }
-
         val selectedGoal = scheduledGoalsListUiState.scheduledGoalsList
             .firstOrNull{
-                it.scheduledGoalId == selectedGoalId
+                it.scheduledGoalId == currentTaskUiState.selectedGoalId
             }
         val filteredGoals = scheduledGoalsListUiState.scheduledGoalsList.incompleteGoals()
 
         //Display a goal list filtered for goals that are paused and not started only
         ScheduledGoalList(
             goals = filteredGoals,
-            selectedGoalId = selectedGoalId,
+            selectedGoalId = currentTaskUiState.selectedGoalId,
             onGoalClick = {scheduledGoal ->
-                selectedGoalId = scheduledGoal.scheduledGoalId
+                onGoalSelected(scheduledGoal.scheduledGoalId)
             },
+            showCountdownReminders = true,
+            countdownReminders = currentTaskUiState.countdownReminders,
             modifier = Modifier
                 .weight(1f)
                 .padding(dimensionResource(R.dimen.padding_medium))
@@ -243,10 +244,6 @@ fun CurrentTaskBody(
                         if(needsNotificationPermission || requiresExactAlarmPermission){
                             goalWaitingForPermissions = goal
                             showPermissionsDialog = true
-
-                            /*notificationPermissionLauncher.launch(
-                                Manifest.permission.POST_NOTIFICATIONS
-                            )*/
                         } else {
                             onSaveCurrentTaskPressed(goal)
                         }
@@ -281,7 +278,9 @@ fun CurrentTaskBodyPreview(){
                 .fillMaxSize()
                 .padding(dimensionResource(R.dimen.padding_medium)),
             needsExactAlarmPermission = {false},
-            navigateBack = {}
+            navigateBack = {},
+            onGoalSelected = {},
+            currentTaskUiState = CurrentTaskUiState()
         )
     }
 }
