@@ -47,7 +47,8 @@ class ReminderEditorState {
     }
 
     fun validateReminderInput(
-        existingReminders: Set<Int>
+        existingReminders: Set<Int>,
+        goalMinutes: Int? = null
     ): Int?{
         val editorState = uiState.value
         val minutes = editorState.input.toIntOrNull()
@@ -57,6 +58,10 @@ class ReminderEditorState {
                 "Enter a valid number."
             minutes <= 0 ->
                 "Reminder time must be greater than zero."
+
+            goalMinutes != null && minutes >= goalMinutes ->
+                "Reminder must be less than task duration."
+
             minutes != editorState.originalMinutes &&
                     minutes in existingReminders ->
                 "Reminder with that value already exists."

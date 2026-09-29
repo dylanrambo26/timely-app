@@ -39,7 +39,7 @@ class CurrentTaskViewModel(
 
     private val _taskStartState = MutableStateFlow(TaskStartState.IDLE)
     private val _selectedCountdownReminders = MutableStateFlow<Set<Int>?>(null)
-    private val _selectedGoalId = MutableStateFlow<Int?>(null)
+    private val _selectedGoal = MutableStateFlow<ScheduledGoal?>(null)
 
     val reminderEditor = ReminderEditorState()
     val reminderEditorUiState = reminderEditor.uiState
@@ -74,10 +74,10 @@ class CurrentTaskViewModel(
 
     private val selectionState =
         combine(
-            _selectedGoalId,
+            _selectedGoal,
             _isCustomizingReminders
-        ){ selectedGoalId, isCustomizing ->
-            selectedGoalId to isCustomizing
+        ){ selectedGoal, isCustomizing ->
+            selectedGoal to isCustomizing
         }
 
     val currentTaskUiState: StateFlow<CurrentTaskUiState> =
@@ -94,7 +94,7 @@ class CurrentTaskViewModel(
             selectionState
         ){ uiState, selection ->
             uiState.copy(
-                selectedGoalId = selection.first,
+                selectedGoal = selection.first,
                 isCustomizingReminders = selection.second
             )
         }.stateIn(
@@ -214,12 +214,8 @@ class CurrentTaskViewModel(
         return !alarmManagerGoalsRepository.canScheduleExactAlarms()
     }
 
-    fun selectGoal(scheduledGoalId: Int){
-        if(_selectedGoalId.value != scheduledGoalId){
-            _selectedGoalId.value = null
-        }
-
-        _selectedGoalId.value = scheduledGoalId
+    fun selectGoal(scheduledGoal: ScheduledGoal){
+        _selectedGoal.value = scheduledGoal
     }
 
     override fun openAddReminderDialog() {
@@ -239,8 +235,13 @@ class CurrentTaskViewModel(
     }
 
     override fun saveReminder() {
+        val selectedGoalMinutes = _selectedGoal.value?.let { goal ->
+            goal.scheduledHours * 60 + goal.scheduledMinutes
+        }
+
         val minutes = reminderEditor.validateReminderInput(
-            currentTaskUiState.value.countdownReminders
+            currentTaskUiState.value.countdownReminders,
+            goalMinutes = selectedGoalMinutes
         ) ?: return
 
         val editorState = reminderEditor.uiState.value
@@ -277,7 +278,7 @@ class CurrentTaskViewModel(
 
 data class CurrentTaskUiState(
     val currentTask: ScheduledGoal? = null,
-    val selectedGoalId: Int? = null,
+    val selectedGoal: ScheduledGoal? = null,
     val taskStartState: TaskStartState = TaskStartState.IDLE,
     val countdownReminders: Set<Int> = emptySet(),
     val isCustomizingReminders: Boolean = false

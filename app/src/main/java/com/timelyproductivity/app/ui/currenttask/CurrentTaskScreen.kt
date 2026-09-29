@@ -135,7 +135,7 @@ fun CurrentTaskScreen(
 @Composable
 fun CurrentTaskBody(
     currentTaskUiState: CurrentTaskUiState,
-    onGoalSelected: (Int) -> Unit,
+    onGoalSelected: (ScheduledGoal) -> Unit,
     scheduledGoalsListUiState: ScheduledGoalsListUiState,
     onSaveCurrentTaskPressed: (ScheduledGoal) -> Unit,
     needsExactAlarmPermission: () -> Boolean,
@@ -219,16 +219,16 @@ fun CurrentTaskBody(
     ) {
         val selectedGoal = scheduledGoalsListUiState.scheduledGoalsList
             .firstOrNull{
-                it.scheduledGoalId == currentTaskUiState.selectedGoalId
+                it.scheduledGoalId == currentTaskUiState.selectedGoal?.scheduledGoalId
             }
         val filteredGoals = scheduledGoalsListUiState.scheduledGoalsList.incompleteGoals()
 
         //Display a goal list filtered for goals that are paused and not started only
         ScheduledGoalList(
             goals = filteredGoals,
-            selectedGoalId = currentTaskUiState.selectedGoalId,
+            selectedGoalId = currentTaskUiState.selectedGoal?.scheduledGoalId,
             onGoalClick = {scheduledGoal ->
-                onGoalSelected(scheduledGoal.scheduledGoalId)
+                onGoalSelected(scheduledGoal)
             },
             showCountdownReminders = true,
             countdownReminders = currentTaskUiState.countdownReminders,
