@@ -46,6 +46,8 @@ import com.timelyproductivity.app.data.testScheduledGoalsSizeThree
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.components.PermissionsDialog
 import com.timelyproductivity.app.ui.components.lists.ScheduledGoalList
+import com.timelyproductivity.app.ui.components.settings.ReminderEditorDialog
+import com.timelyproductivity.app.ui.components.settings.ReminderEditorUiState
 import com.timelyproductivity.app.ui.navigation.NavigationDest
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 import com.timelyproductivity.app.ui.viewgoals.ScheduledGoalsListUiState
@@ -68,6 +70,7 @@ fun CurrentTaskScreen(
 ){
     val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
     val currentTaskUiState by currentTaskViewModel.currentTaskUiState.collectAsState()
+    val reminderEditorUiState by currentTaskViewModel.reminderEditorUiState.collectAsState()
 
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -113,6 +116,17 @@ fun CurrentTaskScreen(
             navigateBack = navigateBack,
             onGoalSelected = currentTaskViewModel::selectGoal,
             currentTaskUiState = currentTaskUiState,
+
+            reminderEditorUiState = reminderEditorUiState,
+            onCustomizeReminders = currentTaskViewModel::customizeReminder,
+            onAddReminder = currentTaskViewModel::openAddReminderDialog,
+            onEditReminder = currentTaskViewModel::openEditReminderDialog,
+            onDeleteReminder = currentTaskViewModel::deleteReminder,
+
+            onReminderInputChanged = currentTaskViewModel::updateReminderInput,
+            onSaveReminder = currentTaskViewModel::saveReminder,
+            onDismissReminderDialog = currentTaskViewModel::closeReminderDialog,
+
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -126,6 +140,16 @@ fun CurrentTaskBody(
     onSaveCurrentTaskPressed: (ScheduledGoal) -> Unit,
     needsExactAlarmPermission: () -> Boolean,
     navigateBack: () -> Unit,
+
+    reminderEditorUiState: ReminderEditorUiState,
+    onCustomizeReminders: () -> Unit,
+    onAddReminder: () -> Unit,
+    onEditReminder: (Int) -> Unit,
+    onDeleteReminder: (Int) -> Unit,
+
+    onReminderInputChanged: (String) -> Unit,
+    onSaveReminder: () -> Unit,
+    onDismissReminderDialog: () -> Unit,
     modifier: Modifier = Modifier
 ){
     var goalWaitingForPermissions by remember {
@@ -179,6 +203,15 @@ fun CurrentTaskBody(
         )
     }
 
+    if(reminderEditorUiState.isVisible){
+        ReminderEditorDialog(
+            editorUiState = reminderEditorUiState,
+            onInputChanged = onReminderInputChanged,
+            onSave = onSaveReminder,
+            onDismiss = onDismissReminderDialog
+        )
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize(),
@@ -199,9 +232,14 @@ fun CurrentTaskBody(
             },
             showCountdownReminders = true,
             countdownReminders = currentTaskUiState.countdownReminders,
+            isCustomizingReminders = currentTaskUiState.isCustomizingReminders,
+            onCustomizeReminders = onCustomizeReminders,
+            onAddReminder = onAddReminder,
+            onEditReminder = onEditReminder,
+            onDeleteReminder = onDeleteReminder,
             modifier = Modifier
                 .weight(1f)
-                .padding(dimensionResource(R.dimen.padding_medium))
+                .padding(dimensionResource(R.dimen.padding_medium)),
         )
         HorizontalDivider(
             modifier = Modifier
@@ -280,7 +318,15 @@ fun CurrentTaskBodyPreview(){
             needsExactAlarmPermission = {false},
             navigateBack = {},
             onGoalSelected = {},
-            currentTaskUiState = CurrentTaskUiState()
+            currentTaskUiState = CurrentTaskUiState(),
+            onCustomizeReminders = {},
+            onDeleteReminder = {},
+            onAddReminder = {},
+            onEditReminder = {},
+            onDismissReminderDialog = {},
+            onSaveReminder = {},
+            onReminderInputChanged = {},
+            reminderEditorUiState = ReminderEditorUiState()
         )
     }
 }

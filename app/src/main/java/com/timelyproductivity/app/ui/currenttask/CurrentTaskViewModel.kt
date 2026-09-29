@@ -8,33 +8,43 @@ import com.timelyproductivity.app.data.alarm.AlarmManagerGoalsRepository
 import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalsRepository
+import com.timelyproductivity.app.ui.components.settings.ReminderEditorUiState
+import com.timelyproductivity.app.ui.reminders.ReminderEditorActions
+import com.timelyproductivity.app.ui.reminders.ReminderEditorState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.selects.select
 
 class CurrentTaskViewModel(
     private val userPreferencesRepository: UserPreferencesRepository,
     //private val goalsRepository: GoalsRepository,
     private val scheduledGoalsRepository: ScheduledGoalsRepository,
     private val alarmManagerGoalsRepository: AlarmManagerGoalsRepository
-): ViewModel(){
+): ViewModel(), ReminderEditorActions{
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
     }
 
     private var pendingTask: ScheduledGoal? = null
-    private var scheduledCountdownReminders: List<Int> = emptyList()
+    private var scheduledCountdownReminders: Set<Int> = emptySet()
 
     private val _taskStartState = MutableStateFlow(TaskStartState.IDLE)
-    private val _selectedCountdownReminders = MutableStateFlow<List<Int>?>(null)
+    private val _selectedCountdownReminders = MutableStateFlow<Set<Int>?>(null)
     private val _selectedGoalId = MutableStateFlow<Int?>(null)
+
+    val reminderEditor = ReminderEditorState()
+    val reminderEditorUiState = reminderEditor.uiState
+
+    private val _isCustomizingReminders = MutableStateFlow(false)
 
     private val currentTask: Flow<ScheduledGoal?> =
         userPreferencesRepository.currentTaskID
@@ -46,19 +56,46 @@ class CurrentTaskViewModel(
                 }
             }
 
-    val currentTaskUiState: StateFlow<CurrentTaskUiState> =
+    private val taskState =
         combine(
             currentTask,
-            _taskStartState,
+            _taskStartState
+        ){currentTask, taskStartState ->
+            currentTask to taskStartState
+        }
+
+    private val reminderState =
+        combine(
             userPreferencesRepository.countdownRemindersMinutes,
-            _selectedCountdownReminders,
-            _selectedGoalId
-        ){currentTask, taskStartState, countdownReminders, override, selectedGoalId->
+            _selectedCountdownReminders
+        ){defaults, override ->
+            defaults to override
+        }
+
+    private val selectionState =
+        combine(
+            _selectedGoalId,
+            _isCustomizingReminders
+        ){ selectedGoalId, isCustomizing ->
+            selectedGoalId to isCustomizing
+        }
+
+    val currentTaskUiState: StateFlow<CurrentTaskUiState> =
+        combine(
+            taskState,
+            reminderState
+        ){task, reminders->
             CurrentTaskUiState(
-                currentTask = currentTask,
-                taskStartState = taskStartState,
-                selectedGoalId = selectedGoalId,
-                countdownReminders = override ?: countdownReminders.toList()
+                currentTask = task.first,
+                taskStartState = task.second,
+                countdownReminders = reminders.second ?: reminders.first
+            )
+        }.combine(
+            selectionState
+        ){ uiState, selection ->
+            uiState.copy(
+                selectedGoalId = selection.first,
+                isCustomizingReminders = selection.second
             )
         }.stateIn(
             scope = viewModelScope,
@@ -105,7 +142,7 @@ class CurrentTaskViewModel(
 
             if(scheduledCountdownReminders.isNotEmpty()){
                 alarmManagerGoalsRepository.scheduleCountdownReminders(
-                    scheduledGoal = scheduledGoal,
+                    scheduledGoal = updatedScheduledGoal,
                     reminderMinutes = scheduledCountdownReminders
                 )
             }
@@ -142,7 +179,7 @@ class CurrentTaskViewModel(
             )
         }
 
-        scheduledCountdownReminders = emptyList()
+        scheduledCountdownReminders = emptySet()
 
         val isRunning = currentTask.status == GoalStatus.RUNNING && currentTask.startTimeMillis > 0L
 
@@ -184,13 +221,66 @@ class CurrentTaskViewModel(
 
         _selectedGoalId.value = scheduledGoalId
     }
+
+    override fun openAddReminderDialog() {
+        reminderEditor.openAddReminderDialog()
+    }
+
+    override fun openEditReminderDialog(minutes: Int) {
+        reminderEditor.openEditReminderDialog(minutes)
+    }
+
+    override fun closeReminderDialog() {
+        reminderEditor.closeReminderDialog()
+    }
+
+    override fun updateReminderInput(input: String) {
+        reminderEditor.updateReminderInput(input)
+    }
+
+    override fun saveReminder() {
+        val minutes = reminderEditor.validateReminderInput(
+            currentTaskUiState.value.countdownReminders
+        ) ?: return
+
+        val editorState = reminderEditor.uiState.value
+
+        val updatedMinutes = currentTaskUiState.value.countdownReminders
+            .toMutableSet()
+            .apply {
+                editorState.originalMinutes?.let{originalMinutes ->
+                    remove(originalMinutes)
+                }
+
+                add(minutes)
+            }
+
+        _selectedCountdownReminders.value = updatedMinutes
+        closeReminderDialog()
+    }
+
+    override fun deleteReminder(minutes: Int) {
+        val updatedMinutes =
+            currentTaskUiState.value.countdownReminders - minutes
+
+        _selectedCountdownReminders.value = updatedMinutes
+    }
+
+    fun customizeReminder(){
+        _isCustomizingReminders.value = true
+    }
+
+    fun finishCustomizingReminders(){
+        _isCustomizingReminders.value = false
+    }
 }
 
 data class CurrentTaskUiState(
     val currentTask: ScheduledGoal? = null,
     val selectedGoalId: Int? = null,
     val taskStartState: TaskStartState = TaskStartState.IDLE,
-    val countdownReminders: List<Int> = emptyList()
+    val countdownReminders: Set<Int> = emptySet(),
+    val isCustomizingReminders: Boolean = false
 )
 
 enum class TaskStartState{

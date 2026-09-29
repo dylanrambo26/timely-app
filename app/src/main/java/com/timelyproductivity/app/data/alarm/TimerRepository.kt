@@ -13,11 +13,11 @@ interface TimerRepository {
 
     fun scheduleCountdownReminders(
         scheduledGoal: ScheduledGoal,
-        reminderMinutes: List<Int>
+        reminderMinutes: Set<Int>
     )
 
     fun cancelCountdownReminders(
         scheduledGoalId: Int,
-        reminderMinutes: List<Int>
+        reminderMinutes: Set<Int>
     )
 }

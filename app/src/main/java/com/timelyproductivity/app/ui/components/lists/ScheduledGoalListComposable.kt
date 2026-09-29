@@ -37,9 +37,11 @@ import com.timelyproductivity.app.R
 import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.testScheduledGoalsSizeThree
+import com.timelyproductivity.app.ui.components.settings.ReminderTimes
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 import com.timelyproductivity.app.ui.theme.checkbox
 import com.timelyproductivity.app.ui.theme.completedGoal
+import com.timelyproductivity.app.util.MAX_NUMBER_OF_COUNTDOWN_REMINDERS
 import com.timelyproductivity.app.util.incompleteGoals
 
 @Composable
@@ -54,8 +56,14 @@ fun ScheduledGoalList(
     addCheckboxes: Boolean = false,
     onCompleteChange: ((ScheduledGoal, Boolean) -> Unit)? = null,
     showCountdownReminders: Boolean = false,
-    countdownReminders: List<Int> = emptyList(),
-    onCustomizeReminders: (() -> Unit)? = null
+
+    countdownReminders: Set<Int> = emptySet(),
+    onCustomizeReminders: (() -> Unit)? = null,
+    onAddReminder: (() -> Unit)? = null,
+    onDeleteReminder: ((Int) -> Unit)? = null,
+    onEditReminder: ((Int) -> Unit)? = null,
+    isCustomizingReminders: Boolean = false,
+
 ) {
     val listState = rememberLazyListState()
     val previousSize = rememberPreviousLazyColumn(goals.size)
@@ -98,7 +106,12 @@ fun ScheduledGoalList(
                     onCompleteChange = onCompleteChange,
                     showCountdownReminders = showCountdownReminders,
                     countdownReminders = countdownReminders,
-                    onCustomizeReminders = onCustomizeReminders
+                    onCustomizeReminders = onCustomizeReminders,
+
+                    onAddReminder = onAddReminder,
+                    onDeleteReminder = onDeleteReminder,
+                    onEditReminder = onEditReminder,
+                    isCustomizingReminders = isCustomizingReminders,
                 )
             }
         }
@@ -116,7 +129,13 @@ fun GoalCard(
     onGoalClick: ((ScheduledGoal) -> Unit)? = null,
     onCompleteChange: ((ScheduledGoal, Boolean) -> Unit)? = null,
     showCountdownReminders: Boolean = false,
-    countdownReminders: List<Int> = emptyList(),
+
+    countdownReminders: Set<Int> = emptySet(),
+    onAddReminder: (() -> Unit)? = null,
+    onDeleteReminder: ((Int) -> Unit)? = null,
+    onEditReminder: ((Int) -> Unit)? = null,
+    isCustomizingReminders: Boolean = false,
+
     onCustomizeReminders: (() -> Unit)? = null
 ){
     val goalStatus = scheduledGoal.status
@@ -213,22 +232,36 @@ fun GoalCard(
                         modifier = Modifier.padding(top= 8.dp)
                     )
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
+                    if(isCustomizingReminders &&
+                        onAddReminder != null &&
+                        onEditReminder != null &&
+                        onDeleteReminder != null
                     ){
-                        Text(
-                            text = "Reminders: ${
-                                countdownReminders.joinToString(", ") { "$it min" }
-                            }",
-                            style = MaterialTheme.typography.bodySmall,
-                            modifier = Modifier.weight(1f)
+                        ReminderTimes(
+                            selectedMinutes = countdownReminders,
+                            onEditReminder = onEditReminder,
+                            onAddReminder = onAddReminder,
+                            onDeleteReminder = onDeleteReminder,
+                            maxSizeReached = countdownReminders.size >= MAX_NUMBER_OF_COUNTDOWN_REMINDERS
                         )
+                    } else {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ){
+                            Text(
+                                text = "Reminders: ${
+                                    countdownReminders.joinToString(", ") { "$it min" }
+                                }",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.weight(1f)
+                            )
 
-                        TextButton(
-                            onClick = { onCustomizeReminders?.invoke() }
-                        ) {
-                            Text("Customize")
+                            TextButton(
+                                onClick = { onCustomizeReminders?.invoke() }
+                            ) {
+                                Text("Customize")
+                            }
                         }
                     }
                 }
@@ -310,7 +343,8 @@ fun ScheduledGoalListPreview(){
             addCheckboxes = false,
             selectedGoalId = 0,
             showCountdownReminders = true,
-            countdownReminders = listOf(1,5,10)
+            countdownReminders = setOf(1,5,10),
+
             /*onDeleteGoal = {},
             onEditGoal = {}*/
             )

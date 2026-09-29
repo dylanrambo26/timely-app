@@ -23,7 +23,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.timelyproductivity.app.ui.settings.ReminderEditorUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -152,3 +151,10 @@ fun ReminderTimes(
         }
     }
 }
+
+data class ReminderEditorUiState(
+    val isVisible: Boolean = false,
+    val input: String = "",
+    val originalMinutes: Int? = null,
+    val errorMessage: String? = null
+)
