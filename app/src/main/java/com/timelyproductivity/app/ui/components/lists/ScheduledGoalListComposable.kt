@@ -59,6 +59,7 @@ fun ScheduledGoalList(
 
     countdownReminders: Set<Int> = emptySet(),
     onCustomizeReminders: (() -> Unit)? = null,
+    onFinishCustomizeReminders: (() -> Unit)? = null,
     onAddReminder: (() -> Unit)? = null,
     onDeleteReminder: ((Int) -> Unit)? = null,
     onEditReminder: ((Int) -> Unit)? = null,
@@ -107,6 +108,7 @@ fun ScheduledGoalList(
                     showCountdownReminders = showCountdownReminders,
                     countdownReminders = countdownReminders,
                     onCustomizeReminders = onCustomizeReminders,
+                    onFinishCustomizeReminders = onFinishCustomizeReminders,
 
                     onAddReminder = onAddReminder,
                     onDeleteReminder = onDeleteReminder,
@@ -136,7 +138,8 @@ fun GoalCard(
     onEditReminder: ((Int) -> Unit)? = null,
     isCustomizingReminders: Boolean = false,
 
-    onCustomizeReminders: (() -> Unit)? = null
+    onCustomizeReminders: (() -> Unit)? = null,
+    onFinishCustomizeReminders: (() -> Unit)? = null
 ){
     val goalStatus = scheduledGoal.status
     val scheduledDurationMillis = (scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60000L
@@ -244,6 +247,14 @@ fun GoalCard(
                             onDeleteReminder = onDeleteReminder,
                             maxSizeReached = countdownReminders.size >= MAX_NUMBER_OF_COUNTDOWN_REMINDERS
                         )
+
+                        TextButton(
+                            onClick = {onFinishCustomizeReminders?.invoke()}
+                        ) {
+                            Text(
+                                "Finish"
+                            )
+                        }
                     } else {
                         Row(
                             modifier = Modifier.fillMaxWidth(),

@@ -64,8 +64,8 @@ fun CurrentTaskScreen(
     scheduledGoalsListViewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     currentTaskViewModel: CurrentTaskViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToHome: () -> Unit,
-    navigateToCalendar: () -> Unit, //TODO
-    navigateToAnalytics: () -> Unit, //TODO
+    navigateToCalendar: () -> Unit,
+    navigateToAnalytics: () -> Unit,
     navigateBack: () -> Unit
 ){
     val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
@@ -119,6 +119,7 @@ fun CurrentTaskScreen(
 
             reminderEditorUiState = reminderEditorUiState,
             onCustomizeReminders = currentTaskViewModel::customizeReminder,
+            onFinishCustomizeReminders = currentTaskViewModel::finishCustomizingReminders,
             onAddReminder = currentTaskViewModel::openAddReminderDialog,
             onEditReminder = currentTaskViewModel::openEditReminderDialog,
             onDeleteReminder = currentTaskViewModel::deleteReminder,
@@ -143,6 +144,7 @@ fun CurrentTaskBody(
 
     reminderEditorUiState: ReminderEditorUiState,
     onCustomizeReminders: () -> Unit,
+    onFinishCustomizeReminders: () -> Unit,
     onAddReminder: () -> Unit,
     onEditReminder: (Int) -> Unit,
     onDeleteReminder: (Int) -> Unit,
@@ -234,6 +236,7 @@ fun CurrentTaskBody(
             countdownReminders = currentTaskUiState.countdownReminders,
             isCustomizingReminders = currentTaskUiState.isCustomizingReminders,
             onCustomizeReminders = onCustomizeReminders,
+            onFinishCustomizeReminders = onFinishCustomizeReminders,
             onAddReminder = onAddReminder,
             onEditReminder = onEditReminder,
             onDeleteReminder = onDeleteReminder,
@@ -310,7 +313,6 @@ fun CurrentTaskBodyPreview(){
             scheduledGoalsListUiState = ScheduledGoalsListUiState(
                 scheduledGoalsList = testScheduledGoalsSizeThree
             ),
-            //currentTaskUiState = CurrentTaskUiState(testScheduledGoalsSizeThree[0]),
             onSaveCurrentTaskPressed = {},
             modifier = Modifier
                 .fillMaxSize()
@@ -326,7 +328,8 @@ fun CurrentTaskBodyPreview(){
             onDismissReminderDialog = {},
             onSaveReminder = {},
             onReminderInputChanged = {},
-            reminderEditorUiState = ReminderEditorUiState()
+            reminderEditorUiState = ReminderEditorUiState(),
+            onFinishCustomizeReminders = {}
         )
     }
 }
