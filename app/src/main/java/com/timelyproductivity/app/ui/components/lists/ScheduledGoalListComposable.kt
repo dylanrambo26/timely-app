@@ -250,9 +250,14 @@ fun GoalCard(
                             verticalAlignment = Alignment.CenterVertically
                         ){
                             Text(
-                                text = "Reminders: ${
-                                    countdownReminders.joinToString(", ") { "$it min" }
-                                }",
+                                text =
+                                    "Reminders: ${
+                                        if(countdownReminders.isNotEmpty()){
+                                            countdownReminders.joinToString(", ") { "$it min" }
+                                        } else {
+                                            "None"
+                                        }
+                                    }",
                                 style = MaterialTheme.typography.bodySmall,
                                 modifier = Modifier.weight(1f)
                             )
