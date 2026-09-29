@@ -130,7 +130,12 @@ class TimerReceiver : BroadcastReceiver(){
             setSilent = !notificationSettings.soundEnabled,
             iconResource = R.drawable.outline_hourglass,
             contentTitle = "Task Reminder",
-            contentText = "$reminderMinutes minutes remaining on task: \"$goalTitle\""
+            contentText = if(reminderMinutes > 1){
+                "$reminderMinutes minutes remaining on task: \"$goalTitle\""
+            } else {
+                "$reminderMinutes minute remaining on task: \"$goalTitle\""
+            }
+
         )
     }
 

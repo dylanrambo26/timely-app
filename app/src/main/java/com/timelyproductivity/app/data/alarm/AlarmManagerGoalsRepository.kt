@@ -141,13 +141,15 @@ class AlarmManagerGoalsRepository(
                 return@forEach
             }
 
+            val requestCode = countdownReminderRequestCode(
+                scheduledGoal.scheduledGoalId,
+                minutes
+            )
+
             scheduleExactAlarm(
                 scheduledGoal,
                 triggerTime,
-                requestCode = countdownReminderRequestCode(
-                    scheduledGoal.scheduledGoalId,
-                    minutes
-                ),
+                requestCode = requestCode,
                 reminderMinutes = minutes
             )
         }
@@ -160,12 +162,12 @@ class AlarmManagerGoalsRepository(
         reminderMinutes: Set<Int>
     ){
         reminderMinutes.forEach{minutes->
-            cancelExactAlarm(
-                countdownReminderRequestCode(
-                    scheduledGoalId,
-                    minutes
-                )
+            val requestCode = countdownReminderRequestCode(
+                scheduledGoalId,
+                minutes
             )
+
+            cancelExactAlarm(requestCode)
         }
     }
 

@@ -8,21 +8,18 @@ import com.timelyproductivity.app.data.alarm.AlarmManagerGoalsRepository
 import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalsRepository
-import com.timelyproductivity.app.ui.components.settings.ReminderEditorUiState
 import com.timelyproductivity.app.ui.reminders.ReminderEditorActions
 import com.timelyproductivity.app.ui.reminders.ReminderEditorState
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.selects.select
 
 class CurrentTaskViewModel(
     private val userPreferencesRepository: UserPreferencesRepository,
@@ -35,7 +32,6 @@ class CurrentTaskViewModel(
     }
 
     private var pendingTask: ScheduledGoal? = null
-    private var scheduledCountdownReminders: Set<Int> = emptySet()
 
     private val _taskStartState = MutableStateFlow(TaskStartState.IDLE)
     private val _selectedCountdownReminders = MutableStateFlow<Set<Int>?>(null)
@@ -66,7 +62,7 @@ class CurrentTaskViewModel(
 
     private val reminderState =
         combine(
-            userPreferencesRepository.countdownRemindersMinutes,
+            userPreferencesRepository.defaultCountdownRemindersMinutes,
             _selectedCountdownReminders
         ){defaults, override ->
             defaults to override
@@ -138,12 +134,15 @@ class CurrentTaskViewModel(
 
             alarmManagerGoalsRepository.scheduleCompletionAlarm(updatedScheduledGoal)
 
-            scheduledCountdownReminders = currentTaskUiState.value.countdownReminders
+            val reminders = currentTaskUiState.value.countdownReminders
+            userPreferencesRepository.setCurrentTaskCountdownRemindersMinutes(
+                reminders
+            )
 
-            if(scheduledCountdownReminders.isNotEmpty()){
+            if(reminders.isNotEmpty()){
                 alarmManagerGoalsRepository.scheduleCountdownReminders(
                     scheduledGoal = updatedScheduledGoal,
-                    reminderMinutes = scheduledCountdownReminders
+                    reminderMinutes = reminders
                 )
             }
 
@@ -168,18 +167,20 @@ class CurrentTaskViewModel(
     }
 
     suspend fun stopTaskTimer(goalStatus: GoalStatus){
+        val reminders = userPreferencesRepository.currentTaskCountdownRemindersMinutes.first()
+
         val currentTask = currentTaskUiState.value.currentTask ?: return
 
         alarmManagerGoalsRepository.cancelCompletionAlarm(currentTask.scheduledGoalId)
 
-        if(scheduledCountdownReminders.isNotEmpty()){
+        if(reminders.isNotEmpty()){
             alarmManagerGoalsRepository.cancelCountdownReminders(
                 scheduledGoalId = currentTask.scheduledGoalId,
-                reminderMinutes = scheduledCountdownReminders
+                reminderMinutes = reminders
             )
         }
 
-        scheduledCountdownReminders = emptySet()
+        userPreferencesRepository.setCurrentTaskCountdownRemindersMinutes(emptySet())
 
         val isRunning = currentTask.status == GoalStatus.RUNNING && currentTask.startTimeMillis > 0L
 

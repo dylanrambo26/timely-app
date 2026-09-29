@@ -3,13 +3,10 @@ package com.timelyproductivity.app.ui.settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.timelyproductivity.app.data.UserPreferencesRepository
-import com.timelyproductivity.app.ui.components.settings.ReminderEditorUiState
 import com.timelyproductivity.app.ui.reminders.ReminderEditorActions
 import com.timelyproductivity.app.ui.reminders.ReminderEditorState
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -41,7 +38,7 @@ class SettingsViewModel(
             settingsUiState.value.countdownRemindersMinutes - minutes
 
         viewModelScope.launch {
-            userPreferencesRepository.setCountdownRemindersMinutes(updatedMinutes)
+            userPreferencesRepository.setDefaultCountdownRemindersMinutes(updatedMinutes)
         }
     }
 
@@ -66,7 +63,7 @@ class SettingsViewModel(
             }
 
         viewModelScope.launch {
-            userPreferencesRepository.setCountdownRemindersMinutes(updatedMinutes)
+            userPreferencesRepository.setDefaultCountdownRemindersMinutes(updatedMinutes)
             closeReminderDialog()
         }
     }
@@ -93,7 +90,7 @@ class SettingsViewModel(
         combine(
             userPreferencesRepository.taskCompletionNotificationsEnabled,
             userPreferencesRepository.countdownRemindersEnabled,
-            userPreferencesRepository.countdownRemindersMinutes,
+            userPreferencesRepository.defaultCountdownRemindersMinutes,
             userPreferencesRepository.taskNotificationSoundEnabled
         ){ completionNotificationsEnabled, countdownRemindersEnabled, countdownRemindersMinutes, taskNotificationSoundEnabled->
             SettingsUiState(
