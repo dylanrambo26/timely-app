@@ -24,7 +24,7 @@ import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalDao
         RecurrenceException::class
     ],
     version = 17,
-    exportSchema = false
+    exportSchema = true
 )
 @TypeConverters(Converters::class)
 abstract class GoalsDatabase : RoomDatabase(){
