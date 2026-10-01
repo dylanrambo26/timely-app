@@ -87,13 +87,9 @@ class TimerReceiver : BroadcastReceiver(){
                 )
             )
 
-        val application = context.applicationContext as TimelyApplication
-
-        val completionNotificationsEnabled = application.container.userPreferencesRepository.taskCompletionNotificationsEnabled.first()
-
         val notificationSettings = getNotificationSettings(context)
         if(
-            completionNotificationsEnabled
+            notificationSettings.completionAlarmsEnabled
             && notificationSettings.notificationsAllowed
         ){
             showNotification(
@@ -118,25 +114,22 @@ class TimerReceiver : BroadcastReceiver(){
     ){
         val notificationSettings = getNotificationSettings(context)
 
-        if(!notificationSettings.notificationsAllowed){
-            return
+        if(notificationSettings.notificationsAllowed && notificationSettings.countdownsRemindersEnabled){
+            showNotification(
+                scheduledGoalId = scheduledGoalId,
+                context = context,
+                channelId = notificationSettings.channelId,
+                priority = notificationSettings.priority,
+                setSilent = !notificationSettings.soundEnabled,
+                iconResource = R.drawable.outline_hourglass,
+                contentTitle = "Task Reminder",
+                contentText = if(reminderMinutes > 1){
+                    "$reminderMinutes minutes remaining on task: \"$goalTitle\""
+                } else {
+                    "$reminderMinutes minute remaining on task: \"$goalTitle\""
+                }
+            )
         }
-
-        showNotification(
-            scheduledGoalId = scheduledGoalId,
-            context = context,
-            channelId = notificationSettings.channelId,
-            priority = notificationSettings.priority,
-            setSilent = !notificationSettings.soundEnabled,
-            iconResource = R.drawable.outline_hourglass,
-            contentTitle = "Task Reminder",
-            contentText = if(reminderMinutes > 1){
-                "$reminderMinutes minutes remaining on task: \"$goalTitle\""
-            } else {
-                "$reminderMinutes minute remaining on task: \"$goalTitle\""
-            }
-
-        )
     }
 
     private suspend fun getNotificationSettings(
@@ -155,6 +148,8 @@ class TimerReceiver : BroadcastReceiver(){
         val systemNotificationsEnabled = NotificationManagerCompat.from(context).areNotificationsEnabled()
 
         val soundEnabled = userPreferencesRepository.taskNotificationSoundEnabled.first()
+        val remindersEnabled = userPreferencesRepository.countdownRemindersEnabled.first()
+        val completionAlarmsEnabled = userPreferencesRepository.taskCompletionNotificationsEnabled.first()
 
         val channelId = if(soundEnabled){
             TimelyNotificationChannels.TASK_ALERTS_SOUND
@@ -171,6 +166,8 @@ class TimerReceiver : BroadcastReceiver(){
         return NotificationSettings(
             notificationsAllowed = hasNotificationPermission && systemNotificationsEnabled,
             soundEnabled = soundEnabled,
+            countdownsRemindersEnabled = remindersEnabled,
+            completionAlarmsEnabled = completionAlarmsEnabled,
             channelId = channelId,
             priority = priority
         )
@@ -178,6 +175,8 @@ class TimerReceiver : BroadcastReceiver(){
 
     private data class NotificationSettings(
         val notificationsAllowed: Boolean,
+        val countdownsRemindersEnabled: Boolean,
+        val completionAlarmsEnabled: Boolean,
         val soundEnabled: Boolean,
         val channelId: String,
         val priority: Int

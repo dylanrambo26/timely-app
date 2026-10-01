@@ -232,7 +232,7 @@ fun CurrentTaskBody(
             onGoalClick = {scheduledGoal ->
                 onGoalSelected(scheduledGoal)
             },
-            showCountdownReminders = true,
+            showCountdownReminders = currentTaskUiState.countdownRemindersEnabled,
             countdownReminders = currentTaskUiState.countdownReminders,
             isCustomizingReminders = currentTaskUiState.isCustomizingReminders,
             onCustomizeReminders = onCustomizeReminders,
