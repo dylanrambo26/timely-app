@@ -127,27 +127,29 @@ class AlarmManagerGoalsRepository(
 
     override fun scheduleCountdownReminders(
         scheduledGoal: ScheduledGoal,
-        reminderMinutes: List<Int>
+        reminderMinutes: Set<Int>
     ) {
         val completionTime = calculateCompletionTimeMillis(scheduledGoal)
 
-        reminderMinutes.forEachIndexed {index, minutes ->
+        reminderMinutes.forEach {minutes ->
             val triggerTime = calculateCountdownReminderTimeMillis(
                 completionTime,
                 minutes
             )
 
             if(triggerTime <= System.currentTimeMillis()){
-                return@forEachIndexed
+                return@forEach
             }
+
+            val requestCode = countdownReminderRequestCode(
+                scheduledGoal.scheduledGoalId,
+                minutes
+            )
 
             scheduleExactAlarm(
                 scheduledGoal,
                 triggerTime,
-                requestCode = countdownReminderRequestCode(
-                    scheduledGoal.scheduledGoalId,
-                    minutes
-                ),
+                requestCode = requestCode,
                 reminderMinutes = minutes
             )
         }
@@ -157,15 +159,15 @@ class AlarmManagerGoalsRepository(
 
     override fun cancelCountdownReminders(
         scheduledGoalId: Int,
-        reminderMinutes: List<Int>
+        reminderMinutes: Set<Int>
     ){
         reminderMinutes.forEach{minutes->
-            cancelExactAlarm(
-                countdownReminderRequestCode(
-                    scheduledGoalId,
-                    minutes
-                )
+            val requestCode = countdownReminderRequestCode(
+                scheduledGoalId,
+                minutes
             )
+
+            cancelExactAlarm(requestCode)
         }
     }
 

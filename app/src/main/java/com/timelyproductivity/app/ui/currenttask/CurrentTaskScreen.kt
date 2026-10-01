@@ -46,6 +46,8 @@ import com.timelyproductivity.app.data.testScheduledGoalsSizeThree
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.components.PermissionsDialog
 import com.timelyproductivity.app.ui.components.lists.ScheduledGoalList
+import com.timelyproductivity.app.ui.components.settings.ReminderEditorDialog
+import com.timelyproductivity.app.ui.components.settings.ReminderEditorUiState
 import com.timelyproductivity.app.ui.navigation.NavigationDest
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 import com.timelyproductivity.app.ui.viewgoals.ScheduledGoalsListUiState
@@ -59,16 +61,16 @@ object CurrentTaskDestination : NavigationDest{
 
 @Composable
 fun CurrentTaskScreen(
-    //goalListViewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     scheduledGoalsListViewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     currentTaskViewModel: CurrentTaskViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToHome: () -> Unit,
-    navigateToCalendar: () -> Unit, //TODO
-    navigateToAnalytics: () -> Unit, //TODO
+    navigateToCalendar: () -> Unit,
+    navigateToAnalytics: () -> Unit,
     navigateBack: () -> Unit
 ){
     val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
     val currentTaskUiState by currentTaskViewModel.currentTaskUiState.collectAsState()
+    val reminderEditorUiState by currentTaskViewModel.reminderEditorUiState.collectAsState()
 
     val lifecycleOwner = LocalLifecycleOwner.current
 
@@ -106,14 +108,26 @@ fun CurrentTaskScreen(
         }
     ) { innerPadding ->
         CurrentTaskBody(
-            //goalListUiState = goalListUiState,
             scheduledGoalsListUiState = scheduledGoalsListUiState,
-            //currentTaskUiState = currentTaskUiState,
             onSaveCurrentTaskPressed = {scheduledGoal ->
                 currentTaskViewModel.startTaskTimer(scheduledGoal)
             },
             needsExactAlarmPermission = currentTaskViewModel::needsExactAlarmPermission,
             navigateBack = navigateBack,
+            onGoalSelected = currentTaskViewModel::selectGoal,
+            currentTaskUiState = currentTaskUiState,
+
+            reminderEditorUiState = reminderEditorUiState,
+            onCustomizeReminders = currentTaskViewModel::customizeReminder,
+            onFinishCustomizeReminders = currentTaskViewModel::finishCustomizingReminders,
+            onAddReminder = currentTaskViewModel::openAddReminderDialog,
+            onEditReminder = currentTaskViewModel::openEditReminderDialog,
+            onDeleteReminder = currentTaskViewModel::deleteReminder,
+
+            onReminderInputChanged = currentTaskViewModel::updateReminderInput,
+            onSaveReminder = currentTaskViewModel::saveReminder,
+            onDismissReminderDialog = currentTaskViewModel::closeReminderDialog,
+
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -121,10 +135,23 @@ fun CurrentTaskScreen(
 
 @Composable
 fun CurrentTaskBody(
+    currentTaskUiState: CurrentTaskUiState,
+    onGoalSelected: (ScheduledGoal) -> Unit,
     scheduledGoalsListUiState: ScheduledGoalsListUiState,
     onSaveCurrentTaskPressed: (ScheduledGoal) -> Unit,
     needsExactAlarmPermission: () -> Boolean,
     navigateBack: () -> Unit,
+
+    reminderEditorUiState: ReminderEditorUiState,
+    onCustomizeReminders: () -> Unit,
+    onFinishCustomizeReminders: () -> Unit,
+    onAddReminder: () -> Unit,
+    onEditReminder: (Int) -> Unit,
+    onDeleteReminder: (Int) -> Unit,
+
+    onReminderInputChanged: (String) -> Unit,
+    onSaveReminder: () -> Unit,
+    onDismissReminderDialog: () -> Unit,
     modifier: Modifier = Modifier
 ){
     var goalWaitingForPermissions by remember {
@@ -178,29 +205,44 @@ fun CurrentTaskBody(
         )
     }
 
+    if(reminderEditorUiState.isVisible){
+        ReminderEditorDialog(
+            editorUiState = reminderEditorUiState,
+            onInputChanged = onReminderInputChanged,
+            onSave = onSaveReminder,
+            onDismiss = onDismissReminderDialog
+        )
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        var selectedGoalId by rememberSaveable { mutableStateOf<Int?>(null) }
-
         val selectedGoal = scheduledGoalsListUiState.scheduledGoalsList
             .firstOrNull{
-                it.scheduledGoalId == selectedGoalId
+                it.scheduledGoalId == currentTaskUiState.selectedGoal?.scheduledGoalId
             }
         val filteredGoals = scheduledGoalsListUiState.scheduledGoalsList.incompleteGoals()
 
         //Display a goal list filtered for goals that are paused and not started only
         ScheduledGoalList(
             goals = filteredGoals,
-            selectedGoalId = selectedGoalId,
+            selectedGoalId = currentTaskUiState.selectedGoal?.scheduledGoalId,
             onGoalClick = {scheduledGoal ->
-                selectedGoalId = scheduledGoal.scheduledGoalId
+                onGoalSelected(scheduledGoal)
             },
+            showCountdownReminders = currentTaskUiState.countdownRemindersEnabled,
+            countdownReminders = currentTaskUiState.countdownReminders,
+            isCustomizingReminders = currentTaskUiState.isCustomizingReminders,
+            onCustomizeReminders = onCustomizeReminders,
+            onFinishCustomizeReminders = onFinishCustomizeReminders,
+            onAddReminder = onAddReminder,
+            onEditReminder = onEditReminder,
+            onDeleteReminder = onDeleteReminder,
             modifier = Modifier
                 .weight(1f)
-                .padding(dimensionResource(R.dimen.padding_medium))
+                .padding(dimensionResource(R.dimen.padding_medium)),
         )
         HorizontalDivider(
             modifier = Modifier
@@ -243,10 +285,6 @@ fun CurrentTaskBody(
                         if(needsNotificationPermission || requiresExactAlarmPermission){
                             goalWaitingForPermissions = goal
                             showPermissionsDialog = true
-
-                            /*notificationPermissionLauncher.launch(
-                                Manifest.permission.POST_NOTIFICATIONS
-                            )*/
                         } else {
                             onSaveCurrentTaskPressed(goal)
                         }
@@ -275,13 +313,23 @@ fun CurrentTaskBodyPreview(){
             scheduledGoalsListUiState = ScheduledGoalsListUiState(
                 scheduledGoalsList = testScheduledGoalsSizeThree
             ),
-            //currentTaskUiState = CurrentTaskUiState(testScheduledGoalsSizeThree[0]),
             onSaveCurrentTaskPressed = {},
             modifier = Modifier
                 .fillMaxSize()
                 .padding(dimensionResource(R.dimen.padding_medium)),
             needsExactAlarmPermission = {false},
-            navigateBack = {}
+            navigateBack = {},
+            onGoalSelected = {},
+            currentTaskUiState = CurrentTaskUiState(),
+            onCustomizeReminders = {},
+            onDeleteReminder = {},
+            onAddReminder = {},
+            onEditReminder = {},
+            onDismissReminderDialog = {},
+            onSaveReminder = {},
+            onReminderInputChanged = {},
+            reminderEditorUiState = ReminderEditorUiState(),
+            onFinishCustomizeReminders = {}
         )
     }
 }

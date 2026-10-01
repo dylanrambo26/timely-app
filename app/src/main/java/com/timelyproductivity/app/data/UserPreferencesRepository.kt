@@ -28,8 +28,12 @@ class UserPreferencesRepository(
             "countdown_reminders_enabled"
         )
 
-        val COUNTDOWN_REMINDERS_MINUTES = stringSetPreferencesKey(
-            "countdown_reminders_minutes"
+        val DEFAULT_COUNTDOWN_REMINDERS_MINUTES = stringSetPreferencesKey(
+            "default_countdown_reminders_minutes"
+        )
+
+        val CURRENT_TASK_COUNTDOWN_REMINDERS_MINUTES = stringSetPreferencesKey(
+            "current_task_countdown_reminders_minutes"
         )
 
         val TASK_NOTIFICATION_SOUND_ENABLED = booleanPreferencesKey(
@@ -64,12 +68,20 @@ class UserPreferencesRepository(
             preferences[COUNTDOWN_REMINDERS_ENABLED] ?: false
         }
 
-    val countdownRemindersMinutes: Flow<Set<Int>> =
+    val defaultCountdownRemindersMinutes: Flow<Set<Int>> =
         preferencesFlow.map { preferences ->
-            preferences[COUNTDOWN_REMINDERS_MINUTES]
+            preferences[DEFAULT_COUNTDOWN_REMINDERS_MINUTES]
                 ?.mapNotNull { it.toIntOrNull() }
                 ?.toSet()
                 ?: setOf(10, 5, 1)
+        }
+
+    val currentTaskCountdownRemindersMinutes: Flow<Set<Int>> =
+        preferencesFlow.map { preferences ->
+            preferences[CURRENT_TASK_COUNTDOWN_REMINDERS_MINUTES]
+                ?.mapNotNull { it.toIntOrNull() }
+                ?.toSet()
+                ?: emptySet()
         }
 
     val taskNotificationSoundEnabled: Flow<Boolean> =
@@ -95,11 +107,23 @@ class UserPreferencesRepository(
         }
     }
 
-    suspend fun setCountdownRemindersMinutes(
+    suspend fun setDefaultCountdownRemindersMinutes(
         minutes: Set<Int>
     ){
         dataStore.edit { preferences ->
-            preferences[COUNTDOWN_REMINDERS_MINUTES] =
+            preferences[DEFAULT_COUNTDOWN_REMINDERS_MINUTES] =
+                minutes
+                    .filter { it > 0 }
+                    .map { it.toString() }
+                    .toSet()
+        }
+    }
+
+    suspend fun setCurrentTaskCountdownRemindersMinutes(
+        minutes: Set<Int>
+    ){
+        dataStore.edit { preferences ->
+            preferences[CURRENT_TASK_COUNTDOWN_REMINDERS_MINUTES] =
                 minutes
                     .filter { it > 0 }
                     .map { it.toString() }
