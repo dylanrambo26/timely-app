@@ -39,8 +39,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.timelyproductivity.app.R
 import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
+import com.timelyproductivity.app.data.goal.category.CategoryColor
+import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.categories.CategoryEditorUiState
 import com.timelyproductivity.app.ui.components.RecurringGoalBody
+import com.timelyproductivity.app.ui.components.categories.CategoryDropdown
+import com.timelyproductivity.app.ui.components.categories.CategoryEditorDialog
 import com.timelyproductivity.app.ui.components.lists.GoalTemplateCard
 import com.timelyproductivity.app.ui.goal.GoalListViewModel
 import com.timelyproductivity.app.ui.goal.canSave
@@ -74,6 +79,7 @@ fun CreateGoalScreen(
 ){
     val coroutineScope = rememberCoroutineScope()
     val selectedDate by createGoalViewModel.date.collectAsState()
+    val categoryEditorUiState by createGoalViewModel.categoryEditorUiState.collectAsState()
     Scaffold(
         topBar = { TimelySmallTopAppBar(stringResource(R.string.create_a_goal_from_scratch)) },
         bottomBar = {
@@ -112,7 +118,17 @@ fun CreateGoalScreen(
             onEndDateEnabledChanged = createGoalViewModel::updateHasRecurrenceEndDate,
             updateRecurrenceEndDate = createGoalViewModel::updateRecurrenceEndDate,
             updateRecurrenceStartDate = createGoalViewModel::updateRecurrenceStartDate,
-            selectedDate = selectedDate
+            selectedDate = selectedDate,
+
+            onCategorySelected = {category ->
+                createGoalViewModel.selectCategory(category?.categoryId)
+            },
+            onCreateCategory = createGoalViewModel::openAddCategoryEditor,
+            categoryEditorUiState = categoryEditorUiState,
+            onCategoryInputChanged = createGoalViewModel::updateCategoryName,
+            onSaveCategory = createGoalViewModel::saveCategory,
+            onDismissCategoryDialog = createGoalViewModel::closeCategoryDialog,
+            onColorSelected = createGoalViewModel::updateCategoryColor
         )
     }
 }
@@ -123,17 +139,38 @@ fun CreateGoalBody(
     onGoalValueChange: (GoalDetails) -> Unit,
     onSaveGoalClicked: () -> Unit,
     onSaveGoalAndAddToDateClicked: () -> Unit,
+
     onRecurringChange: (Boolean) -> Unit,
     onDailyChange: (Boolean) -> Unit,
     onRecurringDayChange: (DayOfWeek, Boolean) -> Unit,
     onEndDateEnabledChanged: (Boolean) -> Unit,
     updateRecurrenceStartDate: (LocalDate) -> Unit,
     updateRecurrenceEndDate: (LocalDate?) -> Unit,
+
+    categoryEditorUiState: CategoryEditorUiState,
+    onCreateCategory: () -> Unit,
+    onCategorySelected: (GoalCategory?) -> Unit,
+    onCategoryInputChanged: (String) -> Unit,
+    onSaveCategory: () -> Unit,
+    onDismissCategoryDialog: () -> Unit,
+    onColorSelected: (CategoryColor) -> Unit,
+
+
     onCancelButtonClicked: () -> Unit,
     showSaveGoalAndAddToDateButton: Boolean,
     modifier: Modifier = Modifier,
     selectedDate: LocalDate? = null
 ){
+    if(categoryEditorUiState.isVisible){
+        CategoryEditorDialog(
+            editorUiState = categoryEditorUiState,
+            onInputChanged = onCategoryInputChanged,
+            onColorSelected = onColorSelected,
+            onSave = onSaveCategory,
+            onDismiss = onDismissCategoryDialog
+        )
+    }
+
     val scrollState = rememberScrollState()
     Column(
         modifier = modifier
@@ -165,6 +202,18 @@ fun CreateGoalBody(
             goalDetails = goalUiState.goalDetails,
             onValueChange = onGoalValueChange,
             modifier = Modifier.fillMaxWidth()
+        )
+
+        val selectedCategory = goalUiState.goalCategories
+            .firstOrNull {
+                it.categoryId == goalUiState.selectedCategoryId
+            }
+
+        CategoryDropdown(
+            categories = goalUiState.goalCategories,
+            selectedCategory = selectedCategory,
+            onCategorySelected = onCategorySelected,
+            onCreateCategory = onCreateCategory
         )
 
         RecurringGoalBody(
@@ -354,7 +403,7 @@ fun AddGoalInputForm(
 }
 
 //Preview the AddLogScreen
-@Preview(showBackground = true, heightDp = 2000)
+/*@Preview(showBackground = true, heightDp = 2000)
 @Composable
 fun CreateGoalScreenPreview(){
     TimeManagementAppTheme {
@@ -380,7 +429,9 @@ fun CreateGoalScreenPreview(){
             onRecurringDayChange = {_,_ ->},
             onEndDateEnabledChanged = {},
             updateRecurrenceStartDate = {},
-            updateRecurrenceEndDate = {}
+            updateRecurrenceEndDate = {},
+            onCategorySelected = {},
+            onCreateCategory = {}
         )
     }
-}
+}*/

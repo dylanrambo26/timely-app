@@ -36,7 +36,8 @@ object AppViewModelProvider{
                 timelyApplication().container.goalsRepository,
                 timelyApplication().container.scheduledGoalsRepository,
                 timelyApplication().container.calendarEventsRepository,
-                timelyApplication().container.createRecurrenceUseCase
+                timelyApplication().container.createRecurrenceUseCase,
+                timelyApplication().container.goalCategoriesRepository
             )
         }
 

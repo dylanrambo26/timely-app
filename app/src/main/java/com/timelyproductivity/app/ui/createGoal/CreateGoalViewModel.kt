@@ -11,8 +11,13 @@ import com.timelyproductivity.app.data.goal.recurrence.CreateRecurrenceUseCase
 import com.timelyproductivity.app.data.calendar.CalendarEventsRepository
 import com.timelyproductivity.app.data.goal.Goal
 import com.timelyproductivity.app.data.goal.GoalsRepository
+import com.timelyproductivity.app.data.goal.category.CategoryColor
+import com.timelyproductivity.app.data.goal.category.GoalCategoriesRepository
+import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalsRepository
+import com.timelyproductivity.app.ui.categories.CategoryEditorActions
+import com.timelyproductivity.app.ui.categories.CategoryEditorState
 import com.timelyproductivity.app.ui.goal.validateRecurrence
 import com.timelyproductivity.app.ui.goal.withAllRecurringDays
 import com.timelyproductivity.app.ui.goal.withGoalRecurring
@@ -32,11 +37,16 @@ class CreateGoalViewModel(
     private val goalsRepository: GoalsRepository,
     private val scheduledGoalsRepository: ScheduledGoalsRepository,
     private val calendarEventsRepository: CalendarEventsRepository,
-    private val createRecurrenceUseCase: CreateRecurrenceUseCase
-) : ViewModel(){
+    private val createRecurrenceUseCase: CreateRecurrenceUseCase,
+    private val goalCategoriesRepository: GoalCategoriesRepository
+) : ViewModel(), CategoryEditorActions{
 
     var goalUiState by mutableStateOf(GoalUiState())
         private set
+
+    private val categoryEditor = CategoryEditorState()
+
+    val categoryEditorUiState = categoryEditor.uiState
 
     val calendarEventId =
         savedStateHandle.get<Int>(CreateGoalDestination.eventIdArg)
@@ -52,6 +62,15 @@ class CreateGoalViewModel(
         get() = calendarEventId != null
 
     init{
+        viewModelScope.launch {
+            goalCategoriesRepository.getCategories()
+                .collect {categories ->
+                    goalUiState = goalUiState.copy(
+                        goalCategories = categories
+                    )
+                }
+        }
+
         calendarEventId?.let {
             viewModelScope.launch {
                 _date.value = calendarEventsRepository.getEventById(calendarEventId)?.date
@@ -203,66 +222,53 @@ class CreateGoalViewModel(
         onNavigate(eventId)
     }
 
-    /*private suspend fun createRecurrenceRule(
-        recurringDays: Set<DayOfWeek>,
-        goalId: Int,
-        endDate: LocalDate?,
-        goal: Goal
-    ){
-        val startDate = calculateRecurrenceStartDate(recurringDays)
-
-        val newRecurrenceRule = RecurrenceRule(
-            goalId = goalId,
-            recurringDays = recurringDays,
-            startDate = startDate,
-            endDate = endDate
-        )
-        val recurrenceRuleId = goalsRepository.insertRecurrenceRule(newRecurrenceRule)
-        val insertedRecurrenceRule = newRecurrenceRule.copy(
-            recurrenceRuleId = recurrenceRuleId.toInt()
-        )
-        scheduleRecurringGoals(
-            recurrenceRule = insertedRecurrenceRule,
-            goal = goal
+    fun selectCategory(categoryId: Int?){
+        goalUiState = goalUiState.copy(
+            selectedCategoryId = categoryId
         )
     }
 
-    private suspend fun scheduleRecurringGoals(
-        recurrenceRule: RecurrenceRule,
-        goal: Goal
-    ){
-        val schedulingEndDateExclusive = recurrenceRule.endDate?.plusDays(1) ?: recurrenceRule.startDate.plusMonths(3).plusDays(1)
+    override fun openAddCategoryEditor() {
+        categoryEditor.openAddCategoryDialog()
+    }
 
-        val dates = recurrenceRule.startDate.datesUntil(schedulingEndDateExclusive)
+    override fun updateCategoryName(input: String) {
+        categoryEditor.updateCategoryInput(input)
+    }
 
-        for (date in dates){
-            if (date.dayOfWeek in recurrenceRule.recurringDays){
-                val eventId = calendarEventsRepository.getOrCreateEventIdForDate(date)
+    override fun updateCategoryColor(color: CategoryColor) {
+        categoryEditor.updateSelectedColor(color)
+    }
 
-                val scheduledGoal = ScheduledGoal(
-                    goalId = recurrenceRule.goalId,
-                    eventId = eventId,
-                    scheduledGoalTitle = goal.goalTitle,
-                    scheduledHours = goal.hours,
-                    scheduledMinutes = goal.minutes,
-                    recurrenceRuleId = recurrenceRule.recurrenceRuleId
-                )
-                scheduledGoalsRepository.insertScheduledGoal(scheduledGoal)
+    override fun closeCategoryDialog() {
+        categoryEditor.closeCategoryDialog()
+    }
+
+    override fun saveCategory() {
+        val editorState = categoryEditor.uiState.value
+
+        val name = categoryEditor.validateCategoryInput(
+            existingCategories = goalUiState.goalCategories
+        ) ?: return
+
+        val category = GoalCategory(
+            categoryId = editorState.originalCategoryId ?: 0,
+            name = name,
+            color = editorState.selectedColor
+        )
+
+        viewModelScope.launch {
+            if(editorState.originalCategoryId == null){
+                val categoryId = goalCategoriesRepository.insertCategory(category)
+
+                selectCategory(categoryId.toInt())
+            } else {
+                goalCategoriesRepository.updateCategory(category)
             }
+
+            categoryEditor.closeCategoryDialog()
         }
     }
-
-    private fun calculateRecurrenceStartDate(
-        recurringDays: Set<DayOfWeek>
-    ): LocalDate{
-        var date = LocalDate.now()
-
-        while(date.dayOfWeek !in recurringDays){
-            date = date.plusDays(1)
-        }
-
-        return date
-    }*/
 }
 
 
@@ -278,7 +284,10 @@ data class GoalUiState(
 
     val recurrenceStartDate: LocalDate = LocalDate.now(),
     val recurrenceEndDate: LocalDate? = null,
-    val hasRecurrenceEndDate: Boolean = false
+    val hasRecurrenceEndDate: Boolean = false,
+
+    val goalCategories: List<GoalCategory> = emptyList(),
+    val selectedCategoryId: Int? = null
 )
 
 data class GoalDetails(

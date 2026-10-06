@@ -21,3 +21,23 @@ val selectedDateDark = Color(0xFF0057FF)
 
 val activityGridYellowLight = Color(0xFFFDF297)
 val activityGridYellowDark = Color(0xFFF5DE2A)
+
+//Category Colors
+
+val categoryOrangeLight = Color(0xFFFFAB3D)
+val categoryOrangeDark = Color(0xFFFF8F00)
+
+val categoryRedLight = Color(0xFFFF7469)
+val categoryRedDark = Color(0xFFFF0F00)
+
+val categoryYellowLight = Color(0xFFFFF182)
+val categoryYellowDark = Color(0xFFFFE200)
+
+val categoryGreenLight = Color(0xFF73EA7A)
+val categoryGreenDark = Color(0xFF326534)
+
+val categoryBlueLight = Color(0xFF2196F3)
+val categoryBlueDark = Color(0xFF3F51B5)
+
+val categoryVioletLight = Color(0xFFE546FF)
+val categoryVioletDark = Color(0xFF9C27B0)

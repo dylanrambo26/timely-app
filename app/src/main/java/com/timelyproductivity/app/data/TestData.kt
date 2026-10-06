@@ -1,9 +1,11 @@
 package com.timelyproductivity.app.data
 
 import com.timelyproductivity.app.data.goal.Goal
+import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.goal.recurrence.GoalWithRecurrence
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
+import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.ui.analytics.AnalyticsTimePeriod
 import com.timelyproductivity.app.ui.analytics.DailyActivity
@@ -107,6 +109,24 @@ val testGoalsWithRecurrenceSizeThree: List<GoalWithRecurrence>
             recurrenceRule = null
         )
     )
+
+val testGoalCategoriesSizeThreeWithColor = listOf(
+    GoalCategory(
+        categoryId = 0,
+        name = "School",
+        color = CategoryColor.YELLOW
+    ),
+    GoalCategory(
+        categoryId = 1,
+        name = "Work",
+        color = CategoryColor.BLUE
+    ),
+    GoalCategory(
+        categoryId = 2,
+        name = "Exercise",
+        color = CategoryColor.ORANGE
+    )
+)
 
 fun generateTestDailyActivity(
     timePeriod: AnalyticsTimePeriod,

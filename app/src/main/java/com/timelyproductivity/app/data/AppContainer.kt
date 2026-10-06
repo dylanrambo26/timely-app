@@ -12,6 +12,8 @@ import com.timelyproductivity.app.data.calendar.OfflineCalendarEventsRepository
 import com.timelyproductivity.app.data.goal.GoalsDatabase
 import com.timelyproductivity.app.data.goal.GoalsRepository
 import com.timelyproductivity.app.data.goal.OfflineGoalsRepository
+import com.timelyproductivity.app.data.goal.category.GoalCategoriesRepository
+import com.timelyproductivity.app.data.goal.category.OfflineGoalCategoriesRepository
 import com.timelyproductivity.app.data.goal.recurrence.CreateRecurrenceUseCase
 import com.timelyproductivity.app.data.goal.recurrence.UpdateRecurrenceUseCase
 import com.timelyproductivity.app.data.scheduledgoal.OfflineScheduledGoalsRepository
@@ -35,6 +37,7 @@ interface AppContainer{
     val analyticsRepository: AnalyticsRepository
     val createRecurrenceUseCase: CreateRecurrenceUseCase
     val updateRecurrenceUseCase: UpdateRecurrenceUseCase
+    val goalCategoriesRepository: GoalCategoriesRepository
 }
 
 class AppDataContainer(
@@ -89,6 +92,12 @@ class AppDataContainer(
         UpdateRecurrenceUseCase(
             goalsRepository = goalsRepository,
             scheduledGoalsRepository = scheduledGoalsRepository
+        )
+    }
+
+    override val goalCategoriesRepository: OfflineGoalCategoriesRepository by lazy {
+        OfflineGoalCategoriesRepository(
+            database.goalCategoryDao()
         )
     }
 }
