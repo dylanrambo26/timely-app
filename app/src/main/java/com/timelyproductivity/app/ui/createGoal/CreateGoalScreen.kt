@@ -121,7 +121,7 @@ fun CreateGoalScreen(
             selectedDate = selectedDate,
 
             onCategorySelected = {category ->
-                createGoalViewModel.selectCategory(category.categoryId)
+                createGoalViewModel.selectCategory(category?.categoryId)
             },
             onCreateCategory = createGoalViewModel::openAddCategoryEditor,
             categoryEditorUiState = categoryEditorUiState,
@@ -149,7 +149,7 @@ fun CreateGoalBody(
 
     categoryEditorUiState: CategoryEditorUiState,
     onCreateCategory: () -> Unit,
-    onCategorySelected: (GoalCategory) -> Unit,
+    onCategorySelected: (GoalCategory?) -> Unit,
     onCategoryInputChanged: (String) -> Unit,
     onSaveCategory: () -> Unit,
     onDismissCategoryDialog: () -> Unit,

@@ -62,6 +62,15 @@ class CreateGoalViewModel(
         get() = calendarEventId != null
 
     init{
+        viewModelScope.launch {
+            goalCategoriesRepository.getCategories()
+                .collect {categories ->
+                    goalUiState = goalUiState.copy(
+                        goalCategories = categories
+                    )
+                }
+        }
+
         calendarEventId?.let {
             viewModelScope.launch {
                 _date.value = calendarEventsRepository.getEventById(calendarEventId)?.date

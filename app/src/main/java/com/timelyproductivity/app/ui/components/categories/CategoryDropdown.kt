@@ -27,7 +27,7 @@ import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 fun CategoryDropdown(
     categories: List<GoalCategory>,
     selectedCategory: GoalCategory?,
-    onCategorySelected: (GoalCategory) -> Unit,
+    onCategorySelected: (GoalCategory?) -> Unit,
     onCreateCategory: () -> Unit,
 ){
     var expanded by remember { mutableStateOf(false) }
@@ -61,6 +61,16 @@ fun CategoryDropdown(
                 expanded = false
             }
         ) {
+            DropdownMenuItem(
+                text = {
+                    Text("None")
+                },
+                onClick = {
+                    onCategorySelected(null)
+                    expanded = false
+                }
+            )
+
             categories.forEach { category ->
                 DropdownMenuItem(
                     text = {
