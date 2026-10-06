@@ -1,6 +1,7 @@
 package com.timelyproductivity.app.data.goal
 
 import android.content.Context
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
@@ -27,7 +28,13 @@ import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalDao
         GoalCategory::class
     ],
     version = 18,
-    exportSchema = true
+    exportSchema = true,
+    autoMigrations = [
+        AutoMigration(
+            from = 17,
+            to = 18
+        )
+    ]
 )
 @TypeConverters(Converters::class)
 abstract class GoalsDatabase : RoomDatabase(){
@@ -44,7 +51,7 @@ abstract class GoalsDatabase : RoomDatabase(){
 
         fun getDatabase(context: Context): GoalsDatabase {
             return Instance ?: synchronized(this) {
-                Room.databaseBuilder(context, GoalsDatabase::class.java, "item_database").fallbackToDestructiveMigration().build().also { Instance = it }
+                Room.databaseBuilder(context, GoalsDatabase::class.java, "item_database").build().also { Instance = it }
             }
         }
     }
