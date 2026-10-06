@@ -41,7 +41,9 @@ import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
 import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.goal.category.GoalCategory
+import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.categories.CategoryEditorState
 import com.timelyproductivity.app.ui.categories.CategoryEditorUiState
 import com.timelyproductivity.app.ui.components.RecurringGoalBody
 import com.timelyproductivity.app.ui.components.categories.CategoryDropdown
@@ -402,8 +404,8 @@ fun AddGoalInputForm(
     }
 }
 
-//Preview the AddLogScreen
-/*@Preview(showBackground = true, heightDp = 2000)
+//Preview the CreateGoalScreen
+@Preview(showBackground = true, heightDp = 2000)
 @Composable
 fun CreateGoalScreenPreview(){
     TimeManagementAppTheme {
@@ -416,7 +418,9 @@ fun CreateGoalScreenPreview(){
                 errorMessage = R.string.invalid_title,
                 isGoalRecurring = true,
                 hasRecurrenceEndDate = true,
-                recurrenceEndDate = LocalDate.of(2026, 10, 3)
+                recurrenceEndDate = LocalDate.of(2026, 10, 3),
+                goalCategories = testGoalCategoriesSizeThreeWithColor,
+                selectedCategoryId = testGoalCategoriesSizeThreeWithColor[2].categoryId
             ),
             onGoalValueChange = {},
             onSaveGoalClicked = {},
@@ -431,7 +435,12 @@ fun CreateGoalScreenPreview(){
             updateRecurrenceStartDate = {},
             updateRecurrenceEndDate = {},
             onCategorySelected = {},
-            onCreateCategory = {}
+            onCreateCategory = {},
+            onSaveCategory = {},
+            onColorSelected = {},
+            onCategoryInputChanged = {},
+            onDismissCategoryDialog = {},
+            categoryEditorUiState = CategoryEditorUiState()
         )
     }
-}*/
+}
