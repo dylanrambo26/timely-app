@@ -2,6 +2,7 @@ package com.timelyproductivity.app.data
 
 import androidx.room.TypeConverter
 import com.timelyproductivity.app.data.goal.GoalStatus
+import com.timelyproductivity.app.data.goal.category.CategoryColor
 import java.time.DayOfWeek
 import java.time.LocalDate
 
@@ -45,5 +46,15 @@ class Converters {
             .split(",")
             .map { DayOfWeek.valueOf(it) }
             .toSet()
+    }
+
+    @TypeConverter
+    fun fromCategoryColor(categoryColor: CategoryColor): String{
+        return categoryColor.name
+    }
+
+    @TypeConverter
+    fun toCategoryColor(colorString: String): CategoryColor{
+        return CategoryColor.valueOf(colorString)
     }
 }

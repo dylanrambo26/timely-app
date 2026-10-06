@@ -9,6 +9,8 @@ import com.timelyproductivity.app.data.Converters
 import com.timelyproductivity.app.data.analytics.AnalyticsDao
 import com.timelyproductivity.app.data.calendar.CalendarEvent
 import com.timelyproductivity.app.data.calendar.CalendarEventDao
+import com.timelyproductivity.app.data.goal.category.GoalCategory
+import com.timelyproductivity.app.data.goal.category.GoalCategoryDao
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceException
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRuleDao
@@ -21,9 +23,10 @@ import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalDao
         CalendarEvent::class,
         ScheduledGoal::class,
         RecurrenceRule::class,
-        RecurrenceException::class
+        RecurrenceException::class,
+        GoalCategory::class
     ],
-    version = 17,
+    version = 18,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -33,6 +36,7 @@ abstract class GoalsDatabase : RoomDatabase(){
     abstract fun scheduledGoalDao(): ScheduledGoalDao
     abstract fun analyticsDao(): AnalyticsDao
     abstract fun recurrenceRuleDao(): RecurrenceRuleDao
+    abstract fun goalCategoryDao(): GoalCategoryDao
     companion object {
 
         @Volatile
