@@ -1,6 +1,7 @@
 package com.timelyproductivity.app.ui.components.lists
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,18 +30,23 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.timelyproductivity.app.R
 import com.timelyproductivity.app.data.goal.GoalStatus
+import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
+import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testScheduledGoalsSizeThree
+import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeThree
 import com.timelyproductivity.app.ui.components.settings.ReminderTimes
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 import com.timelyproductivity.app.ui.theme.checkbox
 import com.timelyproductivity.app.ui.theme.completedGoal
+import com.timelyproductivity.app.ui.theme.toColor
 import com.timelyproductivity.app.util.MAX_NUMBER_OF_COUNTDOWN_REMINDERS
 import com.timelyproductivity.app.util.incompleteGoals
 
@@ -48,11 +54,13 @@ import com.timelyproductivity.app.util.incompleteGoals
 fun ScheduledGoalList(
     modifier: Modifier = Modifier,
     goals: List<ScheduledGoal>,
+    categories: List<GoalCategory> = emptyList(),
     selectedGoalId: Int? = null,
     onDeleteGoal: ((ScheduledGoal) -> Unit)? = null,
     onEditGoal: ((ScheduledGoal) -> Unit)? = null,
     onGoalClick: ((ScheduledGoal) -> Unit)? = null,
-    addColors: Boolean = false,
+    addCompletionColor: Boolean = false,
+    addCategoryColors: Boolean = false,
     addCheckboxes: Boolean = false,
     onCompleteChange: ((ScheduledGoal, Boolean) -> Unit)? = null,
     showCountdownReminders: Boolean = false,
@@ -65,7 +73,7 @@ fun ScheduledGoalList(
     onEditReminder: ((Int) -> Unit)? = null,
     isCustomizingReminders: Boolean = false,
 
-) {
+    ) {
     val listState = rememberLazyListState()
     val previousSize = rememberPreviousLazyColumn(goals.size)
 
@@ -98,11 +106,13 @@ fun ScheduledGoalList(
                 val isSelected = scheduledGoal.scheduledGoalId == selectedGoalId
                 GoalCard(
                     scheduledGoal = scheduledGoal,
+                    categories = categories,
                     isSelected = isSelected,
                     onDeleteGoal = onDeleteGoal,
                     onEditGoal = onEditGoal,
                     onGoalClick = onGoalClick,
-                    addColors = addColors,
+                    addCompletionColor = addCompletionColor,
+                    addCategoryColors = addCategoryColors,
                     addCheckboxes = addCheckboxes && scheduledGoal.status != GoalStatus.RUNNING,
                     onCompleteChange = onCompleteChange,
                     showCountdownReminders = showCountdownReminders,
@@ -123,8 +133,11 @@ fun ScheduledGoalList(
 @Composable
 fun GoalCard(
     scheduledGoal: ScheduledGoal,
+    categories: List<GoalCategory> = emptyList(),
+
     isSelected: Boolean = false,
-    addColors: Boolean = false,
+    addCompletionColor: Boolean = false,
+    addCategoryColors: Boolean = false,
     addCheckboxes: Boolean = false,
     onDeleteGoal: ((ScheduledGoal) -> Unit)? = null,
     onEditGoal: ((ScheduledGoal) -> Unit)? = null,
@@ -145,6 +158,12 @@ fun GoalCard(
     val scheduledDurationMillis = (scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60000L
     val completedDuration = scheduledGoal.completedMillis >= scheduledDurationMillis
 
+    val category = categories.firstOrNull{
+        it.categoryId == scheduledGoal.scheduledCategoryId
+    }
+
+    val cardCategoryColor = category?.color?.toColor() ?: MaterialTheme.colorScheme.secondaryContainer
+
     Surface(
         modifier = Modifier
             .fillMaxWidth()
@@ -157,12 +176,26 @@ fun GoalCard(
                 } else {
                     Modifier
                 }
+            )
+            .border(
+                width = if(isSelected && addCategoryColors) 2.dp else 0.dp,
+                color = if(isSelected){
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    Color.Transparent
+                },
+                shape = RoundedCornerShape(12.dp)
             ),
         shape = RoundedCornerShape(12.dp),
-        color = if(isSelected){
+        color = if(isSelected && addCategoryColors){
+            cardCategoryColor
+        } else if(isSelected){
             MaterialTheme.colorScheme.primaryContainer
-        } else if(addColors && goalStatus == GoalStatus.COMPLETED){
+        }
+        else if(addCompletionColor && goalStatus == GoalStatus.COMPLETED){
             MaterialTheme.colorScheme.completedGoal
+        } else if (addCategoryColors) {
+            cardCategoryColor
         } else {
             MaterialTheme.colorScheme.secondaryContainer
         }
@@ -191,6 +224,12 @@ fun GoalCard(
                     Text(
                         text = "Goal: ${scheduledGoal.scheduledHours}h ${scheduledGoal.scheduledMinutes}m",
                         style = MaterialTheme.typography.bodyMedium
+                    )
+
+                    val categoryName = category?.name ?: "None"
+                    Text(
+                        text = "Category: $categoryName",
+                        style = MaterialTheme.typography.bodySmall
                     )
 
                     GoalStatusText(scheduledGoal = scheduledGoal)
@@ -351,18 +390,16 @@ fun ScheduledGoalListPreview(){
             )
         }
 
-        val currentTaskGoals = testScheduledGoalsSizeThree.incompleteGoals()
+        val currentTaskGoals = testScheduledGoalsWithCategoriesSizeThree
 
         ScheduledGoalList(
             goals = currentTaskGoals,
-            addColors = false,
-            addCheckboxes = false,
+            categories = testGoalCategoriesSizeThreeWithColor,
+            addCompletionColor = false,
+            addCategoryColors = true,
+            addCheckboxes = true,
             selectedGoalId = 0,
-            showCountdownReminders = true,
-            countdownReminders = setOf(1,5,10),
-
-            /*onDeleteGoal = {},
-            onEditGoal = {}*/
-            )
+            onCompleteChange = {_,_->},
+        )
     }
 }

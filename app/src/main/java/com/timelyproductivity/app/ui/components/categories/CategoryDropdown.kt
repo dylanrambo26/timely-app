@@ -45,7 +45,7 @@ fun CategoryDropdown(
             expanded = !expanded
         }
     ) {
-        val categoryColor = selectedCategory?.color?.toColor()?.copy(alpha = 0.3f) ?: Color.Transparent
+        val categoryColor = selectedCategory?.color?.toColor() ?: Color.Transparent
 
         OutlinedTextField(
             value = selectedCategory?.name ?: "None",

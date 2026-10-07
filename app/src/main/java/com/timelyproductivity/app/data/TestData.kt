@@ -128,6 +128,60 @@ val testGoalCategoriesSizeThreeWithColor = listOf(
     )
 )
 
+val testScheduledGoalsWithCategoriesSizeThree: List<ScheduledGoal>
+    get() = listOf(
+        ScheduledGoal(
+            scheduledGoalId = 0,
+            eventId = 3,
+            goalId = 1,
+            status = GoalStatus.NOT_STARTED,
+            startTimeMillis = 123456L,
+            completedMillis = 60000L,
+            scheduledGoalTitle = goal1.goalTitle,
+            scheduledHours = goal1.hours,
+            scheduledMinutes = goal1.minutes,
+            scheduledCategoryId = 0
+        ),
+        ScheduledGoal(
+            scheduledGoalId = 1,
+            eventId = 3,
+            goalId = 2,
+            status = GoalStatus.COMPLETED,
+            startTimeMillis = 146000L,
+            completedMillis = 80000L,
+            scheduledGoalTitle = goal2.goalTitle,
+            scheduledHours = goal2.hours,
+            scheduledMinutes = goal2.minutes,
+            scheduledCategoryId = 1
+        ),
+        ScheduledGoal(
+            scheduledGoalId = 2,
+            eventId = 3,
+            goalId = 3,
+            status = GoalStatus.NOT_STARTED,
+            startTimeMillis = 156456L,
+            completedMillis = 60000L,
+            scheduledGoalTitle = goal3.goalTitle,
+            scheduledHours = goal3.hours,
+            scheduledMinutes = goal3.minutes,
+            scheduledCategoryId = 2
+        ),
+        ScheduledGoal(
+            scheduledGoalId = 3,
+            eventId = 3,
+            goalId = 4,
+            status = GoalStatus.NOT_STARTED,
+            startTimeMillis = 156456L,
+            completedMillis = 60000L,
+            scheduledGoalTitle = goal3.goalTitle,
+            scheduledHours = goal3.hours,
+            scheduledMinutes = goal3.minutes,
+            scheduledCategoryId = null
+        )
+
+    )
+
+
 fun generateTestDailyActivity(
     timePeriod: AnalyticsTimePeriod,
 ): List<DailyActivity>{

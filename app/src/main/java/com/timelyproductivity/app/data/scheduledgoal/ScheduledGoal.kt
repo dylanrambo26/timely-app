@@ -6,6 +6,7 @@ import androidx.room.PrimaryKey
 import com.timelyproductivity.app.data.calendar.CalendarEvent
 import com.timelyproductivity.app.data.goal.Goal
 import com.timelyproductivity.app.data.goal.GoalStatus
+import com.timelyproductivity.app.data.goal.category.GoalCategory
 
 @Entity(
     // Don't delete scheduled goals when associated reusable goal is deleted
@@ -20,6 +21,12 @@ import com.timelyproductivity.app.data.goal.GoalStatus
             entity = Goal::class,
             parentColumns = ["goalID"],
             childColumns = ["goalId"],
+            onDelete = ForeignKey.SET_NULL
+        ),
+        ForeignKey(
+            entity = GoalCategory::class,
+            parentColumns = ["categoryId"],
+            childColumns = ["scheduledCategoryId"],
             onDelete = ForeignKey.SET_NULL
         )
     ],
@@ -42,6 +49,7 @@ data class ScheduledGoal(
     val scheduledGoalTitle: String,
     val scheduledHours: Int,
     val scheduledMinutes: Int,
+    val scheduledCategoryId: Int? = null,
 
     val recurrenceRuleId: Int? = null
 )

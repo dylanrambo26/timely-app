@@ -3,8 +3,11 @@ package com.timelyproductivity.app.ui.viewgoals
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.timelyproductivity.app.data.UserPreferencesRepository
 import com.timelyproductivity.app.data.calendar.CalendarEventsRepository
 import com.timelyproductivity.app.data.goal.GoalStatus
+import com.timelyproductivity.app.data.goal.category.GoalCategoriesRepository
+import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalsRepository
 import com.timelyproductivity.app.util.MINUTES_IN_24_HOUR_DAY
@@ -22,6 +25,8 @@ class ScheduledGoalsListViewModel(
     savedStateHandle: SavedStateHandle,
     private val scheduledGoalsRepository: ScheduledGoalsRepository,
     private val calendarEventsRepository: CalendarEventsRepository,
+    private val userPreferencesRepository: UserPreferencesRepository,
+    private val goalCategoriesRepository: GoalCategoriesRepository
 ): ViewModel() {
 
     companion object {
@@ -51,8 +56,10 @@ class ScheduledGoalsListViewModel(
             .flatMapLatest { eventId ->
                 combine(
                     scheduledGoalsRepository.getScheduledGoals(eventId),
-                    _date.filterNotNull()
-                ){scheduledGoals, date ->
+                    _date.filterNotNull(),
+                    userPreferencesRepository.useCategoryColorsEnabled,
+                    goalCategoriesRepository.getCategories()
+                ){scheduledGoals, date, useCategoryColorsEnabled, goalCategories ->
                     val totalMinutes = scheduledGoals.sumOf {
                         val hours = it.scheduledHours
                         val minutes = it.scheduledMinutes
@@ -62,10 +69,12 @@ class ScheduledGoalsListViewModel(
 
                     ScheduledGoalsListUiState(
                         scheduledGoalsList = scheduledGoals,
+                        categories = goalCategories,
                         calendarEventId = eventId,
                         date = date,
                         totalMinutes = totalMinutes,
-                        remainingMinutesInDay = MINUTES_IN_24_HOUR_DAY - totalMinutes
+                        remainingMinutesInDay = MINUTES_IN_24_HOUR_DAY - totalMinutes,
+                        useCategoryColorsEnabled = useCategoryColorsEnabled
                     )
 
                 }
@@ -153,13 +162,21 @@ class ScheduledGoalsListViewModel(
             scheduledGoalsRepository.updateScheduledGoal(scheduledGoal.copy(status = newStatus))
         }
     }
+
+    fun setCategoryColorsEnabled(enabled: Boolean){
+        viewModelScope.launch {
+            userPreferencesRepository.setUseCategoryColorsEnabled(enabled)
+        }
+    }
 }
 
 data class ScheduledGoalsListUiState(
     val scheduledGoalsList: List<ScheduledGoal> = emptyList(),
+    val categories: List<GoalCategory> = emptyList(),
     val calendarEventId: Int? = null,
     val date: LocalDate = LocalDate.now(),
     val totalMinutes: Int = 0,
     val remainingMinutesInDay: Int = MINUTES_IN_24_HOUR_DAY - totalMinutes,
-    val remainingTimeError: Boolean = false
+    val remainingTimeError: Boolean = false,
+    val useCategoryColorsEnabled: Boolean = false
 )

@@ -67,7 +67,9 @@ object AppViewModelProvider{
             ScheduledGoalsListViewModel(
                 this.createSavedStateHandle(),
                 timelyApplication().container.scheduledGoalsRepository,
-                timelyApplication().container.calendarEventsRepository
+                timelyApplication().container.calendarEventsRepository,
+                timelyApplication().container.userPreferencesRepository,
+                timelyApplication().container.goalCategoriesRepository
             )
         }
 

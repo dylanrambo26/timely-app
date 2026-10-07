@@ -27,7 +27,7 @@ import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalDao
         RecurrenceException::class,
         GoalCategory::class
     ],
-    version = 18,
+    version = 19,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(
