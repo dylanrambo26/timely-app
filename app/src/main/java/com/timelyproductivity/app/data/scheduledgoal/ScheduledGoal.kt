@@ -2,6 +2,7 @@ package com.timelyproductivity.app.data.scheduledgoal
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.timelyproductivity.app.data.calendar.CalendarEvent
 import com.timelyproductivity.app.data.goal.Goal
@@ -30,7 +31,10 @@ import com.timelyproductivity.app.data.goal.category.GoalCategory
             onDelete = ForeignKey.SET_NULL
         )
     ],
-    tableName = "scheduled_goals"
+    tableName = "scheduled_goals",
+    indices = [
+        Index(value = ["scheduledCategoryId"])
+    ]
 )
 data class ScheduledGoal(
     @PrimaryKey(autoGenerate = true)

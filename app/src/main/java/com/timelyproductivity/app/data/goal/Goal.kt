@@ -2,6 +2,7 @@ package com.timelyproductivity.app.data.goal
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
+import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.timelyproductivity.app.data.goal.category.GoalCategory
 
@@ -18,6 +19,9 @@ import com.timelyproductivity.app.data.goal.category.GoalCategory
             childColumns = ["categoryId"],
             onDelete = ForeignKey.SET_NULL
         )
+    ],
+    indices = [
+        Index(value = ["categoryId"])
     ]
 )
 data class Goal(

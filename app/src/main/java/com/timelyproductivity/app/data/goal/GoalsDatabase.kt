@@ -33,6 +33,10 @@ import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalDao
         AutoMigration(
             from = 17,
             to = 18
+        ),
+        AutoMigration(
+            from = 18,
+            to = 19
         )
     ]
 )

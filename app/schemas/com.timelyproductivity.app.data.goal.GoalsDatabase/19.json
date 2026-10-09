@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 19,
-    "identityHash": "e93c43730f00684ac5cf32ff7d6d858c",
+    "identityHash": "b84507eae15745d3ae7c391d913fe0ca",
     "entities": [
       {
         "tableName": "goals",
@@ -45,7 +45,17 @@
             "goalID"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_goals_categoryId",
+            "unique": false,
+            "columnNames": [
+              "categoryId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_goals_categoryId` ON `${TABLE_NAME}` (`categoryId`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "goal_categories",
@@ -169,7 +179,17 @@
             "scheduledGoalId"
           ]
         },
-        "indices": [],
+        "indices": [
+          {
+            "name": "index_scheduled_goals_scheduledCategoryId",
+            "unique": false,
+            "columnNames": [
+              "scheduledCategoryId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_scheduled_goals_scheduledCategoryId` ON `${TABLE_NAME}` (`scheduledCategoryId`)"
+          }
+        ],
         "foreignKeys": [
           {
             "table": "calendar_events",
@@ -335,7 +355,7 @@
     "views": [],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'e93c43730f00684ac5cf32ff7d6d858c')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'b84507eae15745d3ae7c391d913fe0ca')"
     ]
   }
 }
