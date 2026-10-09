@@ -338,7 +338,7 @@ fun ViewGoalsBodyPreview(){
                 categories = testGoalCategoriesSizeThreeWithColor,
                 date = selectedDate,
                 totalMinutes = 120,
-                useCategoryColorsEnabled = false
+                useCategoryColorsEnabled = true
             ),
             onAddGoal = {},
             onEditGoalsClicked = {},

@@ -83,6 +83,7 @@ class CreateGoalViewModel(
 
                 goalUiState = goalUiState.copy(
                     goalDetails = sourceGoal.toGoalDetails().copy(id = 0),
+                    selectedCategoryId = sourceGoal.categoryId,
                     isGoalRecurring = false,
                     recurringDays = emptySet(),
                     hasRecurrenceEndDate = false,
@@ -151,12 +152,13 @@ class CreateGoalViewModel(
         if(error != null){
             goalUiState = goalUiState.copy(
                 errorMessage = error,
-                //isEntryValid = false
             )
             return
         }
 
-        val goal = goalUiState.goalDetails.toGoal()
+        val goal = goalUiState.goalDetails.toGoal(
+            categoryId = goalUiState.selectedCategoryId
+        )
         val goalId = goalsRepository.insertGoal(goal)
 
         val insertedGoal = goal.copy(
@@ -191,7 +193,9 @@ class CreateGoalViewModel(
             return
         }
 
-        val goal = goalUiState.goalDetails.toGoal()
+        val goal = goalUiState.goalDetails.toGoal(
+            categoryId = goalUiState.selectedCategoryId
+        )
         val goalTotalMinutes = goal.hours * 60 + goal.minutes
 
         val isValidDuration = scheduledGoalsRepository.isValidDurationForDate(
@@ -216,6 +220,7 @@ class CreateGoalViewModel(
                 scheduledGoalTitle = goal.goalTitle,
                 scheduledHours = goal.hours,
                 scheduledMinutes = goal.minutes,
+                scheduledCategoryId = goal.categoryId,
                 recurrenceRuleId = null
             )
         )
@@ -297,11 +302,14 @@ data class GoalDetails(
     val minutes: String = ""
 )
 
-fun GoalDetails.toGoal(): Goal = Goal(
+fun GoalDetails.toGoal(
+    categoryId: Int? = null
+): Goal = Goal(
     goalID = id,
     goalTitle = title,
     hours = hours.toIntOrNull() ?: 0,
     minutes = minutes.toIntOrNull() ?: 0,
+    categoryId = categoryId
 )
 
 fun Goal.toGoalUiState(isEntryValid: Boolean = false): GoalUiState = GoalUiState(
