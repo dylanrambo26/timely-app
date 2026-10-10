@@ -59,6 +59,7 @@ fun SettingsScreen(
             onTaskCompletionNotificationCheckedChange = settingsViewModel::setTaskCompletionNotificationsEnabled,
             onCountdownRemindersCheckedChange = settingsViewModel::setCountdownRemindersEnabled,
             onTaskNotificationSoundChanged = settingsViewModel::setTaskNotificationSoundEnabled,
+            onUseCategoryColorsCheckedChange = settingsViewModel::setUseCategoryColorsEnabled,
 
             onAddReminder = settingsViewModel::openAddReminderDialog,
             openEditReminder = settingsViewModel::openEditReminderDialog,
@@ -77,6 +78,7 @@ fun SettingsBody(
     reminderEditorUiState: ReminderEditorUiState,
     onTaskCompletionNotificationCheckedChange: (Boolean) -> Unit,
     onCountdownRemindersCheckedChange: (Boolean) -> Unit,
+    onUseCategoryColorsCheckedChange: (Boolean) -> Unit,
 
     onAddReminder: () -> Unit,
     openEditReminder: (Int) -> Unit,
@@ -126,6 +128,17 @@ fun SettingsBody(
                 maxSizeReached = settingsUiState.countdownRemindersMinutes.size >= MAX_NUMBER_OF_COUNTDOWN_REMINDERS
             )
         }
+
+        Text(
+            text = "Theme Settings",
+            style = MaterialTheme.typography.headlineMedium
+        )
+
+        SettingsSwitch(
+            text = "Use category colors",
+            checked = settingsUiState.useCategoryColorsEnabled,
+            onCheckedChange = onUseCategoryColorsCheckedChange
+        )
     }
 
     if(reminderEditorUiState.isVisible){
@@ -177,7 +190,8 @@ fun SettingsBodyPreview(){
             onDismissReminderDialog = {},
             reminderEditorUiState = ReminderEditorUiState(),
             onTaskNotificationSoundChanged = {},
-            openEditReminder = {}
+            openEditReminder = {},
+            onUseCategoryColorsCheckedChange = {}
         )
     }
 }

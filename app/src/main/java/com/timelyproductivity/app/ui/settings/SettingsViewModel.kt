@@ -86,18 +86,26 @@ class SettingsViewModel(
         }
     }
 
+    fun setUseCategoryColorsEnabled(enabled: Boolean){
+        viewModelScope.launch {
+            userPreferencesRepository.setUseCategoryColorsEnabled(enabled)
+        }
+    }
+
     val settingsUiState: StateFlow<SettingsUiState> =
         combine(
             userPreferencesRepository.taskCompletionNotificationsEnabled,
             userPreferencesRepository.countdownRemindersEnabled,
             userPreferencesRepository.defaultCountdownRemindersMinutes,
-            userPreferencesRepository.taskNotificationSoundEnabled
-        ){ completionNotificationsEnabled, countdownRemindersEnabled, countdownRemindersMinutes, taskNotificationSoundEnabled->
+            userPreferencesRepository.taskNotificationSoundEnabled,
+            userPreferencesRepository.useCategoryColorsEnabled
+        ){ completionNotificationsEnabled, countdownRemindersEnabled, countdownRemindersMinutes, taskNotificationSoundEnabled, useCategoryColorsEnabled->
             SettingsUiState(
                 taskCompletionNotificationsEnabled = completionNotificationsEnabled,
                 countdownRemindersEnabled = countdownRemindersEnabled,
                 countdownRemindersMinutes = countdownRemindersMinutes,
-                taskNotificationSoundEnabled = taskNotificationSoundEnabled
+                taskNotificationSoundEnabled = taskNotificationSoundEnabled,
+                useCategoryColorsEnabled = useCategoryColorsEnabled
             )
         }.stateIn(
             scope = viewModelScope,
@@ -113,4 +121,5 @@ data class SettingsUiState(
     val countdownRemindersEnabled: Boolean = false,
     val countdownRemindersMinutes: Set<Int> = setOf(10,5,1),
     val taskNotificationSoundEnabled: Boolean = true,
+    val useCategoryColorsEnabled: Boolean = false,
 )
