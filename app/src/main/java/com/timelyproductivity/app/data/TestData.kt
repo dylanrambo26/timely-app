@@ -128,7 +128,7 @@ val testGoalCategoriesSizeThreeWithColor = listOf(
     )
 )
 
-val testScheduledGoalsWithCategoriesSizeThree: List<ScheduledGoal>
+val testScheduledGoalsWithCategoriesSizeFour: List<ScheduledGoal>
     get() = listOf(
         ScheduledGoal(
             scheduledGoalId = 0,
@@ -179,6 +179,28 @@ val testScheduledGoalsWithCategoriesSizeThree: List<ScheduledGoal>
             scheduledCategoryId = null
         )
 
+    )
+
+val testGoalsWithCategoriesSizeThree: List<GoalWithRecurrence>
+    get() = listOf(
+        GoalWithRecurrence(
+            goal = goal1.copy(
+                categoryId = 0
+            ),
+            recurrenceRule = recurrenceRule1
+        ),
+        GoalWithRecurrence(
+            goal = goal2.copy(
+                categoryId = 1
+            ),
+            recurrenceRule = recurrenceRule2
+        ),
+        GoalWithRecurrence(
+            goal = goal3.copy(
+                categoryId = 2
+            ),
+            recurrenceRule = null
+        )
     )
 
 

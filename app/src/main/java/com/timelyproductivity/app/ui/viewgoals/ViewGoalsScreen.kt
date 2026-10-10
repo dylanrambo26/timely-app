@@ -38,7 +38,7 @@ import com.timelyproductivity.app.TimelySmallTopAppBar
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testScheduledGoalsSizeThree
-import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeThree
+import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeFour
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.components.ColorLegend
 import com.timelyproductivity.app.ui.components.LegendItem
@@ -334,7 +334,7 @@ fun ViewGoalsBodyPreview(){
         ViewGoalsBody(
             isPastDate = {false},
             scheduledGoalsListUiState = ScheduledGoalsListUiState(
-                scheduledGoalsList = testScheduledGoalsWithCategoriesSizeThree,
+                scheduledGoalsList = testScheduledGoalsWithCategoriesSizeFour,
                 categories = testGoalCategoriesSizeThreeWithColor,
                 date = selectedDate,
                 totalMinutes = 120,

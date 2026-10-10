@@ -27,6 +27,8 @@ object AppViewModelProvider{
         initializer {
             GoalListViewModel(
                 timelyApplication().container.goalsRepository,
+                timelyApplication().container.goalCategoriesRepository,
+                timelyApplication().container.userPreferencesRepository
             )
         }
 

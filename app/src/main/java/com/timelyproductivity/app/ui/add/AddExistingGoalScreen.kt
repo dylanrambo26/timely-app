@@ -35,6 +35,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.timelyproductivity.app.R
 import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
+import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
+import com.timelyproductivity.app.data.testGoalsWithCategoriesSizeThree
 import com.timelyproductivity.app.data.testGoalsWithRecurrenceSizeThree
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.components.AddGoalButton
@@ -106,7 +108,6 @@ fun AddExistingGoalScreen(
 @Composable
 fun AddExistingGoalBody(
     goalListUiState: GoalListUiState,
-    //goalsListUiState: ScheduledGoalsListUiState,
     scheduledGoalsListUiState: ScheduledGoalsListUiState,
     showDurationError: Boolean,
     onAddGoalPressed: (Int) -> Unit,
@@ -143,6 +144,8 @@ fun AddExistingGoalBody(
         } else {
             GoalTemplateList(
                 goals = goalListUiState.goalList,
+                categories = goalListUiState.categories,
+                addCategoryColors = goalListUiState.useCategoryColorsEnabled,
                 onGoalClick = {goal ->
                     selectedGoalId = goal.goalID
                 },
@@ -232,7 +235,9 @@ fun AddExistingGoalBodyPreview(){
     TimeManagementAppTheme {
         AddExistingGoalBody(
             goalListUiState = GoalListUiState(
-                goalList = testGoalsWithRecurrenceSizeThree
+                goalList = testGoalsWithCategoriesSizeThree,
+                categories = testGoalCategoriesSizeThreeWithColor,
+                useCategoryColorsEnabled = true,
             ),
             scheduledGoalsListUiState = ScheduledGoalsListUiState(),
             onAddGoalPressed = {},

@@ -56,6 +56,7 @@ class OfflineScheduledGoalsRepository(
                 scheduledGoalTitle = goal.goalTitle,
                 scheduledHours = goal.hours,
                 scheduledMinutes = goal.minutes,
+                scheduledCategoryId = goal.categoryId
             )
         )
 
