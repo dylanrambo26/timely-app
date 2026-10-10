@@ -42,7 +42,9 @@ import com.timelyproductivity.app.R
 import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
+import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testScheduledGoalsSizeThree
+import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeFour
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.components.PermissionsDialog
 import com.timelyproductivity.app.ui.components.lists.ScheduledGoalList
@@ -228,10 +230,12 @@ fun CurrentTaskBody(
         //Display a goal list filtered for goals that are paused and not started only
         ScheduledGoalList(
             goals = filteredGoals,
+            categories = scheduledGoalsListUiState.categories,
             selectedGoalId = currentTaskUiState.selectedGoal?.scheduledGoalId,
             onGoalClick = {scheduledGoal ->
                 onGoalSelected(scheduledGoal)
             },
+            addCategoryColors = scheduledGoalsListUiState.useCategoryColorsEnabled,
             showCountdownReminders = currentTaskUiState.countdownRemindersEnabled,
             countdownReminders = currentTaskUiState.countdownReminders,
             isCustomizingReminders = currentTaskUiState.isCustomizingReminders,
@@ -311,7 +315,9 @@ fun CurrentTaskBodyPreview(){
     TimeManagementAppTheme {
         CurrentTaskBody(
             scheduledGoalsListUiState = ScheduledGoalsListUiState(
-                scheduledGoalsList = testScheduledGoalsSizeThree
+                scheduledGoalsList = testScheduledGoalsWithCategoriesSizeFour,
+                categories = testGoalCategoriesSizeThreeWithColor,
+                useCategoryColorsEnabled = true
             ),
             onSaveCurrentTaskPressed = {},
             modifier = Modifier

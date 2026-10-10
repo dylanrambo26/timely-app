@@ -140,7 +140,8 @@ class OfflineScheduledGoalsRepository(
                         recurrenceRuleId = rule.recurrenceRuleId,
                         scheduledGoalTitle = goal.goalTitle,
                         scheduledHours = goal.hours,
-                        scheduledMinutes = goal.minutes
+                        scheduledMinutes = goal.minutes,
+                        scheduledCategoryId = goal.categoryId
                     )
                 )
             }
