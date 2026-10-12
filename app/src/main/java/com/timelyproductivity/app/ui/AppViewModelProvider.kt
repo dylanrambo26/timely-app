@@ -39,14 +39,17 @@ object AppViewModelProvider{
                 timelyApplication().container.scheduledGoalsRepository,
                 timelyApplication().container.calendarEventsRepository,
                 timelyApplication().container.createRecurrenceUseCase,
-                timelyApplication().container.goalCategoriesRepository
+                timelyApplication().container.goalCategoriesRepository,
+                timelyApplication().container.userPreferencesRepository
             )
         }
 
         initializer {
             EditScheduledGoalViewModel(
                 this.createSavedStateHandle(),
-                timelyApplication().container.scheduledGoalsRepository
+                timelyApplication().container.scheduledGoalsRepository,
+                timelyApplication().container.goalCategoriesRepository,
+                timelyApplication().container.userPreferencesRepository
             )
         }
 

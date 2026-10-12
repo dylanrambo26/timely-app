@@ -1,11 +1,17 @@
 package com.timelyproductivity.app.ui.editScheduled
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -13,8 +19,11 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
@@ -27,7 +36,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.timelyproductivity.app.R
 import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
+import com.timelyproductivity.app.data.goal.category.CategoryColor
+import com.timelyproductivity.app.data.goal.category.GoalCategory
+import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.categories.CategoryEditorUiState
+import com.timelyproductivity.app.ui.components.categories.CategoryDropdown
+import com.timelyproductivity.app.ui.components.categories.CategoryEditorDialog
 import com.timelyproductivity.app.ui.components.lists.GoalTemplateCard
 import com.timelyproductivity.app.ui.createGoal.GoalDetails
 import com.timelyproductivity.app.ui.createGoal.GoalUiState
@@ -46,13 +61,14 @@ object EditScheduledGoalDestination : NavigationDest {
 @Composable
 fun EditScheduledGoalScreen(
     modifier: Modifier = Modifier,
-    viewModel: EditScheduledGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    editScheduledGoalViewModel: EditScheduledGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToEditScheduledGoals: (Int) -> Unit,
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val coroutineScope = rememberCoroutineScope()
+    val categoryEditorUiState by editScheduledGoalViewModel.categoryEditorUiState.collectAsState()
     Scaffold(
         topBar = { TimelySmallTopAppBar(stringResource(R.string.edit_one_goal)) },
         bottomBar = {
@@ -63,16 +79,25 @@ fun EditScheduledGoalScreen(
             )}
     ) { innerPadding ->
         EditScheduledGoalBody(
-            goalUiState = viewModel.goalUiState,
-            onGoalValueChange = viewModel::updateUiState,
+            goalUiState = editScheduledGoalViewModel.goalUiState,
+            onGoalValueChange = editScheduledGoalViewModel::updateUiState,
             onSaveGoalClick = {
                 coroutineScope.launch {
-                    viewModel.updateScheduledGoal {eventId ->
+                    editScheduledGoalViewModel.updateScheduledGoal { eventId ->
                         navigateToEditScheduledGoals(eventId)
                     }
                 }
             },
-            navigateBack = { viewModel.calendarEventId.value?.let(navigateToEditScheduledGoals) },
+            navigateBack = { editScheduledGoalViewModel.calendarEventId.value?.let(navigateToEditScheduledGoals) },
+            onCategorySelected = {category ->
+                editScheduledGoalViewModel.selectCategory(category?.categoryId)
+            },
+            categoryEditorUiState = categoryEditorUiState,
+            onCreateCategory = editScheduledGoalViewModel::openAddCategoryEditor,
+            onCategoryInputChanged = editScheduledGoalViewModel::updateCategoryName,
+            onSaveCategory = editScheduledGoalViewModel::saveCategory,
+            onDismissCategoryDialog = editScheduledGoalViewModel::closeCategoryDialog,
+            onColorSelected = editScheduledGoalViewModel::updateCategoryColor,
             modifier = modifier.padding(innerPadding)
         )
     }
@@ -84,28 +109,56 @@ fun EditScheduledGoalBody(
     goalUiState: GoalUiState,
     onGoalValueChange: (GoalDetails) -> Unit,
     onSaveGoalClick: () -> Unit,
+
+    onCategorySelected: (GoalCategory?) -> Unit,
+    categoryEditorUiState: CategoryEditorUiState,
+    onCreateCategory: () -> Unit,
+    onCategoryInputChanged: (String) -> Unit,
+    onSaveCategory: () -> Unit,
+    onDismissCategoryDialog: () -> Unit,
+    onColorSelected: (CategoryColor) -> Unit,
+
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier
 ){
+    val scrollState = rememberScrollState()
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxSize()
-            .padding(dimensionResource(R.dimen.padding_medium)),
-        verticalArrangement = Arrangement.Center
+            .verticalScroll(scrollState)
+            .padding(dimensionResource(R.dimen.padding_medium))
+            .navigationBarsPadding(),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        //TimeRemaining(remaining = goalUiState.remainingMinutesInDay)
-        //DisplayTime(duration = goalUiState.remainingMinutesInDay, title = stringResource(R.string.available_time_in_full_day))
+
+        if(categoryEditorUiState.isVisible){
+            CategoryEditorDialog(
+                editorUiState = categoryEditorUiState,
+                onInputChanged = onCategoryInputChanged,
+                onColorSelected = onColorSelected,
+                onSave = onSaveCategory,
+                onDismiss = onDismissCategoryDialog
+            )
+        }
 
         val oldGoalDetails = remember(goalUiState.goalDetails.id){
             goalUiState.goalDetails
         }
         Text(stringResource(R.string.old_goal))
         GoalTemplateCard(
-            goal = oldGoalDetails.toGoal(),
+            goal = oldGoalDetails.toGoal(
+                categoryId = goalUiState.originalCategoryId
+            ),
+            categories = goalUiState.goalCategories,
+            addCategoryColors = goalUiState.useCategoryColorsEnabled
         )
         Text(stringResource(R.string.new_goal))
         GoalTemplateCard(
-            goal = goalUiState.goalDetails.toGoal(),
+            goal = goalUiState.goalDetails.toGoal(
+                categoryId = goalUiState.selectedCategoryId
+            ),
+            categories = goalUiState.goalCategories,
+            addCategoryColors = goalUiState.useCategoryColorsEnabled
         )
 
 
@@ -115,6 +168,35 @@ fun EditScheduledGoalBody(
             modifier = Modifier.fillMaxWidth(),
             isDurationEditable = goalUiState.isDurationEditable
         )
+
+        val selectedCategory = goalUiState.goalCategories
+            .firstOrNull {
+                it.categoryId == goalUiState.selectedCategoryId
+            }
+
+        CategoryDropdown(
+            categories = goalUiState.goalCategories,
+            selectedCategory = selectedCategory,
+            onCategorySelected = onCategorySelected,
+            onCreateCategory = onCreateCategory
+        )
+
+        //Error Message Space
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .heightIn(min = 40.dp),
+            contentAlignment = Alignment.Center
+        ){
+            goalUiState.errorMessage?.let {
+                Text(
+                    text = stringResource(it),
+                    color = MaterialTheme.colorScheme.error,
+                    textAlign = TextAlign.Center,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
+        }
 
         Row(
             modifier = Modifier.padding(16.dp)
@@ -146,14 +228,6 @@ fun EditScheduledGoalBody(
                     color = Color.Green
                 )
             }
-        }
-        if(goalUiState.errorMessage != null){
-            Text(
-                text = stringResource(goalUiState.errorMessage),
-                color = MaterialTheme.colorScheme.error,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.padding(8.dp)
-            )
         }
     }
 }
@@ -234,11 +308,23 @@ fun EditScheduledGoalScreenPreview(){
                GoalDetails(
                    title = "Title", hours = "1", minutes = "30"
                ),
-               isDurationEditable = false
+               isDurationEditable = true,
+               selectedCategoryId = 1,
+               originalCategoryId = 0,
+               errorMessage = R.string.selected_goal_exceeds_remaining_time,
+               goalCategories = testGoalCategoriesSizeThreeWithColor,
+               useCategoryColorsEnabled = true
            ),
             onGoalValueChange = {},
             onSaveGoalClick = {},
-            navigateBack = {}
+            navigateBack = {},
+            onCategorySelected = {},
+            onSaveCategory = {},
+            onColorSelected = {},
+            onCategoryInputChanged = {},
+            onDismissCategoryDialog = {},
+            onCreateCategory = {},
+            categoryEditorUiState = CategoryEditorUiState()
         )
     }
 }

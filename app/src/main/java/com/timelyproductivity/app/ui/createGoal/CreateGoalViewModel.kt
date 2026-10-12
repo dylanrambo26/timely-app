@@ -7,6 +7,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.timelyproductivity.app.R
+import com.timelyproductivity.app.data.UserPreferencesRepository
 import com.timelyproductivity.app.data.goal.recurrence.CreateRecurrenceUseCase
 import com.timelyproductivity.app.data.calendar.CalendarEventsRepository
 import com.timelyproductivity.app.data.goal.Goal
@@ -38,7 +39,8 @@ class CreateGoalViewModel(
     private val scheduledGoalsRepository: ScheduledGoalsRepository,
     private val calendarEventsRepository: CalendarEventsRepository,
     private val createRecurrenceUseCase: CreateRecurrenceUseCase,
-    private val goalCategoriesRepository: GoalCategoriesRepository
+    private val goalCategoriesRepository: GoalCategoriesRepository,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel(), CategoryEditorActions{
 
     var goalUiState by mutableStateOf(GoalUiState())
@@ -67,6 +69,15 @@ class CreateGoalViewModel(
                 .collect {categories ->
                     goalUiState = goalUiState.copy(
                         goalCategories = categories
+                    )
+                }
+        }
+
+        viewModelScope.launch {
+            userPreferencesRepository.useCategoryColorsEnabled
+                .collect { enabled ->
+                    goalUiState = goalUiState.copy(
+                        useCategoryColorsEnabled = enabled
                     )
                 }
         }
@@ -292,7 +303,9 @@ data class GoalUiState(
     val hasRecurrenceEndDate: Boolean = false,
 
     val goalCategories: List<GoalCategory> = emptyList(),
-    val selectedCategoryId: Int? = null
+    val selectedCategoryId: Int? = null,
+    val originalCategoryId: Int? = null,
+    val useCategoryColorsEnabled: Boolean = false,
 )
 
 data class GoalDetails(
