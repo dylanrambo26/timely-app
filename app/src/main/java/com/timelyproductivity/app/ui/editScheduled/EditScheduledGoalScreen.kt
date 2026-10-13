@@ -41,6 +41,7 @@ import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.categories.CategoryEditorUiState
+import com.timelyproductivity.app.ui.components.ErrorMessageBox
 import com.timelyproductivity.app.ui.components.categories.CategoryDropdown
 import com.timelyproductivity.app.ui.components.categories.CategoryEditorDialog
 import com.timelyproductivity.app.ui.components.lists.GoalTemplateCard
@@ -182,21 +183,9 @@ fun EditScheduledGoalBody(
         )
 
         //Error Message Space
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .heightIn(min = 40.dp),
-            contentAlignment = Alignment.Center
-        ){
-            goalUiState.errorMessage?.let {
-                Text(
-                    text = stringResource(it),
-                    color = MaterialTheme.colorScheme.error,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(8.dp)
-                )
-            }
-        }
+        ErrorMessageBox(
+            errorMessageValue = goalUiState.errorMessage
+        )
 
         Row(
             modifier = Modifier.padding(16.dp)

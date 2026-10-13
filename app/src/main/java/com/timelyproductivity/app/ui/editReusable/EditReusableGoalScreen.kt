@@ -18,6 +18,8 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -30,10 +32,17 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.timelyproductivity.app.R
+import com.timelyproductivity.app.data.goal.category.CategoryColor
+import com.timelyproductivity.app.data.goal.category.GoalCategory
+import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.TimelyScaffold
+import com.timelyproductivity.app.ui.categories.CategoryEditorUiState
+import com.timelyproductivity.app.ui.components.ErrorMessageBox
 import com.timelyproductivity.app.ui.components.RecurrenceOptions
 import com.timelyproductivity.app.ui.components.RecurringGoalBody
+import com.timelyproductivity.app.ui.components.categories.CategoryDropdown
+import com.timelyproductivity.app.ui.components.categories.CategoryEditorDialog
 import com.timelyproductivity.app.ui.components.lists.GoalTemplateCard
 import com.timelyproductivity.app.ui.createGoal.GoalDetails
 import com.timelyproductivity.app.ui.createGoal.GoalUiState
@@ -63,6 +72,7 @@ fun EditReusableGoalScreen(
     navigateToAnalytics: () -> Unit,
 ){
     val coroutineScope = rememberCoroutineScope()
+    val categoryEditorUiState by viewModel.categoryEditorUiState.collectAsState()
     TimelyScaffold(
         topBarTitle = stringResource(R.string.edit_one_goal_top_bar_text),
         onHomeClick = navigateToHome,
@@ -101,6 +111,16 @@ fun EditReusableGoalScreen(
                     viewModel.goalUiState.goalDetails.id
                 )
             },
+            onCategorySelected = {category ->
+                viewModel.selectCategory(category?.categoryId)
+            },
+            categoryEditorUiState = categoryEditorUiState,
+            onCreateCategory = viewModel::openAddCategoryEditor,
+            onCategoryInputChanged = viewModel::updateCategoryName,
+            onSaveCategory = viewModel::saveCategory,
+            onDismissCategoryDialog = viewModel::closeCategoryDialog,
+            onColorSelected = viewModel::updateCategoryColor,
+
             modifier = modifier.padding(innerPadding)
         )
     }
@@ -121,8 +141,26 @@ fun EditReusableGoalBody(
     updateRecurrenceStartDate: (LocalDate) -> Unit,
     updateRecurrenceEndDate: (LocalDate?) -> Unit,
     onRecurringChange: (Boolean) -> Unit,
+
+    onCategorySelected: (GoalCategory?) -> Unit,
+    categoryEditorUiState: CategoryEditorUiState,
+    onCreateCategory: () -> Unit,
+    onCategoryInputChanged: (String) -> Unit,
+    onSaveCategory: () -> Unit,
+    onDismissCategoryDialog: () -> Unit,
+    onColorSelected: (CategoryColor) -> Unit,
     modifier: Modifier = Modifier
 ){
+    if(categoryEditorUiState.isVisible){
+        CategoryEditorDialog(
+            editorUiState = categoryEditorUiState,
+            onInputChanged = onCategoryInputChanged,
+            onColorSelected = onColorSelected,
+            onSave = onSaveCategory,
+            onDismiss = onDismissCategoryDialog
+        )
+    }
+
     val scrollState = rememberScrollState()
 
     Column(
@@ -137,15 +175,23 @@ fun EditReusableGoalBody(
             goalUiState.goalDetails
         }
 
-        Text(stringResource(R.string.old_goal))
+        Text(stringResource(R.string.existing_goal))
         GoalTemplateCard(
-            goal = oldGoalDetails.toGoal(),
+            goal = oldGoalDetails.toGoal(
+                categoryId = goalUiState.originalCategoryId
+            ),
+            categories = goalUiState.goalCategories,
+            addCategoryColors = goalUiState.useCategoryColorsEnabled,
             recurringDays = goalUiState.originalRecurringDays.takeIf { goalUiState.wasOriginallyRecurring }
         )
 
-        Text(stringResource(R.string.new_goal))
+        Text(stringResource(R.string.updated_goal))
         GoalTemplateCard(
-            goal = goalUiState.goalDetails.toGoal(),
+            goal = goalUiState.goalDetails.toGoal(
+                categoryId = goalUiState.selectedCategoryId
+            ),
+            categories = goalUiState.goalCategories,
+            addCategoryColors = goalUiState.useCategoryColorsEnabled,
             recurringDays = goalUiState.recurringDays.takeIf { goalUiState.isGoalRecurring }
         )
 
@@ -155,6 +201,18 @@ fun EditReusableGoalBody(
             modifier = Modifier.fillMaxWidth()
         )
 
+        val selectedCategory = goalUiState.goalCategories
+            .firstOrNull {
+                it.categoryId == goalUiState.selectedCategoryId
+            }
+
+        CategoryDropdown(
+            categories = goalUiState.goalCategories,
+            selectedCategory = selectedCategory,
+            onCategorySelected = onCategorySelected,
+            onCreateCategory = onCreateCategory
+        )
+
         EditRecurrenceRuleBody(
             goalUiState = goalUiState,
             onDailyChange = onDailyChange,
@@ -162,7 +220,11 @@ fun EditReusableGoalBody(
             onEndDateEnabledChanged = onEndDateEnabledChanged,
             updateRecurrenceEndDate = updateRecurrenceEndDate,
             updateRecurrenceStartDate = updateRecurrenceStartDate,
-            onRecurringChange = onRecurringChange
+            onRecurringChange = onRecurringChange,
+        )
+
+        ErrorMessageBox(
+            errorMessageValue = goalUiState.errorMessage
         )
 
         Column(
@@ -180,14 +242,6 @@ fun EditReusableGoalBody(
                 Text(
                     text = "Save Changes to Template Only",
                     fontSize = 16.sp,
-                )
-            }
-            if(goalUiState.errorMessage != null){
-                Text(
-                    text = stringResource(goalUiState.errorMessage),
-                    color = MaterialTheme.colorScheme.error,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(8.dp)
                 )
             }
 
@@ -237,7 +291,7 @@ fun EditRecurrenceRuleBody(
     onEndDateEnabledChanged: (Boolean) -> Unit,
     updateRecurrenceStartDate: (LocalDate) -> Unit,
     updateRecurrenceEndDate: (LocalDate?) -> Unit,
-    onRecurringChange: (Boolean) -> Unit
+    onRecurringChange: (Boolean) -> Unit,
 ){
     if(goalUiState.wasOriginallyRecurring){
         Column {
@@ -337,7 +391,12 @@ fun EditReusableGoalBodyPreview(){
                 isGoalRecurring = true,
                 wasOriginallyRecurring = true,
                 recurringDays = setOf(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY, DayOfWeek.FRIDAY),
-                originalRecurringDays = setOf(DayOfWeek.THURSDAY, DayOfWeek.TUESDAY)
+                originalRecurringDays = setOf(DayOfWeek.THURSDAY, DayOfWeek.TUESDAY),
+                errorMessage = R.string.select_at_least_one_recurring_day,
+                goalCategories = testGoalCategoriesSizeThreeWithColor,
+                selectedCategoryId = 0,
+                originalCategoryId = 1,
+                useCategoryColorsEnabled = true
 
             ),
             onGoalValueChange = {},
@@ -350,7 +409,15 @@ fun EditReusableGoalBodyPreview(){
             onRecurringDayChange = {_,_->},
             onCreateNonRecurringCopyClicked = {},
             updateRecurrenceStartDate = {},
-            onEndDateEnabledChanged = {}
+            onEndDateEnabledChanged = {},
+            onSaveCategory = {},
+            onColorSelected = {},
+            onCreateCategory = {},
+            onCategorySelected = {},
+            onCategoryInputChanged = {},
+            onDismissCategoryDialog = {},
+            categoryEditorUiState = CategoryEditorUiState()
+
         )
     }
 }

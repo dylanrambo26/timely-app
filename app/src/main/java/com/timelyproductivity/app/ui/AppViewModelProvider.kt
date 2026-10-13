@@ -90,7 +90,9 @@ object AppViewModelProvider{
                 timelyApplication().container.goalsRepository,
                 timelyApplication().container.scheduledGoalsRepository,
                 timelyApplication().container.createRecurrenceUseCase,
-                timelyApplication().container.updateRecurrenceUseCase
+                timelyApplication().container.updateRecurrenceUseCase,
+                timelyApplication().container.goalCategoriesRepository,
+                timelyApplication().container.userPreferencesRepository
             )
         }
         initializer {

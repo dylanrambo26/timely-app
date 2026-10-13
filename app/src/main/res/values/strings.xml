@@ -43,7 +43,9 @@
     <string name="save_goal_and_add_to_date">Save &amp; Add to %1$s</string>
     <string name="existing_goals">Existing Goals</string>
     <string name="old_goal">Old Goal:</string>
+    <string name="existing_goal">Existing Goal:</string>
     <string name="new_goal">New Goal:</string>
+    <string name="updated_goal">Updated Goal:</string>
     <string name="past_date">Goals are View-Only for past dates.</string>
     <string name = "return_to_calendar">Return to Calendar</string>
     <string name="previous_day">Previous Day</string>

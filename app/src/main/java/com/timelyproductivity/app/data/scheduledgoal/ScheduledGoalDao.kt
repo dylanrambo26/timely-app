@@ -116,7 +116,7 @@ interface ScheduledGoalDao {
         hours: Int,
         minutes: Int,
         startDate: LocalDate,
-        notStartedStatus: GoalStatus
+        notStartedStatus: GoalStatus,
     )
 
     @Query(
@@ -138,6 +138,25 @@ interface ScheduledGoalDao {
         startDate: LocalDate
     )
 
+    @Query(
+        """
+            UPDATE scheduled_goals
+            SET scheduledCategoryId = :categoryId
+            WHERE goalId = :goalId
+                AND isCustomized = 0
+                AND eventId IN (
+                    SELECT eventId
+                    FROM calendar_events
+                    WHERE date >= :startDate
+                )
+    """
+    )
+    suspend fun updateFutureScheduledGoalCategories(
+        goalId: Int,
+        categoryId: Int?,
+        startDate: LocalDate
+    )
+
     //Only update the durations and titles of scheduled goals that are not the current task, if it is a current task only update title
     @Transaction
     suspend fun updateFutureScheduledGoalsFromEditedTemplate(
@@ -145,7 +164,8 @@ interface ScheduledGoalDao {
         title: String,
         hours: Int,
         minutes: Int,
-        startDate: LocalDate
+        startDate: LocalDate,
+        categoryId: Int?
     ){
         updateFutureScheduledGoalTitles(
             goalId = goalId,
@@ -160,6 +180,12 @@ interface ScheduledGoalDao {
             minutes = minutes,
             startDate = startDate,
             notStartedStatus = GoalStatus.NOT_STARTED
+        )
+
+        updateFutureScheduledGoalCategories(
+            goalId = goalId,
+            categoryId = categoryId,
+            startDate = startDate
         )
     }
 

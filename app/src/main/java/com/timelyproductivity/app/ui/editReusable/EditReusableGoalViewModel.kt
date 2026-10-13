@@ -6,11 +6,17 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.timelyproductivity.app.data.UserPreferencesRepository
 import com.timelyproductivity.app.data.goal.recurrence.CreateRecurrenceUseCase
 import com.timelyproductivity.app.data.goal.recurrence.UpdateRecurrenceUseCase
 import com.timelyproductivity.app.data.goal.GoalsRepository
+import com.timelyproductivity.app.data.goal.category.CategoryColor
+import com.timelyproductivity.app.data.goal.category.GoalCategoriesRepository
+import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalsRepository
+import com.timelyproductivity.app.ui.categories.CategoryEditorActions
+import com.timelyproductivity.app.ui.categories.CategoryEditorState
 import com.timelyproductivity.app.ui.createGoal.GoalDetails
 import com.timelyproductivity.app.ui.createGoal.GoalUiState
 import com.timelyproductivity.app.ui.createGoal.toGoal
@@ -33,16 +39,40 @@ class EditReusableGoalViewModel(
     private val scheduledGoalsRepository: ScheduledGoalsRepository,
     private val createRecurrenceUseCase: CreateRecurrenceUseCase,
     private val updateRecurrenceUseCase: UpdateRecurrenceUseCase,
-) : ViewModel() {
+    private val goalCategoriesRepository: GoalCategoriesRepository,
+    private val userPreferencesRepository: UserPreferencesRepository
+) : ViewModel(), CategoryEditorActions {
 
     var goalUiState by mutableStateOf(GoalUiState())
         private set
+
+    private val categoryEditor = CategoryEditorState()
+
+    val categoryEditorUiState = categoryEditor.uiState
 
     private val goalId: Int = checkNotNull(savedStateHandle[EditReusableGoalDestination.goalIdArg])
 
     private var originalRecurrenceRule: RecurrenceRule? = null
 
     init {
+        viewModelScope.launch {
+            goalCategoriesRepository.getCategories()
+                .collect { categories ->
+                    goalUiState = goalUiState.copy(
+                        goalCategories = categories
+                    )
+                }
+        }
+
+        viewModelScope.launch {
+            userPreferencesRepository.useCategoryColorsEnabled
+                .collect { enabled ->
+                    goalUiState = goalUiState.copy(
+                        useCategoryColorsEnabled = enabled
+                    )
+                }
+        }
+
         viewModelScope.launch {
             val goalWithRecurrence = goalsRepository
                 .getGoalWithRecurrenceStream(goalId)
@@ -63,7 +93,7 @@ class EditReusableGoalViewModel(
 
             val originalDays = goalWithRecurrence.recurrenceRule?.recurringDays.orEmpty()
 
-            goalUiState = GoalUiState(
+            goalUiState = goalUiState.copy(
                 goalDetails = details,
                 isEntryValid = details.validate() == null,
                 isGoalRecurring = isRecurring,
@@ -71,7 +101,9 @@ class EditReusableGoalViewModel(
                 recurringDays = originalDays,
                 originalRecurringDays = originalDays,
                 recurrenceEndDate = recurrenceRule?.endDate,
-                hasRecurrenceEndDate = recurrenceRule?.endDate != null
+                hasRecurrenceEndDate = recurrenceRule?.endDate != null,
+                selectedCategoryId = goal.categoryId,
+                originalCategoryId = goal.categoryId,
             )
         }
     }
@@ -122,7 +154,9 @@ class EditReusableGoalViewModel(
             return
         }
 
-        val goal = goalUiState.goalDetails.toGoal()
+        val goal = goalUiState.goalDetails.toGoal(
+            categoryId = goalUiState.selectedCategoryId
+        )
         goalsRepository.updateGoal(goal)
 
         //Updates goal values to the new ones, does not depend on recurring status
@@ -132,7 +166,8 @@ class EditReusableGoalViewModel(
                 title = goal.goalTitle,
                 hours = goal.hours,
                 minutes = goal.minutes,
-                startDate = LocalDate.now()
+                startDate = LocalDate.now(),
+                categoryId = goal.categoryId
             )
         }
 
@@ -159,5 +194,48 @@ class EditReusableGoalViewModel(
             )
         }
         onNavigate()
+    }
+
+    fun selectCategory(categoryId: Int?){
+        goalUiState = goalUiState.copy(
+            selectedCategoryId = categoryId
+        )
+    }
+
+    override fun openAddCategoryEditor() {
+        categoryEditor.openAddCategoryDialog()
+    }
+
+    override fun updateCategoryName(input: String) {
+        categoryEditor.updateCategoryInput(input)
+    }
+
+    override fun updateCategoryColor(color: CategoryColor) {
+        categoryEditor.updateSelectedColor(color)
+    }
+
+    override fun closeCategoryDialog() {
+        categoryEditor.closeCategoryDialog()
+    }
+
+    override fun saveCategory() {
+        val editorState = categoryEditor.uiState.value
+
+        val name = categoryEditor.validateCategoryInput(
+            existingCategories = goalUiState.goalCategories
+        ) ?: return
+
+        val category = GoalCategory(
+            name = name,
+            color = editorState.selectedColor
+        )
+
+        viewModelScope.launch {
+            val categoryId = goalCategoriesRepository.insertCategory(category)
+
+            selectCategory(categoryId.toInt())
+
+            categoryEditor.closeCategoryDialog()
+        }
     }
 }
