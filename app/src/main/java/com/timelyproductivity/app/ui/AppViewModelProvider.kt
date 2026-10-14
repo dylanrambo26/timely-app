@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.timelyproductivity.app.TimelyApplication
 import com.timelyproductivity.app.ui.analytics.AnalyticsViewModel
 import com.timelyproductivity.app.ui.calendar.CalendarViewModel
+import com.timelyproductivity.app.ui.categories.ManageCategoriesViewModel
 import com.timelyproductivity.app.ui.createGoal.CreateGoalViewModel
 import com.timelyproductivity.app.ui.currenttask.CurrentTaskViewModel
 import com.timelyproductivity.app.ui.editReusable.EditReusableGoalViewModel
@@ -110,6 +111,12 @@ object AppViewModelProvider{
         initializer {
             SettingsViewModel(
                 userPreferencesRepository = timelyApplication().container.userPreferencesRepository
+            )
+        }
+
+        initializer {
+            ManageCategoriesViewModel(
+                goalCategoriesRepository = timelyApplication().container.goalCategoriesRepository
             )
         }
     }
