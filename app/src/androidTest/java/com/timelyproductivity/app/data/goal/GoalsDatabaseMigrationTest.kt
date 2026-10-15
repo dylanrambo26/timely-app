@@ -3,12 +3,10 @@ package com.timelyproductivity.app.data.goal
 
 import android.database.sqlite.SQLiteConstraintException
 import androidx.room.testing.MigrationTestHelper
-import androidx.room.util.getColumnIndexOrThrow
 import androidx.sqlite.db.SupportSQLiteDatabase
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import junit.framework.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertThrows
 import org.junit.Assert.assertTrue
 import org.junit.Rule

@@ -1,16 +1,15 @@
 package com.timelyproductivity.app.data
 
 import com.timelyproductivity.app.data.goal.Goal
-import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.goal.GoalStatus
-import com.timelyproductivity.app.data.goal.recurrence.GoalWithRecurrence
-import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
 import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
+import com.timelyproductivity.app.data.goal.category.GoalCategory
+import com.timelyproductivity.app.data.goal.recurrence.GoalWithRecurrence
+import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.ui.analytics.AnalyticsTimePeriod
 import com.timelyproductivity.app.ui.analytics.DailyActivity
-import com.timelyproductivity.app.ui.theme.toColor
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters

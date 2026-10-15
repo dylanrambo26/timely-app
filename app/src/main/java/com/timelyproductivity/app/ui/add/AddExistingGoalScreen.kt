@@ -37,7 +37,6 @@ import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testGoalsWithCategoriesSizeThree
-import com.timelyproductivity.app.data.testGoalsWithRecurrenceSizeThree
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.components.AddGoalButton
 import com.timelyproductivity.app.ui.components.lists.GoalTemplateList

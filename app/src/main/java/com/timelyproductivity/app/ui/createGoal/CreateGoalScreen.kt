@@ -2,7 +2,6 @@ package com.timelyproductivity.app.ui.createGoal
 
 //import com.example.timemanagementapp.data.TestData
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -31,7 +30,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -43,7 +41,6 @@ import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.ui.AppViewModelProvider
-import com.timelyproductivity.app.ui.categories.CategoryEditorState
 import com.timelyproductivity.app.ui.categories.CategoryEditorUiState
 import com.timelyproductivity.app.ui.components.ErrorMessageBox
 import com.timelyproductivity.app.ui.components.RecurringGoalBody
@@ -191,7 +188,11 @@ fun CreateGoalBody(
         )
         Spacer(modifier = Modifier.height(8.dp))
         GoalTemplateCard(
-            goal = goalUiState.goalDetails.toGoal(),
+            goal = goalUiState.goalDetails.toGoal(
+                categoryId = goalUiState.selectedCategoryId
+            ),
+            categories = goalUiState.goalCategories,
+            addCategoryColors = goalUiState.useCategoryColorsEnabled,
             recurringDays = if (goalUiState.isGoalRecurring){
                 goalUiState.recurringDays
             } else {
@@ -409,7 +410,8 @@ fun CreateGoalScreenPreview(){
                 hasRecurrenceEndDate = true,
                 recurrenceEndDate = LocalDate.of(2026, 10, 3),
                 goalCategories = testGoalCategoriesSizeThreeWithColor,
-                selectedCategoryId = testGoalCategoriesSizeThreeWithColor[2].categoryId
+                selectedCategoryId = testGoalCategoriesSizeThreeWithColor[2].categoryId,
+                useCategoryColorsEnabled = true
             ),
             onGoalValueChange = {},
             onSaveGoalClicked = {},

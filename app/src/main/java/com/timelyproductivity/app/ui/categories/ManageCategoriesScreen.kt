@@ -20,7 +20,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -58,14 +57,7 @@ import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testGoalCountMap
-import com.timelyproductivity.app.data.testGoalCounts
 import com.timelyproductivity.app.data.testScheduledGoalCountMap
-import com.timelyproductivity.app.data.toSortedByColorAsc
-import com.timelyproductivity.app.data.toSortedByColorDesc
-import com.timelyproductivity.app.data.toSortedByGoalCountAsc
-import com.timelyproductivity.app.data.toSortedByGoalCountDesc
-import com.timelyproductivity.app.data.toSortedByNameAsc
-import com.timelyproductivity.app.data.toSortedByNameDesc
 import com.timelyproductivity.app.data.toSortedByScheduledGoalCountAsc
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.TimelyScaffold

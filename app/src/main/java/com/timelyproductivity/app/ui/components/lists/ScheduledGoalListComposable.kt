@@ -48,7 +48,6 @@ import com.timelyproductivity.app.ui.theme.checkbox
 import com.timelyproductivity.app.ui.theme.completedGoal
 import com.timelyproductivity.app.ui.theme.toColor
 import com.timelyproductivity.app.util.MAX_NUMBER_OF_COUNTDOWN_REMINDERS
-import com.timelyproductivity.app.util.incompleteGoals
 
 @Composable
 fun ScheduledGoalList(
