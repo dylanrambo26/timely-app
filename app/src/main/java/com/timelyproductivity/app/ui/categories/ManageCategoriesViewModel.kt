@@ -5,8 +5,10 @@ import androidx.lifecycle.viewModelScope
 import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.goal.category.GoalCategoriesRepository
 import com.timelyproductivity.app.data.goal.category.GoalCategory
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -20,6 +22,9 @@ class ManageCategoriesViewModel(
 
     val categoryEditor = CategoryEditorState()
     val categoryEditorUiState = categoryEditor.uiState
+
+    private val _categoryPendingDeletion = MutableStateFlow<GoalCategory?>(null)
+    val categoryPendingDeletion = _categoryPendingDeletion.asStateFlow()
 
     val categories: StateFlow<List<GoalCategory>> =
         goalCategoriesRepository.getCategories()
@@ -74,12 +79,22 @@ class ManageCategoriesViewModel(
         categoryEditor.openEditCategoryDialog(category)
     }
 
-    fun deleteCategory(category: GoalCategory){
-        viewModelScope.launch {
-            goalCategoriesRepository.deleteCategory(category)
-        }
+    fun requestDeleteCategory(category: GoalCategory) {
+        _categoryPendingDeletion.value = category
     }
 
+    fun cancelDeleteCategory() {
+        _categoryPendingDeletion.value = null
+    }
+
+    fun confirmDeleteCategory() {
+        val category = _categoryPendingDeletion.value ?: return
+
+        viewModelScope.launch {
+            goalCategoriesRepository.deleteCategory(category)
+            _categoryPendingDeletion.value = null
+        }
+    }
 }
 
 data class ManageCategoriesUiState(

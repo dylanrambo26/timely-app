@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -29,6 +30,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -68,6 +70,7 @@ fun ManageCategoriesScreen(
 ){
     val categories by manageCategoriesViewModel.categories.collectAsState()
     val categoryEditorUiState by manageCategoriesViewModel.categoryEditorUiState.collectAsState()
+    val categoryPendingDeletion by manageCategoriesViewModel.categoryPendingDeletion.collectAsState()
     TimelyScaffold(
         topBarTitle = stringResource(R.string.manage_categories),
         onHomeClick = navigateToHome,
@@ -80,7 +83,7 @@ fun ManageCategoriesScreen(
 
             onAddCategory = manageCategoriesViewModel::openAddCategoryEditor,
             onEditCategory = manageCategoriesViewModel::openEditCategoryEditor,
-            onDeleteCategory = manageCategoriesViewModel::deleteCategory,
+            onDeleteCategory = manageCategoriesViewModel::requestDeleteCategory,
             navigateBack = navigateBack,
 
             onCategoryInputChanged = manageCategoriesViewModel::updateCategoryName,
@@ -89,6 +92,14 @@ fun ManageCategoriesScreen(
             onDismissCategoryDialog = manageCategoriesViewModel::closeCategoryDialog,
 
             modifier = Modifier.padding(innerPadding)
+        )
+    }
+
+    categoryPendingDeletion?.let { category ->
+        DeleteCategoryDialog(
+            category = category,
+            onConfirm = manageCategoriesViewModel::confirmDeleteCategory,
+            onDismiss = manageCategoriesViewModel::cancelDeleteCategory
         )
     }
 }
@@ -244,6 +255,40 @@ fun CategoryCard(
             }
         }
     }
+}
+
+@Composable
+fun DeleteCategoryDialog(
+    category: GoalCategory,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("Delete Category?")
+        },
+        text = {
+            Text(
+                "Are you sure you want to delete the \"${category.name}\" category? " +
+                        "This category will be removed from all goals that use it. " +
+                        "Your goals will not be deleted."
+            )
+        },
+        confirmButton = {
+            TextButton(onClick = onConfirm) {
+                Text(
+                    text = "Delete",
+                    color = MaterialTheme.colorScheme.error
+                )
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        }
+    )
 }
 
 @Preview(showBackground = true)
