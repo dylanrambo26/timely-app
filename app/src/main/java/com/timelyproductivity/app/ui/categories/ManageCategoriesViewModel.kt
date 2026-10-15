@@ -2,18 +2,23 @@ package com.timelyproductivity.app.ui.categories
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.timelyproductivity.app.data.goal.GoalsRepository
 import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.goal.category.GoalCategoriesRepository
 import com.timelyproductivity.app.data.goal.category.GoalCategory
+import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalsRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class ManageCategoriesViewModel(
-    private val goalCategoriesRepository: GoalCategoriesRepository
+    private val goalCategoriesRepository: GoalCategoriesRepository,
+    private val scheduledGoalsRepository: ScheduledGoalsRepository,
+    private val goalsRepository: GoalsRepository,
 ): ViewModel(), CategoryEditorActions{
 
     companion object {
@@ -26,13 +31,60 @@ class ManageCategoriesViewModel(
     private val _categoryPendingDeletion = MutableStateFlow<GoalCategory?>(null)
     val categoryPendingDeletion = _categoryPendingDeletion.asStateFlow()
 
-    val categories: StateFlow<List<GoalCategory>> =
-        goalCategoriesRepository.getCategories()
-            .stateIn(
-                scope = viewModelScope,
-                started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
-                initialValue = emptyList()
-            )
+    private val _sortOption = MutableStateFlow(CategorySortOption.NAME)
+    private val _sortDescending = MutableStateFlow(false)
+
+    val manageCategoriesUiState: StateFlow<ManageCategoriesUiState> = combine(
+        goalCategoriesRepository.getCategories(),
+        _sortOption,
+        _sortDescending,
+        goalsRepository.getGoalCountsByCategory(),
+        scheduledGoalsRepository.getScheduledGoalCountsByCategory(),
+    ) { categories, sortOption, sortDescending, goalCounts, scheduledGoalCounts ->
+
+        val goalCountMap = goalCounts.associate {
+            it.categoryId to it.goalCount
+        }
+
+        val scheduledGoalCountMap = scheduledGoalCounts.associate {
+            it.categoryId to it.goalCount
+        }
+
+        val sortedCategories = when (sortOption) {
+            CategorySortOption.NAME ->
+                categories.sortedBy { it.name.lowercase() }
+
+            CategorySortOption.COLOR ->
+                categories.sortedBy { it.color.ordinal }
+
+            CategorySortOption.GOAL_COUNT ->
+                categories.sortedBy {
+                    goalCountMap[it.categoryId] ?: 0
+                }
+
+            CategorySortOption.SCHEDULED_GOAL_COUNT ->
+                categories.sortedBy {
+                    scheduledGoalCountMap[it.categoryId] ?: 0
+                }
+
+        }
+
+        ManageCategoriesUiState(
+            categories = if (sortDescending) {
+                sortedCategories.reversed()
+            } else {
+                sortedCategories
+            },
+            sortOption = sortOption,
+            sortDescending = sortDescending,
+            goalCounts = goalCountMap,
+            scheduledGoalCounts = scheduledGoalCountMap
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000L),
+        initialValue = ManageCategoriesUiState()
+    )
 
 
     override fun openAddCategoryEditor() {
@@ -55,7 +107,7 @@ class ManageCategoriesViewModel(
         val editorState = categoryEditor.uiState.value
 
         val name = categoryEditor.validateCategoryInput(
-            existingCategories = categories.value
+            existingCategories = manageCategoriesUiState.value.categories
         ) ?: return
 
         val category = GoalCategory(
@@ -95,8 +147,20 @@ class ManageCategoriesViewModel(
             _categoryPendingDeletion.value = null
         }
     }
+
+    fun updateSortOption(option: CategorySortOption) {
+        _sortOption.value = option
+    }
+
+    fun updateSortDescending(descending: Boolean) {
+        _sortDescending.value = descending
+    }
 }
 
 data class ManageCategoriesUiState(
-    val categories: List<GoalCategory> = emptyList()
+    val categories: List<GoalCategory> = emptyList(),
+    val sortOption: CategorySortOption = CategorySortOption.NAME,
+    val sortDescending: Boolean = false,
+    val goalCounts: Map<Int, Int> = emptyMap(),
+    val scheduledGoalCounts: Map<Int, Int> = emptyMap()
 )

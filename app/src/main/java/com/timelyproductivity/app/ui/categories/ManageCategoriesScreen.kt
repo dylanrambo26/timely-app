@@ -20,20 +20,31 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -42,11 +53,20 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.navArgument
 import com.timelyproductivity.app.R
 import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
+import com.timelyproductivity.app.data.testGoalCountMap
+import com.timelyproductivity.app.data.testGoalCounts
+import com.timelyproductivity.app.data.testScheduledGoalCountMap
+import com.timelyproductivity.app.data.toSortedByColorAsc
+import com.timelyproductivity.app.data.toSortedByColorDesc
+import com.timelyproductivity.app.data.toSortedByGoalCountAsc
+import com.timelyproductivity.app.data.toSortedByGoalCountDesc
+import com.timelyproductivity.app.data.toSortedByNameAsc
+import com.timelyproductivity.app.data.toSortedByNameDesc
+import com.timelyproductivity.app.data.toSortedByScheduledGoalCountAsc
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.TimelyScaffold
 import com.timelyproductivity.app.ui.components.categories.CategoryEditorDialog
@@ -68,7 +88,7 @@ fun ManageCategoriesScreen(
 
     manageCategoriesViewModel: ManageCategoriesViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
-    val categories by manageCategoriesViewModel.categories.collectAsState()
+    val manageCategoriesUiState by manageCategoriesViewModel.manageCategoriesUiState.collectAsState()
     val categoryEditorUiState by manageCategoriesViewModel.categoryEditorUiState.collectAsState()
     val categoryPendingDeletion by manageCategoriesViewModel.categoryPendingDeletion.collectAsState()
     TimelyScaffold(
@@ -78,7 +98,7 @@ fun ManageCategoriesScreen(
         onAnalyticsClick = navigateToAnalytics
     ) { innerPadding ->
         ManageCategoriesBody(
-            categories = categories,
+            manageCategoriesUiState = manageCategoriesUiState,
             categoryEditorUiState = categoryEditorUiState,
 
             onAddCategory = manageCategoriesViewModel::openAddCategoryEditor,
@@ -90,6 +110,9 @@ fun ManageCategoriesScreen(
             onColorSelected = manageCategoriesViewModel::updateCategoryColor,
             onSaveCategory = manageCategoriesViewModel::saveCategory,
             onDismissCategoryDialog = manageCategoriesViewModel::closeCategoryDialog,
+
+            updateSortOption = manageCategoriesViewModel::updateSortOption,
+            updateSortDescending = manageCategoriesViewModel::updateSortDescending,
 
             modifier = Modifier.padding(innerPadding)
         )
@@ -104,9 +127,10 @@ fun ManageCategoriesScreen(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManageCategoriesBody(
-    categories: List<GoalCategory>,
+    manageCategoriesUiState: ManageCategoriesUiState,
     categoryEditorUiState: CategoryEditorUiState,
 
     onAddCategory: () -> Unit,
@@ -117,6 +141,9 @@ fun ManageCategoriesBody(
     onSaveCategory: () -> Unit,
     onDismissCategoryDialog: () -> Unit,
     onColorSelected: (CategoryColor) -> Unit,
+
+    updateSortOption: (CategorySortOption) -> Unit,
+    updateSortDescending: (Boolean) -> Unit,
 
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -136,8 +163,16 @@ fun ManageCategoriesBody(
             .fillMaxSize()
             .padding(dimensionResource(R.dimen.padding_medium))
     ) {
+
+        CategorySortDropdown(
+            sortOption = manageCategoriesUiState.sortOption,
+            sortDescending = manageCategoriesUiState.sortDescending,
+            onSortOptionChanged = updateSortOption,
+            onSortDescendingChanged = updateSortDescending,
+        )
+
         CategoryList(
-            categories = categories,
+            manageCategoriesUiState = manageCategoriesUiState,
             onEditCategory = onEditCategory,
             onDeleteCategory = onDeleteCategory,
             modifier = Modifier.weight(1f)
@@ -178,7 +213,7 @@ fun ManageCategoriesBody(
 
 @Composable
 fun CategoryList(
-    categories: List<GoalCategory>,
+    manageCategoriesUiState: ManageCategoriesUiState,
     onEditCategory: (GoalCategory) -> Unit,
     onDeleteCategory: (GoalCategory) -> Unit,
     modifier: Modifier = Modifier
@@ -189,11 +224,14 @@ fun CategoryList(
         contentPadding = PaddingValues(dimensionResource(R.dimen.padding_small))
     ){
         items(
-            items = categories,
+            items = manageCategoriesUiState.categories,
             key = { it.categoryId }
         ){category ->
             CategoryCard(
                 category = category,
+                goalCount = manageCategoriesUiState.goalCounts[category.categoryId] ?: 0,
+                scheduledGoalCount = manageCategoriesUiState.scheduledGoalCounts[category.categoryId] ?: 0,
+                sortOption = manageCategoriesUiState.sortOption,
                 onEditCategory = onEditCategory,
                 onDeleteCategory = onDeleteCategory
             )
@@ -204,6 +242,9 @@ fun CategoryList(
 @Composable
 fun CategoryCard(
     category: GoalCategory,
+    goalCount: Int,
+    scheduledGoalCount: Int,
+    sortOption: CategorySortOption,
     onEditCategory: (GoalCategory) -> Unit,
     onDeleteCategory: (GoalCategory) -> Unit,
     modifier: Modifier = Modifier
@@ -227,14 +268,37 @@ fun CategoryCard(
                     ))
             )
 
-            Text(
-                text = category.name,
-                style = MaterialTheme.typography.titleMedium,
-                fontWeight = FontWeight.SemiBold,
+            Column(
                 modifier = Modifier
                     .weight(1f)
                     .padding(start = 16.dp)
-            )
+            ) {
+                Text(
+                    text = category.name,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+
+                val count = when (sortOption) {
+                    CategorySortOption.GOAL_COUNT -> goalCount
+                    CategorySortOption.SCHEDULED_GOAL_COUNT -> scheduledGoalCount
+                    else -> null
+                }
+
+                count?.let {
+                    val label = when (sortOption) {
+                        CategorySortOption.GOAL_COUNT -> "reusable goal"
+                        CategorySortOption.SCHEDULED_GOAL_COUNT -> "scheduled goal"
+                        else -> ""
+                    }
+
+                    Text(
+                        text = "$it $label${if (it == 1) "" else "s"}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
 
             IconButton(
                 onClick = { onEditCategory(category) }
@@ -291,7 +355,80 @@ fun DeleteCategoryDialog(
     )
 }
 
-@Preview(showBackground = true)
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun CategorySortDropdown(
+    sortOption: CategorySortOption,
+    sortDescending: Boolean,
+    onSortOptionChanged: (CategorySortOption) -> Unit,
+    onSortDescendingChanged: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = it },
+            modifier = Modifier.weight(1f)
+        ) {
+            OutlinedTextField(
+                value = sortOption.displayName,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Sort by") },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(
+                        expanded = expanded
+                    )
+                },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                CategorySortOption.entries.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option.displayName) },
+                        onClick = {
+                            onSortOptionChanged(option)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        IconButton(
+            onClick = {
+                onSortDescendingChanged(!sortDescending)
+            }
+        ) {
+            Icon(
+                imageVector = if(sortDescending){
+                    Icons.Default.KeyboardArrowDown
+                } else {
+                    Icons.Default.KeyboardArrowUp
+                },
+                contentDescription = if (sortDescending) {
+                    "Sort ascending"
+                } else {
+                    "Sort descending"
+                }
+            )
+        }
+    }
+}
+
+/*@Preview(showBackground = true)
 @Composable
 fun CategoryCardPreview(){
     TimeManagementAppTheme {
@@ -313,14 +450,13 @@ fun CategoryListPreview(){
             onDeleteCategory = {}
         )
     }
-}
+}*/
 
 @Preview(showBackground = true)
 @Composable
 fun ManageCategoriesBodyPreview(){
     TimeManagementAppTheme {
         ManageCategoriesBody(
-            categories = testGoalCategoriesSizeThreeWithColor,
             onAddCategory = {},
             onEditCategory = {},
             onDeleteCategory = {},
@@ -329,7 +465,16 @@ fun ManageCategoriesBodyPreview(){
             onSaveCategory = {},
             onCategoryInputChanged = {},
             onColorSelected = {},
-            categoryEditorUiState = CategoryEditorUiState()
+            categoryEditorUiState = CategoryEditorUiState(),
+            manageCategoriesUiState = ManageCategoriesUiState(
+                categories = testGoalCategoriesSizeThreeWithColor.toSortedByScheduledGoalCountAsc(),
+                sortOption = CategorySortOption.SCHEDULED_GOAL_COUNT,
+                goalCounts = testGoalCountMap,
+                scheduledGoalCounts = testScheduledGoalCountMap,
+                sortDescending = true,
+            ),
+            updateSortDescending = {},
+            updateSortOption = {}
         )
     }
 }

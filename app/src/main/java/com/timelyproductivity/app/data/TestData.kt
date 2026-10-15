@@ -6,9 +6,11 @@ import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.goal.recurrence.GoalWithRecurrence
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
 import com.timelyproductivity.app.data.goal.category.CategoryColor
+import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.ui.analytics.AnalyticsTimePeriod
 import com.timelyproductivity.app.ui.analytics.DailyActivity
+import com.timelyproductivity.app.ui.theme.toColor
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
@@ -128,6 +130,58 @@ val testGoalCategoriesSizeThreeWithColor = listOf(
     )
 )
 
+val testGoalCounts = listOf(
+    CategoryGoalCount(categoryId = 0, goalCount = 5),
+    CategoryGoalCount(categoryId = 1, goalCount = 10),
+    CategoryGoalCount(categoryId = 2, goalCount = 2)
+)
+val testScheduledGoalCounts = listOf(
+    CategoryGoalCount(categoryId = 0, goalCount = 1),
+    CategoryGoalCount(categoryId = 1, goalCount = 25),
+    CategoryGoalCount(categoryId = 2, goalCount = 4)
+)
+
+val testGoalCountMap = testGoalCounts.associate {
+    it.categoryId to it.goalCount
+}
+
+val testScheduledGoalCountMap = testScheduledGoalCounts.associate {
+    it.categoryId to it.goalCount
+}
+
+fun List<GoalCategory>.toSortedByNameAsc(): List<GoalCategory>{
+    return testGoalCategoriesSizeThreeWithColor.sortedBy { it.name.lowercase() }
+}
+
+fun List<GoalCategory>.toSortedByNameDesc(): List<GoalCategory>{
+    return toSortedByNameAsc().reversed()
+}
+
+fun List<GoalCategory>.toSortedByColorAsc(): List<GoalCategory>{
+    return testGoalCategoriesSizeThreeWithColor.sortedBy { it.color.ordinal }
+}
+
+fun List<GoalCategory>.toSortedByColorDesc(): List<GoalCategory>{
+    return toSortedByColorAsc().reversed()
+}
+
+fun List<GoalCategory>.toSortedByGoalCountAsc(): List<GoalCategory>{
+    return testGoalCategoriesSizeThreeWithColor.sortedBy { category -> testGoalCountMap[category.categoryId] ?: 0 }
+}
+
+fun List<GoalCategory>.toSortedByGoalCountDesc(): List<GoalCategory>{
+    return toSortedByGoalCountAsc().reversed()
+}
+
+fun List<GoalCategory>.toSortedByScheduledGoalCountAsc(): List<GoalCategory>{
+
+    return testGoalCategoriesSizeThreeWithColor.sortedBy { category -> testScheduledGoalCountMap[category.categoryId] ?: 0 }
+}
+
+fun List<GoalCategory>.toSortedByScheduledGoalCountDesc(): List<GoalCategory>{
+    return toSortedByScheduledGoalCountAsc().reversed()
+}
+
 val testScheduledGoalsWithCategoriesSizeFour: List<ScheduledGoal>
     get() = listOf(
         ScheduledGoal(
@@ -202,6 +256,8 @@ val testGoalsWithCategoriesSizeThree: List<GoalWithRecurrence>
             recurrenceRule = null
         )
     )
+
+
 
 
 fun generateTestDailyActivity(

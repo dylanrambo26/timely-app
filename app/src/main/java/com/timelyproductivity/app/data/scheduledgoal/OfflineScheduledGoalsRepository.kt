@@ -3,6 +3,7 @@ package com.timelyproductivity.app.data.scheduledgoal
 import com.timelyproductivity.app.data.calendar.CalendarEventsRepository
 import com.timelyproductivity.app.data.goal.GoalDao
 import com.timelyproductivity.app.data.goal.GoalStatus
+import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceException
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRuleDao
@@ -181,4 +182,6 @@ class OfflineScheduledGoalsRepository(
             )
         )
     }
+
+    override fun getScheduledGoalCountsByCategory(): Flow<List<CategoryGoalCount>> = scheduledGoalDao.getScheduledGoalCountsByCategory()
 }

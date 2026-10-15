@@ -116,7 +116,9 @@ object AppViewModelProvider{
 
         initializer {
             ManageCategoriesViewModel(
-                goalCategoriesRepository = timelyApplication().container.goalCategoriesRepository
+                goalCategoriesRepository = timelyApplication().container.goalCategoriesRepository,
+                scheduledGoalsRepository = timelyApplication().container.scheduledGoalsRepository,
+                goalsRepository = timelyApplication().container.goalsRepository
             )
         }
     }

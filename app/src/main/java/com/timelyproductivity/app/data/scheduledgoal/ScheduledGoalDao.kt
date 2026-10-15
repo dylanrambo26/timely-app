@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.timelyproductivity.app.data.goal.GoalStatus
+import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -215,4 +216,12 @@ interface ScheduledGoalDao {
         startDate: LocalDate,
         endDate: LocalDate
     ): List<LocalDate>
+
+    @Query("""
+        SELECT scheduledCategoryId AS categoryId, COUNT(*) AS goalCount
+        FROM scheduled_goals
+        WHERE scheduledCategoryId IS NOT NULL
+        GROUP BY scheduledCategoryId
+    """)
+    fun getScheduledGoalCountsByCategory(): Flow<List<CategoryGoalCount>>
 }
