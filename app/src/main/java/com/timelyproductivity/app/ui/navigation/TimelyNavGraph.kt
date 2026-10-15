@@ -20,6 +20,9 @@ import com.timelyproductivity.app.ui.analytics.AnalyticsViewModel
 import com.timelyproductivity.app.ui.calendar.CalendarDestination
 import com.timelyproductivity.app.ui.calendar.CalendarScreen
 import com.timelyproductivity.app.ui.calendar.CalendarViewModel
+import com.timelyproductivity.app.ui.categories.ManageCategoriesDestination
+import com.timelyproductivity.app.ui.categories.ManageCategoriesScreen
+import com.timelyproductivity.app.ui.categories.ManageCategoriesViewModel
 import com.timelyproductivity.app.ui.createGoal.CreateGoalDestination
 import com.timelyproductivity.app.ui.createGoal.CreateGoalScreen
 import com.timelyproductivity.app.ui.createGoal.CreateGoalViewModel
@@ -93,7 +96,8 @@ fun TimelyNavHost(
                     navigateToCalendar = {navController.navigate(CalendarDestination.route)},
                     navigateToHome = {navController.navigate(HomeDestination.route)},
                     navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
-                    settingsViewModel = settingsViewModel
+                    settingsViewModel = settingsViewModel,
+                    onNavigateToManageCategories = {navController.navigate(ManageCategoriesDestination.route)}
                 )
             }
             composable(route = CalendarDestination.route){ backStackEntry ->
@@ -330,6 +334,20 @@ fun TimelyNavHost(
                         )
                     },
                     viewModel = viewModel
+                )
+            }
+
+            composable(
+                route = ManageCategoriesDestination.route
+            ){
+                val viewModel: ManageCategoriesViewModel = viewModel(factory = AppViewModelProvider.Factory)
+
+                ManageCategoriesScreen(
+                    navigateToHome = { navController.navigate(HomeDestination.route) },
+                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
+                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
+                    navigateBack = { navController.popBackStack() },
+                    manageCategoriesViewModel = viewModel
                 )
             }
         }

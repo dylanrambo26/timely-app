@@ -40,6 +40,10 @@ class UserPreferencesRepository(
             "task_notification_sound_enabled"
         )
 
+        val USE_CATEGORY_COLORS_ENABLED = booleanPreferencesKey(
+            "use_category_colors_enabled"
+        )
+
         const val TAG = "UserPreferencesRepo"
     }
 
@@ -89,6 +93,11 @@ class UserPreferencesRepository(
             preferences[TASK_NOTIFICATION_SOUND_ENABLED] ?: true
         }
 
+    val useCategoryColorsEnabled: Flow<Boolean> =
+        preferencesFlow.map { preferences ->
+            preferences[USE_CATEGORY_COLORS_ENABLED] ?: false
+        }
+
     suspend fun saveCurrentTaskID(currentTaskID: Int){
         dataStore.edit { preferences ->
             preferences[CURRENT_TASK_ID] = currentTaskID
@@ -134,6 +143,12 @@ class UserPreferencesRepository(
     suspend fun setTaskNotificationSoundEnabled(enabled: Boolean){
         dataStore.edit { preferences ->
             preferences[TASK_NOTIFICATION_SOUND_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setUseCategoryColorsEnabled(enabled: Boolean){
+        dataStore.edit { preferences ->
+            preferences[USE_CATEGORY_COLORS_ENABLED] = enabled
         }
     }
 }

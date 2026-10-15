@@ -1,5 +1,6 @@
 package com.timelyproductivity.app.ui.settings
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -7,6 +8,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material3.Icon
+import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -40,6 +45,7 @@ fun SettingsScreen(
     navigateToCalendar: () -> Unit,
     navigateToAnalytics: () -> Unit,
     navigateToHome: () -> Unit,
+    onNavigateToManageCategories: () -> Unit,
     settingsViewModel: SettingsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
     val settingsUiState by settingsViewModel.settingsUiState.collectAsState()
@@ -59,6 +65,7 @@ fun SettingsScreen(
             onTaskCompletionNotificationCheckedChange = settingsViewModel::setTaskCompletionNotificationsEnabled,
             onCountdownRemindersCheckedChange = settingsViewModel::setCountdownRemindersEnabled,
             onTaskNotificationSoundChanged = settingsViewModel::setTaskNotificationSoundEnabled,
+            onUseCategoryColorsCheckedChange = settingsViewModel::setUseCategoryColorsEnabled,
 
             onAddReminder = settingsViewModel::openAddReminderDialog,
             openEditReminder = settingsViewModel::openEditReminderDialog,
@@ -66,6 +73,7 @@ fun SettingsScreen(
             onReminderInputChanged = settingsViewModel::updateReminderInput,
             onSaveReminder = settingsViewModel::saveReminder,
             onDismissReminderDialog = settingsViewModel::closeReminderDialog,
+            onNavigateToManageCategories = onNavigateToManageCategories,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -77,6 +85,7 @@ fun SettingsBody(
     reminderEditorUiState: ReminderEditorUiState,
     onTaskCompletionNotificationCheckedChange: (Boolean) -> Unit,
     onCountdownRemindersCheckedChange: (Boolean) -> Unit,
+    onUseCategoryColorsCheckedChange: (Boolean) -> Unit,
 
     onAddReminder: () -> Unit,
     openEditReminder: (Int) -> Unit,
@@ -86,6 +95,8 @@ fun SettingsBody(
     onDismissReminderDialog: () -> Unit,
 
     onTaskNotificationSoundChanged: (Boolean) -> Unit,
+
+    onNavigateToManageCategories: () -> Unit,
 
     modifier: Modifier = Modifier
 ){
@@ -126,6 +137,26 @@ fun SettingsBody(
                 maxSizeReached = settingsUiState.countdownRemindersMinutes.size >= MAX_NUMBER_OF_COUNTDOWN_REMINDERS
             )
         }
+
+        Text(
+            text = "Theme Settings",
+            style = MaterialTheme.typography.headlineMedium
+        )
+
+        SettingsSwitch(
+            text = "Use category colors",
+            checked = settingsUiState.useCategoryColorsEnabled,
+            onCheckedChange = onUseCategoryColorsCheckedChange
+        )
+
+        Text(
+            text = "Manage Categories",
+            style = MaterialTheme.typography.headlineMedium
+        )
+        ManageCategoriesNavigationItem(
+            onClick = onNavigateToManageCategories
+        )
+
     }
 
     if(reminderEditorUiState.isVisible){
@@ -159,6 +190,30 @@ fun SettingsSwitch(
     }
 }
 
+@Composable
+fun ManageCategoriesNavigationItem(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    ListItem(
+        headlineContent = {
+            Text("Manage Categories")
+        },
+        supportingContent = {
+            Text("Create, edit, and delete goal categories")
+        },
+        trailingContent = {
+            Icon(
+                imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null
+            )
+        },
+        modifier = modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+    )
+}
+
 @Preview(showBackground = true)
 @Composable
 fun SettingsBodyPreview(){
@@ -177,7 +232,9 @@ fun SettingsBodyPreview(){
             onDismissReminderDialog = {},
             reminderEditorUiState = ReminderEditorUiState(),
             onTaskNotificationSoundChanged = {},
-            openEditReminder = {}
+            openEditReminder = {},
+            onUseCategoryColorsCheckedChange = {},
+            onNavigateToManageCategories = {}
         )
     }
 }

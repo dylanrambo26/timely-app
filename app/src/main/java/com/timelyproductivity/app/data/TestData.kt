@@ -1,11 +1,12 @@
 package com.timelyproductivity.app.data
 
 import com.timelyproductivity.app.data.goal.Goal
-import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.goal.GoalStatus
+import com.timelyproductivity.app.data.goal.category.CategoryColor
+import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
+import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.goal.recurrence.GoalWithRecurrence
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
-import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.ui.analytics.AnalyticsTimePeriod
 import com.timelyproductivity.app.ui.analytics.DailyActivity
@@ -127,6 +128,136 @@ val testGoalCategoriesSizeThreeWithColor = listOf(
         color = CategoryColor.ORANGE
     )
 )
+
+val testGoalCounts = listOf(
+    CategoryGoalCount(categoryId = 0, goalCount = 5),
+    CategoryGoalCount(categoryId = 1, goalCount = 10),
+    CategoryGoalCount(categoryId = 2, goalCount = 2)
+)
+val testScheduledGoalCounts = listOf(
+    CategoryGoalCount(categoryId = 0, goalCount = 1),
+    CategoryGoalCount(categoryId = 1, goalCount = 25),
+    CategoryGoalCount(categoryId = 2, goalCount = 4)
+)
+
+val testGoalCountMap = testGoalCounts.associate {
+    it.categoryId to it.goalCount
+}
+
+val testScheduledGoalCountMap = testScheduledGoalCounts.associate {
+    it.categoryId to it.goalCount
+}
+
+fun List<GoalCategory>.toSortedByNameAsc(): List<GoalCategory>{
+    return testGoalCategoriesSizeThreeWithColor.sortedBy { it.name.lowercase() }
+}
+
+fun List<GoalCategory>.toSortedByNameDesc(): List<GoalCategory>{
+    return toSortedByNameAsc().reversed()
+}
+
+fun List<GoalCategory>.toSortedByColorAsc(): List<GoalCategory>{
+    return testGoalCategoriesSizeThreeWithColor.sortedBy { it.color.ordinal }
+}
+
+fun List<GoalCategory>.toSortedByColorDesc(): List<GoalCategory>{
+    return toSortedByColorAsc().reversed()
+}
+
+fun List<GoalCategory>.toSortedByGoalCountAsc(): List<GoalCategory>{
+    return testGoalCategoriesSizeThreeWithColor.sortedBy { category -> testGoalCountMap[category.categoryId] ?: 0 }
+}
+
+fun List<GoalCategory>.toSortedByGoalCountDesc(): List<GoalCategory>{
+    return toSortedByGoalCountAsc().reversed()
+}
+
+fun List<GoalCategory>.toSortedByScheduledGoalCountAsc(): List<GoalCategory>{
+
+    return testGoalCategoriesSizeThreeWithColor.sortedBy { category -> testScheduledGoalCountMap[category.categoryId] ?: 0 }
+}
+
+fun List<GoalCategory>.toSortedByScheduledGoalCountDesc(): List<GoalCategory>{
+    return toSortedByScheduledGoalCountAsc().reversed()
+}
+
+val testScheduledGoalsWithCategoriesSizeFour: List<ScheduledGoal>
+    get() = listOf(
+        ScheduledGoal(
+            scheduledGoalId = 0,
+            eventId = 3,
+            goalId = 1,
+            status = GoalStatus.NOT_STARTED,
+            startTimeMillis = 123456L,
+            completedMillis = 60000L,
+            scheduledGoalTitle = goal1.goalTitle,
+            scheduledHours = goal1.hours,
+            scheduledMinutes = goal1.minutes,
+            scheduledCategoryId = 0
+        ),
+        ScheduledGoal(
+            scheduledGoalId = 1,
+            eventId = 3,
+            goalId = 2,
+            status = GoalStatus.COMPLETED,
+            startTimeMillis = 146000L,
+            completedMillis = 80000L,
+            scheduledGoalTitle = goal2.goalTitle,
+            scheduledHours = goal2.hours,
+            scheduledMinutes = goal2.minutes,
+            scheduledCategoryId = 1
+        ),
+        ScheduledGoal(
+            scheduledGoalId = 2,
+            eventId = 3,
+            goalId = 3,
+            status = GoalStatus.NOT_STARTED,
+            startTimeMillis = 156456L,
+            completedMillis = 60000L,
+            scheduledGoalTitle = goal3.goalTitle,
+            scheduledHours = goal3.hours,
+            scheduledMinutes = goal3.minutes,
+            scheduledCategoryId = 2
+        ),
+        ScheduledGoal(
+            scheduledGoalId = 3,
+            eventId = 3,
+            goalId = 4,
+            status = GoalStatus.NOT_STARTED,
+            startTimeMillis = 156456L,
+            completedMillis = 60000L,
+            scheduledGoalTitle = goal3.goalTitle,
+            scheduledHours = goal3.hours,
+            scheduledMinutes = goal3.minutes,
+            scheduledCategoryId = null
+        )
+
+    )
+
+val testGoalsWithCategoriesSizeThree: List<GoalWithRecurrence>
+    get() = listOf(
+        GoalWithRecurrence(
+            goal = goal1.copy(
+                categoryId = 0
+            ),
+            recurrenceRule = recurrenceRule1
+        ),
+        GoalWithRecurrence(
+            goal = goal2.copy(
+                categoryId = 1
+            ),
+            recurrenceRule = recurrenceRule2
+        ),
+        GoalWithRecurrence(
+            goal = goal3.copy(
+                categoryId = 2
+            ),
+            recurrenceRule = null
+        )
+    )
+
+
+
 
 fun generateTestDailyActivity(
     timePeriod: AnalyticsTimePeriod,

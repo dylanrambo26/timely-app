@@ -10,6 +10,7 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -17,10 +18,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
+import com.timelyproductivity.app.ui.theme.toColor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -38,12 +41,16 @@ fun CategoryDropdown(
             expanded = !expanded
         }
     ) {
+        val categoryColor = selectedCategory?.color?.toColor() ?: Color.Transparent
+
         OutlinedTextField(
             value = selectedCategory?.name ?: "None",
             onValueChange = {},
             readOnly = true,
             label = {
-                Text("Category (Optional)")
+                Text(
+                    text = "Category (Optional)",
+                )
             },
             trailingIcon = {
                 ExposedDropdownMenuDefaults.TrailingIcon(
@@ -52,7 +59,11 @@ fun CategoryDropdown(
             },
             modifier = Modifier
                 .menuAnchor()
-                .fillMaxWidth()
+                .fillMaxWidth(),
+            colors = OutlinedTextFieldDefaults.colors(
+                focusedContainerColor = categoryColor,
+                unfocusedContainerColor = categoryColor,
+            )
         )
 
         ExposedDropdownMenu(

@@ -1,6 +1,5 @@
 package com.timelyproductivity.app.ui.editScheduled
 
-//import com.example.timemanagementapp.data.TestData
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -32,7 +31,8 @@ import com.timelyproductivity.app.R
 import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
-import com.timelyproductivity.app.data.testScheduledGoalsSizeThree
+import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
+import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeFour
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.components.lists.ScheduledGoalList
 import com.timelyproductivity.app.ui.components.time.DisplayTime
@@ -53,13 +53,11 @@ object EditScheduledGoalsDestination : NavigationDest{
 fun EditScheduledGoalsScreen(
     onAddGoalButtonClicked: (Int) -> Unit = {},
     onEditGoal: (ScheduledGoal) -> Unit,
-    //viewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     viewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToHome: () -> Unit,
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
 ){
-    //val goalListUiState by viewModel.goalListUiState.collectAsState()
     val scheduledGoalsListUiState by viewModel.scheduledGoalsListUiState.collectAsState()
     Scaffold(
         topBar = {
@@ -74,7 +72,6 @@ fun EditScheduledGoalsScreen(
         }
     ) { innerPadding ->
         EditScheduledGoalsBody(
-            //goalListUiState = goalListUiState,
             scheduledGoalsListUiState = scheduledGoalsListUiState,
             onDeleteGoal = {scheduledGoal -> viewModel.deleteScheduledGoal(scheduledGoal)},
             onEditGoal = onEditGoal,
@@ -104,6 +101,8 @@ fun EditScheduledGoalsBody(
 
         ScheduledGoalList(
             goals = filteredGoals,
+            categories = scheduledGoalsListUiState.categories,
+            addCategoryColors = scheduledGoalsListUiState.useCategoryColorsEnabled,
             onDeleteGoal = onDeleteGoal,
             onEditGoal = onEditGoal,
             modifier = Modifier
@@ -186,7 +185,9 @@ fun EditScheduledGoalsBodyPreview(){
     TimeManagementAppTheme {
         EditScheduledGoalsBody(
             scheduledGoalsListUiState = ScheduledGoalsListUiState(
-                scheduledGoalsList = testScheduledGoalsSizeThree
+                scheduledGoalsList = testScheduledGoalsWithCategoriesSizeFour,
+                categories = testGoalCategoriesSizeThreeWithColor,
+                useCategoryColorsEnabled = true
             ),
             onDeleteGoal = {},
             onEditGoal = {},

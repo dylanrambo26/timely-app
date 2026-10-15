@@ -1,6 +1,7 @@
 package com.timelyproductivity.app.data.scheduledgoal
 
 import com.timelyproductivity.app.data.goal.GoalStatus
+import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
@@ -28,7 +29,7 @@ interface ScheduledGoalsRepository{
 
     suspend fun isValidDurationForDate(goalTotalMinutes: Int, eventId: Int, excludedScheduledGoalId: Int?): Boolean
 
-    suspend fun updateFutureScheduledGoalsFromEditedTemplate(goalId: Int, title: String, hours: Int, minutes: Int, startDate: LocalDate)
+    suspend fun updateFutureScheduledGoalsFromEditedTemplate(goalId: Int, title: String, hours: Int, minutes: Int, startDate: LocalDate, categoryId: Int?)
 
     fun getDatesWithScheduledGoals(startDate: LocalDate, endDate: LocalDate): Flow<List<LocalDate>>
 
@@ -37,4 +38,6 @@ interface ScheduledGoalsRepository{
     suspend fun scheduleRuleForRange(rule: RecurrenceRule, startDate: LocalDate, endDate: LocalDate)
 
     suspend fun insertRecurrenceException(recurrenceRuleId: Int, date: LocalDate)
+
+    fun getScheduledGoalCountsByCategory(): Flow<List<CategoryGoalCount>>
 }

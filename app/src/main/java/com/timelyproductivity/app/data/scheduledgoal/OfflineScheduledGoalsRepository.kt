@@ -3,6 +3,7 @@ package com.timelyproductivity.app.data.scheduledgoal
 import com.timelyproductivity.app.data.calendar.CalendarEventsRepository
 import com.timelyproductivity.app.data.goal.GoalDao
 import com.timelyproductivity.app.data.goal.GoalStatus
+import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceException
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRuleDao
@@ -56,6 +57,7 @@ class OfflineScheduledGoalsRepository(
                 scheduledGoalTitle = goal.goalTitle,
                 scheduledHours = goal.hours,
                 scheduledMinutes = goal.minutes,
+                scheduledCategoryId = goal.categoryId
             )
         )
 
@@ -86,9 +88,10 @@ class OfflineScheduledGoalsRepository(
         title: String,
         hours: Int,
         minutes: Int,
-        startDate: LocalDate
+        startDate: LocalDate,
+        categoryId: Int?
     ) {
-        scheduledGoalDao.updateFutureScheduledGoalsFromEditedTemplate(goalId, title, hours, minutes, startDate)
+        scheduledGoalDao.updateFutureScheduledGoalsFromEditedTemplate(goalId, title, hours, minutes, startDate, categoryId)
     }
 
     override fun getDatesWithScheduledGoals(startDate: LocalDate, endDate: LocalDate): Flow<List<LocalDate>> = scheduledGoalDao.getDatesWithScheduledGoals(startDate, endDate)
@@ -139,7 +142,8 @@ class OfflineScheduledGoalsRepository(
                         recurrenceRuleId = rule.recurrenceRuleId,
                         scheduledGoalTitle = goal.goalTitle,
                         scheduledHours = goal.hours,
-                        scheduledMinutes = goal.minutes
+                        scheduledMinutes = goal.minutes,
+                        scheduledCategoryId = goal.categoryId
                     )
                 )
             }
@@ -178,4 +182,6 @@ class OfflineScheduledGoalsRepository(
             )
         )
     }
+
+    override fun getScheduledGoalCountsByCategory(): Flow<List<CategoryGoalCount>> = scheduledGoalDao.getScheduledGoalCountsByCategory()
 }

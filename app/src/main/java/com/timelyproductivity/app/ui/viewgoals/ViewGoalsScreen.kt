@@ -36,13 +36,15 @@ import com.timelyproductivity.app.R
 import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
-import com.timelyproductivity.app.data.testScheduledGoalsSizeThree
+import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
+import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeFour
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.components.ColorLegend
 import com.timelyproductivity.app.ui.components.LegendItem
 import com.timelyproductivity.app.ui.components.lists.ScheduledGoalList
 import com.timelyproductivity.app.ui.components.time.DisplayTime
 import com.timelyproductivity.app.ui.navigation.NavigationDest
+import com.timelyproductivity.app.ui.settings.SettingsSwitch
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 import com.timelyproductivity.app.ui.theme.completedGoal
 import com.timelyproductivity.app.util.completedGoals
@@ -109,7 +111,8 @@ fun ViewGoalsScreen(
                 }
             },
             formattedDate = formattedDate,
-            onMarkAsComplete = scheduledGoalsListViewModel::setComplete
+            onMarkAsComplete = scheduledGoalsListViewModel::setComplete,
+            onUseCategoryColorsCheckedChange = scheduledGoalsListViewModel::setCategoryColorsEnabled
         )
     }
 }
@@ -124,6 +127,9 @@ fun ViewGoalsBody(
     previousDayClicked: () -> Unit,
     onEditGoalsClicked: () -> Unit,
     onMarkAsComplete: (ScheduledGoal, Boolean) -> Unit,
+
+    onUseCategoryColorsCheckedChange: (Boolean) -> Unit,
+
     modifier: Modifier = Modifier,
     formattedDate: String = ""
 ){
@@ -140,7 +146,9 @@ fun ViewGoalsBody(
         val orderedGoalList = scheduledGoalsListUiState.scheduledGoalsList.completedGoals() + scheduledGoalsListUiState.scheduledGoalsList.incompleteGoals()
         ScheduledGoalList(
             goals = orderedGoalList,
-            addColors = true,
+            categories = scheduledGoalsListUiState.categories,
+            addCompletionColor = true,
+            addCategoryColors = scheduledGoalsListUiState.useCategoryColorsEnabled,
             addCheckboxes = true,
             onCompleteChange = onMarkAsComplete,
             modifier = Modifier
@@ -155,6 +163,12 @@ fun ViewGoalsBody(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
 
             )
+
+        SettingsSwitch(
+            text = "Use category colors",
+            checked = scheduledGoalsListUiState.useCategoryColorsEnabled,
+            onCheckedChange = onUseCategoryColorsCheckedChange
+        )
 
         DisplayTime(
             duration = scheduledGoalsListUiState.totalMinutes,
@@ -319,9 +333,11 @@ fun ViewGoalsBodyPreview(){
         ViewGoalsBody(
             isPastDate = {false},
             scheduledGoalsListUiState = ScheduledGoalsListUiState(
-                scheduledGoalsList = testScheduledGoalsSizeThree,
+                scheduledGoalsList = testScheduledGoalsWithCategoriesSizeFour,
+                categories = testGoalCategoriesSizeThreeWithColor,
                 date = selectedDate,
-                totalMinutes = 120
+                totalMinutes = 120,
+                useCategoryColorsEnabled = true
             ),
             onAddGoal = {},
             onEditGoalsClicked = {},
@@ -330,7 +346,8 @@ fun ViewGoalsBodyPreview(){
             nextDayClicked = {},
             previousDayClicked = {},
             onMarkAsComplete = {_,_ ->},
-            modifier = Modifier
+            modifier = Modifier,
+            onUseCategoryColorsCheckedChange = {}
         )
     }
 }

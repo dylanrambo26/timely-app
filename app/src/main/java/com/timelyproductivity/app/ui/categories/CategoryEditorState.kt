@@ -2,7 +2,6 @@ package com.timelyproductivity.app.ui.categories
 
 import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.goal.category.GoalCategory
-import com.timelyproductivity.app.ui.components.settings.ReminderEditorUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

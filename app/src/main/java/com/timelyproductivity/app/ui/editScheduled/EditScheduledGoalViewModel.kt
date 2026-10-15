@@ -7,9 +7,15 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.timelyproductivity.app.R
+import com.timelyproductivity.app.data.UserPreferencesRepository
 import com.timelyproductivity.app.data.goal.GoalStatus
+import com.timelyproductivity.app.data.goal.category.CategoryColor
+import com.timelyproductivity.app.data.goal.category.GoalCategoriesRepository
+import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalsRepository
+import com.timelyproductivity.app.ui.categories.CategoryEditorActions
+import com.timelyproductivity.app.ui.categories.CategoryEditorState
 import com.timelyproductivity.app.ui.createGoal.GoalDetails
 import com.timelyproductivity.app.ui.createGoal.GoalUiState
 import com.timelyproductivity.app.ui.createGoal.toGoal
@@ -17,16 +23,21 @@ import com.timelyproductivity.app.util.validate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 
 class EditScheduledGoalViewModel(
     savedStateHandle: SavedStateHandle,
-    private val scheduledGoalsRepository: ScheduledGoalsRepository
-) : ViewModel(){
+    private val scheduledGoalsRepository: ScheduledGoalsRepository,
+    private val goalCategoriesRepository: GoalCategoriesRepository,
+    private val userPreferencesRepository: UserPreferencesRepository
+) : ViewModel(), CategoryEditorActions{
 
     var goalUiState by mutableStateOf(GoalUiState())
         private set
+
+    private val categoryEditor = CategoryEditorState()
+
+    val categoryEditorUiState = categoryEditor.uiState
 
     private val scheduledGoalId: Int = checkNotNull(savedStateHandle[EditScheduledGoalDestination.scheduledGoalIdArg])
 
@@ -37,9 +48,26 @@ class EditScheduledGoalViewModel(
 
     init {
         viewModelScope.launch {
+            goalCategoriesRepository.getCategories()
+                .collect { categories ->
+                    goalUiState = goalUiState.copy(
+                        goalCategories = categories
+                    )
+                }
+        }
+
+        viewModelScope.launch {
+            userPreferencesRepository.useCategoryColorsEnabled
+                .collect { enabled ->
+                    goalUiState = goalUiState.copy(
+                        useCategoryColorsEnabled = enabled
+                    )
+                }
+        }
+
+        viewModelScope.launch {
             scheduledGoalsRepository
                 .getScheduledGoal(scheduledGoalId)
-                .filterNotNull()
                 .collect { scheduledGoal ->
                     currentScheduledGoal = scheduledGoal
                     _calendarEventId.value = scheduledGoal.eventId
@@ -54,8 +82,10 @@ class EditScheduledGoalViewModel(
                         minutes = scheduledGoal.scheduledMinutes.toString()
                     )
 
-                    goalUiState = GoalUiState(
+                    goalUiState = goalUiState.copy(
                         goalDetails = details,
+                        selectedCategoryId = scheduledGoal.scheduledCategoryId,
+                        originalCategoryId = scheduledGoal.scheduledCategoryId,
                         isEntryValid = details.validate() == null,
                         isDurationEditable = !isCurrentOrPaused
                     )
@@ -118,11 +148,55 @@ class EditScheduledGoalViewModel(
                 scheduledGoalTitle = goalUiState.goalDetails.title,
                 scheduledHours = updatedHours,
                 scheduledMinutes = updatedMinutes,
+                scheduledCategoryId = goalUiState.selectedCategoryId,
                 isCustomized = true
             )
         )
 
         onNavigate(existingScheduledGoal.eventId)
+    }
+
+    fun selectCategory(categoryId: Int?){
+        goalUiState = goalUiState.copy(
+            selectedCategoryId = categoryId
+        )
+    }
+
+    override fun openAddCategoryEditor() {
+        categoryEditor.openAddCategoryDialog()
+    }
+
+    override fun updateCategoryName(input: String) {
+        categoryEditor.updateCategoryInput(input)
+    }
+
+    override fun updateCategoryColor(color: CategoryColor) {
+        categoryEditor.updateSelectedColor(color)
+    }
+
+    override fun closeCategoryDialog() {
+        categoryEditor.closeCategoryDialog()
+    }
+
+    override fun saveCategory() {
+        val editorState = categoryEditor.uiState.value
+
+        val name = categoryEditor.validateCategoryInput(
+            existingCategories = goalUiState.goalCategories
+        ) ?: return
+
+        val category = GoalCategory(
+            name = name,
+            color = editorState.selectedColor
+        )
+
+        viewModelScope.launch {
+            val categoryId = goalCategoriesRepository.insertCategory(category)
+
+            selectCategory(categoryId.toInt())
+
+            categoryEditor.closeCategoryDialog()
+        }
     }
 }
 

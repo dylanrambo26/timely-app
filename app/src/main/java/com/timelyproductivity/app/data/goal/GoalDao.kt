@@ -7,6 +7,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
+import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
 import com.timelyproductivity.app.data.goal.recurrence.GoalWithRecurrence
 import kotlinx.coroutines.flow.Flow
 
@@ -64,4 +65,12 @@ interface GoalDao {
         WHERE goalID = :goalId
     """)
     fun getGoalWithRecurrenceStream(goalId: Int): Flow<GoalWithRecurrence?>
+
+    @Query("""
+        SELECT categoryId, COUNT(*) AS goalCount
+        FROM goals
+        WHERE categoryId IS NOT NULL
+        GROUP BY categoryId
+    """)
+    fun getGoalCountsByCategory(): Flow<List<CategoryGoalCount>>
 }

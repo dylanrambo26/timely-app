@@ -41,7 +41,8 @@ import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
 import com.timelyproductivity.app.data.goal.Goal
 import com.timelyproductivity.app.data.goal.recurrence.GoalWithRecurrence
-import com.timelyproductivity.app.data.testGoalsWithRecurrenceSizeThree
+import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
+import com.timelyproductivity.app.data.testGoalsWithCategoriesSizeThree
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.components.lists.GoalTemplateList
 import com.timelyproductivity.app.ui.navigation.NavigationDest
@@ -131,6 +132,8 @@ fun ManageReusableGoalsBody(
 
         GoalTemplateList(
             goals = goalListUiState.goalList,
+            categories = goalListUiState.categories,
+            addCategoryColors = goalListUiState.useCategoryColorsEnabled,
             onEditGoal = onEditGoal,
             onDeleteGoal = onDeleteGoal,
             modifier = Modifier
@@ -250,7 +253,9 @@ fun ManageReusableGoalsBodyPreview(){
     TimeManagementAppTheme {
         ManageReusableGoalsBody(
             goalListUiState = GoalListUiState(
-                goalList = testGoalsWithRecurrenceSizeThree
+                goalList = testGoalsWithCategoriesSizeThree,
+                categories = testGoalCategoriesSizeThreeWithColor,
+                useCategoryColorsEnabled = true
             ),
             onDeleteGoal = {},
             onEditGoal = {},

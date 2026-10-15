@@ -7,13 +7,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.timelyproductivity.app.R
-import com.timelyproductivity.app.data.goal.recurrence.CreateRecurrenceUseCase
+import com.timelyproductivity.app.data.UserPreferencesRepository
 import com.timelyproductivity.app.data.calendar.CalendarEventsRepository
 import com.timelyproductivity.app.data.goal.Goal
 import com.timelyproductivity.app.data.goal.GoalsRepository
 import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.goal.category.GoalCategoriesRepository
 import com.timelyproductivity.app.data.goal.category.GoalCategory
+import com.timelyproductivity.app.data.goal.recurrence.CreateRecurrenceUseCase
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalsRepository
 import com.timelyproductivity.app.ui.categories.CategoryEditorActions
@@ -38,7 +39,8 @@ class CreateGoalViewModel(
     private val scheduledGoalsRepository: ScheduledGoalsRepository,
     private val calendarEventsRepository: CalendarEventsRepository,
     private val createRecurrenceUseCase: CreateRecurrenceUseCase,
-    private val goalCategoriesRepository: GoalCategoriesRepository
+    private val goalCategoriesRepository: GoalCategoriesRepository,
+    private val userPreferencesRepository: UserPreferencesRepository
 ) : ViewModel(), CategoryEditorActions{
 
     var goalUiState by mutableStateOf(GoalUiState())
@@ -71,6 +73,15 @@ class CreateGoalViewModel(
                 }
         }
 
+        viewModelScope.launch {
+            userPreferencesRepository.useCategoryColorsEnabled
+                .collect { enabled ->
+                    goalUiState = goalUiState.copy(
+                        useCategoryColorsEnabled = enabled
+                    )
+                }
+        }
+
         calendarEventId?.let {
             viewModelScope.launch {
                 _date.value = calendarEventsRepository.getEventById(calendarEventId)?.date
@@ -83,6 +94,7 @@ class CreateGoalViewModel(
 
                 goalUiState = goalUiState.copy(
                     goalDetails = sourceGoal.toGoalDetails().copy(id = 0),
+                    selectedCategoryId = sourceGoal.categoryId,
                     isGoalRecurring = false,
                     recurringDays = emptySet(),
                     hasRecurrenceEndDate = false,
@@ -151,12 +163,13 @@ class CreateGoalViewModel(
         if(error != null){
             goalUiState = goalUiState.copy(
                 errorMessage = error,
-                //isEntryValid = false
             )
             return
         }
 
-        val goal = goalUiState.goalDetails.toGoal()
+        val goal = goalUiState.goalDetails.toGoal(
+            categoryId = goalUiState.selectedCategoryId
+        )
         val goalId = goalsRepository.insertGoal(goal)
 
         val insertedGoal = goal.copy(
@@ -191,7 +204,9 @@ class CreateGoalViewModel(
             return
         }
 
-        val goal = goalUiState.goalDetails.toGoal()
+        val goal = goalUiState.goalDetails.toGoal(
+            categoryId = goalUiState.selectedCategoryId
+        )
         val goalTotalMinutes = goal.hours * 60 + goal.minutes
 
         val isValidDuration = scheduledGoalsRepository.isValidDurationForDate(
@@ -216,6 +231,7 @@ class CreateGoalViewModel(
                 scheduledGoalTitle = goal.goalTitle,
                 scheduledHours = goal.hours,
                 scheduledMinutes = goal.minutes,
+                scheduledCategoryId = goal.categoryId,
                 recurrenceRuleId = null
             )
         )
@@ -287,7 +303,9 @@ data class GoalUiState(
     val hasRecurrenceEndDate: Boolean = false,
 
     val goalCategories: List<GoalCategory> = emptyList(),
-    val selectedCategoryId: Int? = null
+    val selectedCategoryId: Int? = null,
+    val originalCategoryId: Int? = null,
+    val useCategoryColorsEnabled: Boolean = false,
 )
 
 data class GoalDetails(
@@ -297,11 +315,14 @@ data class GoalDetails(
     val minutes: String = ""
 )
 
-fun GoalDetails.toGoal(): Goal = Goal(
+fun GoalDetails.toGoal(
+    categoryId: Int? = null
+): Goal = Goal(
     goalID = id,
     goalTitle = title,
     hours = hours.toIntOrNull() ?: 0,
     minutes = minutes.toIntOrNull() ?: 0,
+    categoryId = categoryId
 )
 
 fun Goal.toGoalUiState(isEntryValid: Boolean = false): GoalUiState = GoalUiState(

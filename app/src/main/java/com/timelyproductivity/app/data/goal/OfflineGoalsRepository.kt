@@ -1,6 +1,7 @@
 package com.timelyproductivity.app.data.goal
 
 import androidx.room.withTransaction
+import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
 import com.timelyproductivity.app.data.goal.recurrence.GoalWithRecurrence
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRuleDao
@@ -48,7 +49,5 @@ class OfflineGoalsRepository(
 
     override fun getGoalWithRecurrenceStream(goalId: Int): Flow<GoalWithRecurrence?> = goalDao.getGoalWithRecurrenceStream(goalId)
 
-    /*override suspend fun updateGoalStatus(id: Int, status: GoalStatus) = goalDao.updateGoalStatus(id, status)
-
-    override suspend fun updateCompletedMillis(id: Int, millis: Long) = goalDao.updateCompletedMillis(id, millis)*/
+    override fun getGoalCountsByCategory(): Flow<List<CategoryGoalCount>> = goalDao.getGoalCountsByCategory()
 }

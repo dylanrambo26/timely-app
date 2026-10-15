@@ -1,5 +1,6 @@
 package com.timelyproductivity.app.data.goal
 
+import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
 import com.timelyproductivity.app.data.goal.recurrence.GoalWithRecurrence
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
 import kotlinx.coroutines.flow.Flow
@@ -29,7 +30,5 @@ interface GoalsRepository {
     fun getAllGoalsWithRecurrence(): Flow<List<GoalWithRecurrence>>
 
     fun getGoalWithRecurrenceStream(goalId: Int): Flow<GoalWithRecurrence?>
-    /*suspend fun updateGoalStatus(id: Int, status: GoalStatus)
-
-    suspend fun updateCompletedMillis(id: Int, millis: Long)*/
+    fun getGoalCountsByCategory(): Flow<List<CategoryGoalCount>>
 }

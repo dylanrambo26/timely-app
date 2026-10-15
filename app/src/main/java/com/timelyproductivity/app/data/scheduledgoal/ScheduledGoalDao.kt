@@ -8,6 +8,7 @@ import androidx.room.Query
 import androidx.room.Transaction
 import androidx.room.Update
 import com.timelyproductivity.app.data.goal.GoalStatus
+import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -116,7 +117,7 @@ interface ScheduledGoalDao {
         hours: Int,
         minutes: Int,
         startDate: LocalDate,
-        notStartedStatus: GoalStatus
+        notStartedStatus: GoalStatus,
     )
 
     @Query(
@@ -138,6 +139,25 @@ interface ScheduledGoalDao {
         startDate: LocalDate
     )
 
+    @Query(
+        """
+            UPDATE scheduled_goals
+            SET scheduledCategoryId = :categoryId
+            WHERE goalId = :goalId
+                AND isCustomized = 0
+                AND eventId IN (
+                    SELECT eventId
+                    FROM calendar_events
+                    WHERE date >= :startDate
+                )
+    """
+    )
+    suspend fun updateFutureScheduledGoalCategories(
+        goalId: Int,
+        categoryId: Int?,
+        startDate: LocalDate
+    )
+
     //Only update the durations and titles of scheduled goals that are not the current task, if it is a current task only update title
     @Transaction
     suspend fun updateFutureScheduledGoalsFromEditedTemplate(
@@ -145,7 +165,8 @@ interface ScheduledGoalDao {
         title: String,
         hours: Int,
         minutes: Int,
-        startDate: LocalDate
+        startDate: LocalDate,
+        categoryId: Int?
     ){
         updateFutureScheduledGoalTitles(
             goalId = goalId,
@@ -160,6 +181,12 @@ interface ScheduledGoalDao {
             minutes = minutes,
             startDate = startDate,
             notStartedStatus = GoalStatus.NOT_STARTED
+        )
+
+        updateFutureScheduledGoalCategories(
+            goalId = goalId,
+            categoryId = categoryId,
+            startDate = startDate
         )
     }
 
@@ -189,4 +216,12 @@ interface ScheduledGoalDao {
         startDate: LocalDate,
         endDate: LocalDate
     ): List<LocalDate>
+
+    @Query("""
+        SELECT scheduledCategoryId AS categoryId, COUNT(*) AS goalCount
+        FROM scheduled_goals
+        WHERE scheduledCategoryId IS NOT NULL
+        GROUP BY scheduledCategoryId
+    """)
+    fun getScheduledGoalCountsByCategory(): Flow<List<CategoryGoalCount>>
 }

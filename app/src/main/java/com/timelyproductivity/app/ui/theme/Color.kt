@@ -24,20 +24,20 @@ val activityGridYellowDark = Color(0xFFF5DE2A)
 
 //Category Colors
 
-val categoryOrangeLight = Color(0xFFFFAB3D)
-val categoryOrangeDark = Color(0xFFFF8F00)
+val categoryOrangeLight = Color(0x54FFAB3D)
+val categoryOrangeDark = Color(0x54FF8F00)
 
-val categoryRedLight = Color(0xFFFF7469)
-val categoryRedDark = Color(0xFFFF0F00)
+val categoryRedLight = Color(0x54FF7469)
+val categoryRedDark = Color(0x54FF0F00)
 
-val categoryYellowLight = Color(0xFFFFF182)
-val categoryYellowDark = Color(0xFFFFE200)
+val categoryYellowLight = Color(0x54FFF182)
+val categoryYellowDark = Color(0x54FFE200)
 
-val categoryGreenLight = Color(0xFF73EA7A)
-val categoryGreenDark = Color(0xFF326534)
+val categoryGreenLight = Color(0x5473EA7A)
+val categoryGreenDark = Color(0x54326534)
 
-val categoryBlueLight = Color(0xFF2196F3)
-val categoryBlueDark = Color(0xFF3F51B5)
+val categoryBlueLight = Color(0x542196F3)
+val categoryBlueDark = Color(0x543F51B5)
 
-val categoryVioletLight = Color(0xFFE546FF)
-val categoryVioletDark = Color(0xFF9C27B0)
+val categoryVioletLight = Color(0x54E546FF)
+val categoryVioletDark = Color(0x549C27B0)

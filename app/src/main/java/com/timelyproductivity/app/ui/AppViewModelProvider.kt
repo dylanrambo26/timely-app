@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.viewModelFactory
 import com.timelyproductivity.app.TimelyApplication
 import com.timelyproductivity.app.ui.analytics.AnalyticsViewModel
 import com.timelyproductivity.app.ui.calendar.CalendarViewModel
+import com.timelyproductivity.app.ui.categories.ManageCategoriesViewModel
 import com.timelyproductivity.app.ui.createGoal.CreateGoalViewModel
 import com.timelyproductivity.app.ui.currenttask.CurrentTaskViewModel
 import com.timelyproductivity.app.ui.editReusable.EditReusableGoalViewModel
@@ -27,6 +28,8 @@ object AppViewModelProvider{
         initializer {
             GoalListViewModel(
                 timelyApplication().container.goalsRepository,
+                timelyApplication().container.goalCategoriesRepository,
+                timelyApplication().container.userPreferencesRepository
             )
         }
 
@@ -37,14 +40,17 @@ object AppViewModelProvider{
                 timelyApplication().container.scheduledGoalsRepository,
                 timelyApplication().container.calendarEventsRepository,
                 timelyApplication().container.createRecurrenceUseCase,
-                timelyApplication().container.goalCategoriesRepository
+                timelyApplication().container.goalCategoriesRepository,
+                timelyApplication().container.userPreferencesRepository
             )
         }
 
         initializer {
             EditScheduledGoalViewModel(
                 this.createSavedStateHandle(),
-                timelyApplication().container.scheduledGoalsRepository
+                timelyApplication().container.scheduledGoalsRepository,
+                timelyApplication().container.goalCategoriesRepository,
+                timelyApplication().container.userPreferencesRepository
             )
         }
 
@@ -67,7 +73,9 @@ object AppViewModelProvider{
             ScheduledGoalsListViewModel(
                 this.createSavedStateHandle(),
                 timelyApplication().container.scheduledGoalsRepository,
-                timelyApplication().container.calendarEventsRepository
+                timelyApplication().container.calendarEventsRepository,
+                timelyApplication().container.userPreferencesRepository,
+                timelyApplication().container.goalCategoriesRepository
             )
         }
 
@@ -83,7 +91,9 @@ object AppViewModelProvider{
                 timelyApplication().container.goalsRepository,
                 timelyApplication().container.scheduledGoalsRepository,
                 timelyApplication().container.createRecurrenceUseCase,
-                timelyApplication().container.updateRecurrenceUseCase
+                timelyApplication().container.updateRecurrenceUseCase,
+                timelyApplication().container.goalCategoriesRepository,
+                timelyApplication().container.userPreferencesRepository
             )
         }
         initializer {
@@ -101,6 +111,14 @@ object AppViewModelProvider{
         initializer {
             SettingsViewModel(
                 userPreferencesRepository = timelyApplication().container.userPreferencesRepository
+            )
+        }
+
+        initializer {
+            ManageCategoriesViewModel(
+                goalCategoriesRepository = timelyApplication().container.goalCategoriesRepository,
+                scheduledGoalsRepository = timelyApplication().container.scheduledGoalsRepository,
+                goalsRepository = timelyApplication().container.goalsRepository
             )
         }
     }
