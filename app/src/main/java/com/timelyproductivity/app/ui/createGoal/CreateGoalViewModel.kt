@@ -14,6 +14,7 @@ import com.timelyproductivity.app.data.goal.GoalsRepository
 import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.goal.category.GoalCategoriesRepository
 import com.timelyproductivity.app.data.goal.category.GoalCategory
+import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.goal.recurrence.CreateRecurrenceUseCase
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalsRepository
@@ -244,6 +245,12 @@ class CreateGoalViewModel(
         )
     }
 
+    fun selectPriority(priority: GoalPriority?){
+        goalUiState = goalUiState.copy(
+            priority = priority
+        )
+    }
+
     override fun openAddCategoryEditor() {
         categoryEditor.openAddCategoryDialog()
     }
@@ -306,6 +313,8 @@ data class GoalUiState(
     val selectedCategoryId: Int? = null,
     val originalCategoryId: Int? = null,
     val useCategoryColorsEnabled: Boolean = false,
+
+    val priority: GoalPriority? = null,
 )
 
 data class GoalDetails(

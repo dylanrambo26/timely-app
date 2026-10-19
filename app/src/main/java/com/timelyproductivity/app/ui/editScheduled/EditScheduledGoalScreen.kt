@@ -34,10 +34,12 @@ import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
 import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.goal.category.GoalCategory
+import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.categories.CategoryEditorUiState
 import com.timelyproductivity.app.ui.components.ErrorMessageBox
+import com.timelyproductivity.app.ui.components.PriorityDropdown
 import com.timelyproductivity.app.ui.components.categories.CategoryDropdown
 import com.timelyproductivity.app.ui.components.categories.CategoryEditorDialog
 import com.timelyproductivity.app.ui.components.lists.GoalTemplateCard
@@ -95,6 +97,9 @@ fun EditScheduledGoalScreen(
             onSaveCategory = editScheduledGoalViewModel::saveCategory,
             onDismissCategoryDialog = editScheduledGoalViewModel::closeCategoryDialog,
             onColorSelected = editScheduledGoalViewModel::updateCategoryColor,
+
+            onPrioritySelected = editScheduledGoalViewModel::selectPriority,
+
             modifier = modifier.padding(innerPadding)
         )
     }
@@ -114,6 +119,8 @@ fun EditScheduledGoalBody(
     onSaveCategory: () -> Unit,
     onDismissCategoryDialog: () -> Unit,
     onColorSelected: (CategoryColor) -> Unit,
+
+    onPrioritySelected: (GoalPriority?) -> Unit,
 
     navigateBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -176,6 +183,11 @@ fun EditScheduledGoalBody(
             selectedCategory = selectedCategory,
             onCategorySelected = onCategorySelected,
             onCreateCategory = onCreateCategory
+        )
+
+        PriorityDropdown(
+            selectedPriority = goalUiState.priority,
+            onPrioritySelected = onPrioritySelected
         )
 
         //Error Message Space
@@ -298,7 +310,8 @@ fun EditScheduledGoalScreenPreview(){
                originalCategoryId = 0,
                errorMessage = R.string.selected_goal_exceeds_remaining_time,
                goalCategories = testGoalCategoriesSizeThreeWithColor,
-               useCategoryColorsEnabled = true
+               useCategoryColorsEnabled = true,
+               priority = GoalPriority.HIGH
            ),
             onGoalValueChange = {},
             onSaveGoalClick = {},
@@ -309,7 +322,8 @@ fun EditScheduledGoalScreenPreview(){
             onCategoryInputChanged = {},
             onDismissCategoryDialog = {},
             onCreateCategory = {},
-            categoryEditorUiState = CategoryEditorUiState()
+            categoryEditorUiState = CategoryEditorUiState(),
+            onPrioritySelected = {}
         )
     }
 }

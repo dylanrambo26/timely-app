@@ -39,10 +39,12 @@ import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
 import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.goal.category.GoalCategory
+import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.categories.CategoryEditorUiState
 import com.timelyproductivity.app.ui.components.ErrorMessageBox
+import com.timelyproductivity.app.ui.components.PriorityDropdown
 import com.timelyproductivity.app.ui.components.RecurringGoalBody
 import com.timelyproductivity.app.ui.components.categories.CategoryDropdown
 import com.timelyproductivity.app.ui.components.categories.CategoryEditorDialog
@@ -128,7 +130,9 @@ fun CreateGoalScreen(
             onCategoryInputChanged = createGoalViewModel::updateCategoryName,
             onSaveCategory = createGoalViewModel::saveCategory,
             onDismissCategoryDialog = createGoalViewModel::closeCategoryDialog,
-            onColorSelected = createGoalViewModel::updateCategoryColor
+            onColorSelected = createGoalViewModel::updateCategoryColor,
+
+            onPrioritySelected = createGoalViewModel::selectPriority
         )
     }
 }
@@ -155,6 +159,7 @@ fun CreateGoalBody(
     onDismissCategoryDialog: () -> Unit,
     onColorSelected: (CategoryColor) -> Unit,
 
+    onPrioritySelected: (GoalPriority?) -> Unit,
 
     onCancelButtonClicked: () -> Unit,
     showSaveGoalAndAddToDateButton: Boolean,
@@ -218,6 +223,10 @@ fun CreateGoalBody(
             selectedCategory = selectedCategory,
             onCategorySelected = onCategorySelected,
             onCreateCategory = onCreateCategory
+        )
+        PriorityDropdown(
+            selectedPriority = goalUiState.priority,
+            onPrioritySelected = onPrioritySelected
         )
 
         RecurringGoalBody(
@@ -411,7 +420,8 @@ fun CreateGoalScreenPreview(){
                 recurrenceEndDate = LocalDate.of(2026, 10, 3),
                 goalCategories = testGoalCategoriesSizeThreeWithColor,
                 selectedCategoryId = testGoalCategoriesSizeThreeWithColor[2].categoryId,
-                useCategoryColorsEnabled = true
+                useCategoryColorsEnabled = true,
+                priority = GoalPriority.MEDIUM
             ),
             onGoalValueChange = {},
             onSaveGoalClicked = {},
@@ -431,7 +441,8 @@ fun CreateGoalScreenPreview(){
             onColorSelected = {},
             onCategoryInputChanged = {},
             onDismissCategoryDialog = {},
-            categoryEditorUiState = CategoryEditorUiState()
+            categoryEditorUiState = CategoryEditorUiState(),
+            onPrioritySelected = {}
         )
     }
 }
