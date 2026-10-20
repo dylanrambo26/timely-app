@@ -24,6 +24,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -39,18 +42,19 @@ import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeFour
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.components.GoalFilterSheet
 import com.timelyproductivity.app.ui.components.ColorLegend
+import com.timelyproductivity.app.ui.components.GoalFilterBar
 import com.timelyproductivity.app.ui.components.LegendItem
 import com.timelyproductivity.app.ui.components.lists.ScheduledGoalList
 import com.timelyproductivity.app.ui.components.time.DisplayTime
+import com.timelyproductivity.app.ui.filters.GoalFilterState
 import com.timelyproductivity.app.ui.navigation.NavigationDest
 import com.timelyproductivity.app.ui.settings.SettingsSwitch
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 import com.timelyproductivity.app.ui.theme.completedGoal
-import com.timelyproductivity.app.util.completedGoals
 import com.timelyproductivity.app.util.formatLocalDateToCalendarDate
 import com.timelyproductivity.app.util.formatLocalDateToShorthandDate
-import com.timelyproductivity.app.util.incompleteGoals
 import java.time.LocalDate
 
 object ViewGoalsDestination : NavigationDest{
@@ -71,6 +75,7 @@ fun ViewGoalsScreen(
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
+    val filters by scheduledGoalsListViewModel.filters.collectAsState()
     val formattedDate = formatLocalDateToShorthandDate(scheduledGoalsListUiState.date, "Today's")
     Scaffold(
         topBar = {
@@ -112,7 +117,11 @@ fun ViewGoalsScreen(
             },
             formattedDate = formattedDate,
             onMarkAsComplete = scheduledGoalsListViewModel::setComplete,
-            onUseCategoryColorsCheckedChange = scheduledGoalsListViewModel::setCategoryColorsEnabled
+            onUseCategoryColorsCheckedChange = scheduledGoalsListViewModel::setCategoryColorsEnabled,
+
+            filters = filters,
+            onSearchQueryChanged = scheduledGoalsListViewModel::updateFilters,
+            onFiltersChanged = scheduledGoalsListViewModel::updateFilters
         )
     }
 }
@@ -130,6 +139,10 @@ fun ViewGoalsBody(
 
     onUseCategoryColorsCheckedChange: (Boolean) -> Unit,
 
+    filters: GoalFilterState = GoalFilterState(),
+    onSearchQueryChanged: (GoalFilterState) -> Unit,
+    onFiltersChanged: (GoalFilterState) -> Unit,
+
     modifier: Modifier = Modifier,
     formattedDate: String = ""
 ){
@@ -143,9 +156,9 @@ fun ViewGoalsBody(
             nextDayClicked = nextDayClicked,
             previousDayClicked = previousDayClicked
         )
-        val orderedGoalList = scheduledGoalsListUiState.scheduledGoalsList.completedGoals() + scheduledGoalsListUiState.scheduledGoalsList.incompleteGoals()
+        //val orderedGoalList = scheduledGoalsListUiState.scheduledGoalsList.completedGoals() + scheduledGoalsListUiState.scheduledGoalsList.incompleteGoals()
         ScheduledGoalList(
-            goals = orderedGoalList,
+            goals = scheduledGoalsListUiState.filteredScheduledGoals,
             categories = scheduledGoalsListUiState.categories,
             addCompletionColor = true,
             addCategoryColors = scheduledGoalsListUiState.useCategoryColorsEnabled,
@@ -163,6 +176,37 @@ fun ViewGoalsBody(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
 
             )
+
+        var showFilterSheet by rememberSaveable {
+            mutableStateOf(false)
+        }
+        Column{
+            GoalFilterBar(
+                searchQuery = filters.searchQuery,
+                onSearchQueryChanged = {query ->
+                    onSearchQueryChanged(
+                        filters.copy(
+                            searchQuery = query
+                        )
+                    )
+                },
+                onFilterClick = {
+                    showFilterSheet = true
+                }
+            )
+        }
+
+        if (showFilterSheet) {
+            GoalFilterSheet(
+                filters = filters,
+                categories = scheduledGoalsListUiState.categories,
+                showCompletionFilter = true,
+                onFiltersChanged = onFiltersChanged,
+                onDismiss = {
+                    showFilterSheet = false
+                }
+            )
+        }
 
         SettingsSwitch(
             text = "Use category colors",
@@ -347,7 +391,9 @@ fun ViewGoalsBodyPreview(){
             previousDayClicked = {},
             onMarkAsComplete = {_,_ ->},
             modifier = Modifier,
-            onUseCategoryColorsCheckedChange = {}
+            onUseCategoryColorsCheckedChange = {},
+            onFiltersChanged = {},
+            onSearchQueryChanged = {}
         )
     }
 }

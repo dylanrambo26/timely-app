@@ -57,7 +57,8 @@ class OfflineScheduledGoalsRepository(
                 scheduledGoalTitle = goal.goalTitle,
                 scheduledHours = goal.hours,
                 scheduledMinutes = goal.minutes,
-                scheduledCategoryId = goal.categoryId
+                scheduledCategoryId = goal.categoryId,
+                scheduledPriority = goal.priority
             )
         )
 
@@ -143,7 +144,8 @@ class OfflineScheduledGoalsRepository(
                         scheduledGoalTitle = goal.goalTitle,
                         scheduledHours = goal.hours,
                         scheduledMinutes = goal.minutes,
-                        scheduledCategoryId = goal.categoryId
+                        scheduledCategoryId = goal.categoryId,
+                        scheduledPriority = goal.priority
                     )
                 )
             }

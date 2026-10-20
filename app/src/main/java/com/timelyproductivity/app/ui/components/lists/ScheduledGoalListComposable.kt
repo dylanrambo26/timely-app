@@ -225,6 +225,16 @@ fun GoalCard(
                         style = MaterialTheme.typography.bodyMedium
                     )
 
+                    val priorityText = scheduledGoal.scheduledPriority
+                        ?.name
+                        ?.lowercase()
+                        ?.replaceFirstChar { it.uppercase() }
+                        ?: "None"
+                    Text(
+                        text = "Priority: $priorityText",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+
                     val categoryName = category?.name ?: "None"
                     Text(
                         text = "Category: $categoryName",
@@ -265,6 +275,7 @@ fun GoalCard(
                     )
                 }
             }
+
             AnimatedVisibility(
                 visible = isSelected && showCountdownReminders
             ) {

@@ -10,9 +10,12 @@ import com.timelyproductivity.app.data.goal.category.GoalCategoriesRepository
 import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalsRepository
+import com.timelyproductivity.app.ui.filters.GoalFilterState
+import com.timelyproductivity.app.ui.filters.applyFilters
 import com.timelyproductivity.app.util.MINUTES_IN_24_HOUR_DAY
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
@@ -40,6 +43,9 @@ class ScheduledGoalsListViewModel(
     private val _date = MutableStateFlow<LocalDate?>(null)
     private val _showDurationError = MutableStateFlow(false)
     val showDurationError = _showDurationError.asStateFlow()
+
+    private val _filters = MutableStateFlow(GoalFilterState())
+    val filters: StateFlow<GoalFilterState> = _filters.asStateFlow()
 
     init{
         viewModelScope.launch {
@@ -76,7 +82,10 @@ class ScheduledGoalsListViewModel(
                         remainingMinutesInDay = MINUTES_IN_24_HOUR_DAY - totalMinutes,
                         useCategoryColorsEnabled = useCategoryColorsEnabled
                     )
-
+                }.combine(_filters){uiState, filters ->
+                    uiState.copy(
+                        filteredScheduledGoals = uiState.scheduledGoalsList.applyFilters(filters)
+                    )
                 }
             }
             .stateIn(
@@ -168,10 +177,19 @@ class ScheduledGoalsListViewModel(
             userPreferencesRepository.setUseCategoryColorsEnabled(enabled)
         }
     }
+
+    fun updateFilters(filters: GoalFilterState){
+        _filters.value = filters
+    }
+
+    fun clearFilters(filters: GoalFilterState){
+        _filters.value = GoalFilterState()
+    }
 }
 
 data class ScheduledGoalsListUiState(
     val scheduledGoalsList: List<ScheduledGoal> = emptyList(),
+    val filteredScheduledGoals: List<ScheduledGoal> = emptyList(),
     val categories: List<GoalCategory> = emptyList(),
     val calendarEventId: Int? = null,
     val date: LocalDate = LocalDate.now(),

@@ -5,6 +5,7 @@ import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
 import com.timelyproductivity.app.data.goal.category.GoalCategory
+import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.goal.recurrence.GoalWithRecurrence
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
@@ -63,6 +64,7 @@ val testScheduledGoalsSizeThree: List<ScheduledGoal>
                 scheduledGoalTitle = goal1.goalTitle,
                 scheduledHours = goal1.hours,
                 scheduledMinutes = goal1.minutes,
+                scheduledPriority = GoalPriority.HIGH
             ),
             ScheduledGoal(
                 scheduledGoalId = 1,
@@ -74,6 +76,7 @@ val testScheduledGoalsSizeThree: List<ScheduledGoal>
                 scheduledGoalTitle = goal2.goalTitle,
                 scheduledHours = goal2.hours,
                 scheduledMinutes = goal2.minutes,
+                scheduledPriority = GoalPriority.MEDIUM
             ),
         ScheduledGoal(
                 scheduledGoalId = 2,
@@ -85,6 +88,7 @@ val testScheduledGoalsSizeThree: List<ScheduledGoal>
                 scheduledGoalTitle = goal3.goalTitle,
                 scheduledHours = goal3.hours,
                 scheduledMinutes = goal3.minutes,
+                scheduledPriority = GoalPriority.LOW
         ),
     )
 
@@ -193,7 +197,8 @@ val testScheduledGoalsWithCategoriesSizeFour: List<ScheduledGoal>
             scheduledGoalTitle = goal1.goalTitle,
             scheduledHours = goal1.hours,
             scheduledMinutes = goal1.minutes,
-            scheduledCategoryId = 0
+            scheduledCategoryId = 0,
+            scheduledPriority = GoalPriority.HIGH
         ),
         ScheduledGoal(
             scheduledGoalId = 1,
@@ -205,7 +210,8 @@ val testScheduledGoalsWithCategoriesSizeFour: List<ScheduledGoal>
             scheduledGoalTitle = goal2.goalTitle,
             scheduledHours = goal2.hours,
             scheduledMinutes = goal2.minutes,
-            scheduledCategoryId = 1
+            scheduledCategoryId = 1,
+            scheduledPriority = GoalPriority.MEDIUM
         ),
         ScheduledGoal(
             scheduledGoalId = 2,
@@ -217,7 +223,8 @@ val testScheduledGoalsWithCategoriesSizeFour: List<ScheduledGoal>
             scheduledGoalTitle = goal3.goalTitle,
             scheduledHours = goal3.hours,
             scheduledMinutes = goal3.minutes,
-            scheduledCategoryId = 2
+            scheduledCategoryId = 2,
+            scheduledPriority = GoalPriority.LOW
         ),
         ScheduledGoal(
             scheduledGoalId = 3,
@@ -229,7 +236,8 @@ val testScheduledGoalsWithCategoriesSizeFour: List<ScheduledGoal>
             scheduledGoalTitle = goal3.goalTitle,
             scheduledHours = goal3.hours,
             scheduledMinutes = goal3.minutes,
-            scheduledCategoryId = null
+            scheduledCategoryId = null,
+            scheduledPriority = null
         )
 
     )
@@ -238,19 +246,22 @@ val testGoalsWithCategoriesSizeThree: List<GoalWithRecurrence>
     get() = listOf(
         GoalWithRecurrence(
             goal = goal1.copy(
-                categoryId = 0
+                categoryId = 0,
+                priority = GoalPriority.HIGH
             ),
             recurrenceRule = recurrenceRule1
         ),
         GoalWithRecurrence(
             goal = goal2.copy(
-                categoryId = 1
+                categoryId = 1,
+                priority = GoalPriority.MEDIUM
             ),
             recurrenceRule = recurrenceRule2
         ),
         GoalWithRecurrence(
             goal = goal3.copy(
-                categoryId = 2
+                categoryId = 2,
+                priority = GoalPriority.LOW
             ),
             recurrenceRule = null
         )

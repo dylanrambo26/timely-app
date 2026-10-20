@@ -152,6 +152,16 @@ fun GoalTemplateCard(
                     style = MaterialTheme.typography.bodyMedium
                 )
 
+                val priorityText = goal.priority
+                    ?.name
+                    ?.lowercase()
+                    ?.replaceFirstChar { it.uppercase() }
+                    ?: "None"
+                Text(
+                    text = "Priority: $priorityText",
+                    style = MaterialTheme.typography.bodySmall
+                )
+
                 val categoryName = category?.name ?: "None"
                 Text(
                     text = "Category: $categoryName",
