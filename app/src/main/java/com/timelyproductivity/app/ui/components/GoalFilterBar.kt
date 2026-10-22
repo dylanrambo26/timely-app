@@ -7,9 +7,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.FilterAlt
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Sort
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.InputChip
@@ -57,7 +59,14 @@ fun GoalFilterBar(
         IconButton(onClick = onFilterClick) {
             Icon(
                 Icons.Default.FilterAlt,
-                contentDescription = "Filter goals"
+                contentDescription = "Filter Goals"
+            )
+        }
+
+        IconButton(onClick = {/*TODO*/}) {
+            Icon(
+                Icons.AutoMirrored.Filled.Sort,
+                contentDescription = "Sort Goals"
             )
         }
     }

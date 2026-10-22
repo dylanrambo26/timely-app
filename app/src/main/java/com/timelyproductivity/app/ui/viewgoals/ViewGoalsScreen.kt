@@ -122,9 +122,7 @@ fun ViewGoalsScreen(
                     navigateToViewGoals(eventId)
                 }
             },
-            formattedDate = formattedDate,
             onMarkAsComplete = scheduledGoalsListViewModel::setComplete,
-            onUseCategoryColorsCheckedChange = scheduledGoalsListViewModel::setCategoryColorsEnabled,
 
             filters = filters,
             onSearchQueryChanged = scheduledGoalsListViewModel::updateFilters,
@@ -144,14 +142,11 @@ fun ViewGoalsBody(
     onEditGoalsClicked: () -> Unit,
     onMarkAsComplete: (ScheduledGoal, Boolean) -> Unit,
 
-    onUseCategoryColorsCheckedChange: (Boolean) -> Unit,
-
     filters: GoalFilterState = GoalFilterState(),
     onSearchQueryChanged: (GoalFilterState) -> Unit,
     onFiltersChanged: (GoalFilterState) -> Unit,
 
     modifier: Modifier = Modifier,
-    formattedDate: String = ""
 ){
     Column(
         modifier = modifier
@@ -161,12 +156,8 @@ fun ViewGoalsBody(
         ViewGoalsHeader(
             displayedDay = scheduledGoalsListUiState.date,
             nextDayClicked = nextDayClicked,
-            previousDayClicked = previousDayClicked
-        )
-        DisplayTime(
-            duration = scheduledGoalsListUiState.totalMinutes,
-            title = stringResource(R.string.current_filled_time),
-            modifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
+            previousDayClicked = previousDayClicked,
+            totalMinutes = scheduledGoalsListUiState.totalMinutes
         )
 
         var showFilterSheet by rememberSaveable {
@@ -174,7 +165,7 @@ fun ViewGoalsBody(
         }
 
         Column(
-            modifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
+            modifier = Modifier.padding(horizontal = 12.dp)
         ){
             GoalFilterBar(
                 searchQuery = filters.searchQuery,
@@ -199,7 +190,7 @@ fun ViewGoalsBody(
         HorizontalDivider(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(vertical = dimensionResource(R.dimen.padding_small)),
+                .padding(vertical = 4.dp),
             thickness = 1.dp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
         )
@@ -225,7 +216,7 @@ fun ViewGoalsBody(
             onCompleteChange = onMarkAsComplete,
             modifier = Modifier
                 .weight(1f)
-                .padding(dimensionResource(R.dimen.padding_medium))
+                .padding(horizontal = 12.dp)
         )
         if (!isPastDate()){
             Row(
@@ -288,15 +279,16 @@ fun ViewGoalsBody(
 
 @Composable
 fun ViewGoalsHeader(
+    modifier: Modifier = Modifier,
     previousDayClicked: () -> Unit = {},
     nextDayClicked: () -> Unit = {},
     displayedDay: LocalDate,
-    modifier: Modifier = Modifier
+    totalMinutes: Int,
 ){
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ){
@@ -309,10 +301,22 @@ fun ViewGoalsHeader(
             )
         }
 
-        Text(
-            text = formatLocalDateToCalendarDate(displayedDay),
-            textAlign = TextAlign.Center
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ){
+            Text(
+                text = formatLocalDateToCalendarDate(displayedDay),
+                textAlign = TextAlign.Center
+            )
+            DisplayTime(
+                title = "Scheduled",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+                duration = totalMinutes
+            )
+        }
+
 
         IconButton(
             onClick = nextDayClicked
@@ -361,13 +365,11 @@ fun ViewGoalsBodyPreview(){
             ),
             onAddGoal = {},
             onEditGoalsClicked = {},
-            formattedDate = formatLocalDateToShorthandDate(selectedDate, "Today's"),
             navigateToCalendar = {},
             nextDayClicked = {},
             previousDayClicked = {},
             onMarkAsComplete = {_,_ ->},
             modifier = Modifier,
-            onUseCategoryColorsCheckedChange = {},
             onFiltersChanged = {},
             onSearchQueryChanged = {},
             //filters = goalFilterState
