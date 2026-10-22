@@ -82,4 +82,5 @@
     <string name="countdown_reminders_on_off">Countdown reminders On/Off</string>
     <string name="play_sounds_for_task_alerts">Play sounds for task alerts</string>
     <string name="manage_categories">Manage Categories</string>
+    <string name="search_for_a_specific_goal">Search for a specific goal</string>
 </resources>

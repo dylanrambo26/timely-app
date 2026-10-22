@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,11 +15,13 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,17 +41,21 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.timelyproductivity.app.R
 import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
+import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeFour
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.components.ActiveGoalFilters
 import com.timelyproductivity.app.ui.components.GoalFilterSheet
 import com.timelyproductivity.app.ui.components.ColorLegend
 import com.timelyproductivity.app.ui.components.GoalFilterBar
 import com.timelyproductivity.app.ui.components.LegendItem
 import com.timelyproductivity.app.ui.components.lists.ScheduledGoalList
 import com.timelyproductivity.app.ui.components.time.DisplayTime
+import com.timelyproductivity.app.ui.filters.CompletionFilter
 import com.timelyproductivity.app.ui.filters.GoalFilterState
+import com.timelyproductivity.app.ui.filters.applyFilters
 import com.timelyproductivity.app.ui.navigation.NavigationDest
 import com.timelyproductivity.app.ui.settings.SettingsSwitch
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
@@ -156,31 +163,19 @@ fun ViewGoalsBody(
             nextDayClicked = nextDayClicked,
             previousDayClicked = previousDayClicked
         )
-        //val orderedGoalList = scheduledGoalsListUiState.scheduledGoalsList.completedGoals() + scheduledGoalsListUiState.scheduledGoalsList.incompleteGoals()
-        ScheduledGoalList(
-            goals = scheduledGoalsListUiState.filteredScheduledGoals,
-            categories = scheduledGoalsListUiState.categories,
-            addCompletionColor = true,
-            addCategoryColors = scheduledGoalsListUiState.useCategoryColorsEnabled,
-            addCheckboxes = true,
-            onCompleteChange = onMarkAsComplete,
-            modifier = Modifier
-                .weight(1f)
-                .padding(dimensionResource(R.dimen.padding_medium))
+        DisplayTime(
+            duration = scheduledGoalsListUiState.totalMinutes,
+            title = stringResource(R.string.current_filled_time),
+            modifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
         )
-        HorizontalDivider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = dimensionResource(R.dimen.padding_medium_large)),
-            thickness = 1.dp,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-
-            )
 
         var showFilterSheet by rememberSaveable {
             mutableStateOf(false)
         }
-        Column{
+
+        Column(
+            modifier = Modifier.padding(dimensionResource(R.dimen.padding_small))
+        ){
             GoalFilterBar(
                 searchQuery = filters.searchQuery,
                 onSearchQueryChanged = {query ->
@@ -194,7 +189,20 @@ fun ViewGoalsBody(
                     showFilterSheet = true
                 }
             )
+
+            ActiveGoalFilters(
+                filters = filters,
+                categories = scheduledGoalsListUiState.categories,
+                onFiltersChanged = onFiltersChanged
+            )
         }
+        HorizontalDivider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = dimensionResource(R.dimen.padding_small)),
+            thickness = 1.dp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+        )
 
         if (showFilterSheet) {
             GoalFilterSheet(
@@ -208,80 +216,42 @@ fun ViewGoalsBody(
             )
         }
 
-        SettingsSwitch(
-            text = "Use category colors",
-            checked = scheduledGoalsListUiState.useCategoryColorsEnabled,
-            onCheckedChange = onUseCategoryColorsCheckedChange
-        )
-
-        DisplayTime(
-            duration = scheduledGoalsListUiState.totalMinutes,
-            title = stringResource(R.string.current_filled_time)
-        )
-        ColorLegend(
-            items = listOf(
-                LegendItem(
-                    label = "= Completed",
-                    color = MaterialTheme.colorScheme.completedGoal
-                ),
-                LegendItem(
-                    label = "= Incomplete",
-                    color = MaterialTheme.colorScheme.secondaryContainer
-                )
-            )
+        ScheduledGoalList(
+            goals = scheduledGoalsListUiState.filteredScheduledGoals,
+            categories = scheduledGoalsListUiState.categories,
+            addCompletionColor = true,
+            addCategoryColors = scheduledGoalsListUiState.useCategoryColorsEnabled,
+            addCheckboxes = true,
+            onCompleteChange = onMarkAsComplete,
+            modifier = Modifier
+                .weight(1f)
+                .padding(dimensionResource(R.dimen.padding_medium))
         )
         if (!isPastDate()){
             Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.33f)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                //Edit Log Button
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .weight(1f)
+                OutlinedButton(
+                    onClick = onEditGoalsClicked,
+                    modifier = Modifier.weight(1f)
                 ) {
-                    IconButton(
-                        onClick = onEditGoalsClicked,
-                        modifier = Modifier.size(100.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = stringResource(R.string.edit_goals_for_date, formattedDate),
-                            modifier = Modifier
-                                .size(100.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit_goals_for_date))
+                    Spacer(Modifier.width(8.dp))
                     Text(
-                        text = stringResource(
-                            R.string.edit_goals_for_date,
-                            formattedDate
-                        ),
+                        text = "Edit",
                         textAlign = TextAlign.Center
                     )
                 }
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .weight(1f)
+                Button(
+                    onClick = onAddGoal,
+                    modifier = Modifier.weight(1f)
                 ) {
-                    IconButton(
-                        onClick = onAddGoal,
-                        modifier = Modifier
-                            .size(100.dp),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AddCircle,
-                            contentDescription = stringResource(R.string.add_goal),
-                            modifier = Modifier
-                                .size(100.dp)
-                        )
-                    }
+                    Icon(Icons.Default.AddCircle, contentDescription = stringResource(R.string.add_goal))
+                    Spacer(Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.add_goal),
                         textAlign = TextAlign.Center
@@ -373,11 +343,17 @@ fun ViewGoalsTobBarPreview(){
 @Composable
 fun ViewGoalsBodyPreview(){
     TimeManagementAppTheme {
-        val selectedDate = LocalDate.of(2026, 7,6)
+        val selectedDate = LocalDate.now()
+        val goalFilterState = GoalFilterState(
+            categoryIds = setOf(testGoalCategoriesSizeThreeWithColor[0].categoryId, testGoalCategoriesSizeThreeWithColor[1].categoryId),
+            priorities = setOf(),
+            completionFilter = CompletionFilter.ALL
+        )
         ViewGoalsBody(
             isPastDate = {false},
             scheduledGoalsListUiState = ScheduledGoalsListUiState(
                 scheduledGoalsList = testScheduledGoalsWithCategoriesSizeFour,
+                filteredScheduledGoals = testScheduledGoalsWithCategoriesSizeFour.applyFilters(goalFilterState),
                 categories = testGoalCategoriesSizeThreeWithColor,
                 date = selectedDate,
                 totalMinutes = 120,
@@ -393,7 +369,8 @@ fun ViewGoalsBodyPreview(){
             modifier = Modifier,
             onUseCategoryColorsCheckedChange = {},
             onFiltersChanged = {},
-            onSearchQueryChanged = {}
+            onSearchQueryChanged = {},
+            //filters = goalFilterState
         )
     }
 }

@@ -85,7 +85,7 @@ fun ScheduledGoalList(
     LazyColumn(
         state = listState,
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (goals.isEmpty()){
@@ -166,7 +166,7 @@ fun GoalCard(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(horizontal = 8.dp)
             .then(
                 if(onGoalClick != null){
                     Modifier.clickable {
@@ -213,7 +213,7 @@ fun GoalCard(
                 Column(
                     modifier = Modifier
                         .weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ){
                     Text(
                         text = scheduledGoal.scheduledGoalTitle,
@@ -221,6 +221,31 @@ fun GoalCard(
                     )
 
                     Text(
+                        text = buildString {
+                            append("${scheduledGoal.scheduledHours}h ")
+                            append("${scheduledGoal.scheduledMinutes}m")
+
+                            /*category?.let {
+                                append(" · Category: ${it.name}")
+                            }*/
+
+                            val priorityText = scheduledGoal.scheduledPriority
+                                ?.name
+                                ?.lowercase()
+                                ?.replaceFirstChar { it.uppercase() }
+                                ?: "None"
+
+                            scheduledGoal.scheduledPriority?.let {
+                                append(" · Priority: $priorityText")
+                            }
+                        }
+                    )
+                    val categoryName = category?.name ?: "None"
+                    Text(
+                        text = "Category: $categoryName",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    /*Text(
                         text = "Goal: ${scheduledGoal.scheduledHours}h ${scheduledGoal.scheduledMinutes}m",
                         style = MaterialTheme.typography.bodyMedium
                     )
@@ -235,11 +260,7 @@ fun GoalCard(
                         style = MaterialTheme.typography.bodySmall
                     )
 
-                    val categoryName = category?.name ?: "None"
-                    Text(
-                        text = "Category: $categoryName",
-                        style = MaterialTheme.typography.bodySmall
-                    )
+                    */
 
                     GoalStatusText(scheduledGoal = scheduledGoal)
 
