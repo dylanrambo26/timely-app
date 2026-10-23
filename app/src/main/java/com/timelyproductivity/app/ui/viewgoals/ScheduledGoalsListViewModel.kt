@@ -172,19 +172,10 @@ class ScheduledGoalsListViewModel(
         }
     }
 
-    fun setCategoryColorsEnabled(enabled: Boolean){
-        viewModelScope.launch {
-            userPreferencesRepository.setUseCategoryColorsEnabled(enabled)
-        }
-    }
-
     fun updateFilters(filters: GoalFilterState){
         _filters.value = filters
     }
 
-    fun clearFilters(filters: GoalFilterState){
-        _filters.value = GoalFilterState()
-    }
 }
 
 data class ScheduledGoalsListUiState(

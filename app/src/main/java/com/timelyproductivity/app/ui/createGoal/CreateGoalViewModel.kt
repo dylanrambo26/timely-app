@@ -324,6 +324,7 @@ data class GoalUiState(
     val useCategoryColorsEnabled: Boolean = false,
 
     val priority: GoalPriority? = null,
+    val originalPriority: GoalPriority? = null
 )
 
 data class GoalDetails(

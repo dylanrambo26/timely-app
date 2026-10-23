@@ -50,6 +50,7 @@ import com.timelyproductivity.app.ui.components.ActiveGoalFilters
 import com.timelyproductivity.app.ui.components.GoalFilterSheet
 import com.timelyproductivity.app.ui.components.ColorLegend
 import com.timelyproductivity.app.ui.components.GoalFilterBar
+import com.timelyproductivity.app.ui.components.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.LegendItem
 import com.timelyproductivity.app.ui.components.lists.ScheduledGoalList
 import com.timelyproductivity.app.ui.components.time.DisplayTime
@@ -125,7 +126,6 @@ fun ViewGoalsScreen(
             onMarkAsComplete = scheduledGoalsListViewModel::setComplete,
 
             filters = filters,
-            onSearchQueryChanged = scheduledGoalsListViewModel::updateFilters,
             onFiltersChanged = scheduledGoalsListViewModel::updateFilters
         )
     }
@@ -143,7 +143,6 @@ fun ViewGoalsBody(
     onMarkAsComplete: (ScheduledGoal, Boolean) -> Unit,
 
     filters: GoalFilterState = GoalFilterState(),
-    onSearchQueryChanged: (GoalFilterState) -> Unit,
     onFiltersChanged: (GoalFilterState) -> Unit,
 
     modifier: Modifier = Modifier,
@@ -164,29 +163,12 @@ fun ViewGoalsBody(
             mutableStateOf(false)
         }
 
-        Column(
-            modifier = Modifier.padding(horizontal = 12.dp)
-        ){
-            GoalFilterBar(
-                searchQuery = filters.searchQuery,
-                onSearchQueryChanged = {query ->
-                    onSearchQueryChanged(
-                        filters.copy(
-                            searchQuery = query
-                        )
-                    )
-                },
-                onFilterClick = {
-                    showFilterSheet = true
-                }
-            )
-
-            ActiveGoalFilters(
-                filters = filters,
-                categories = scheduledGoalsListUiState.categories,
-                onFiltersChanged = onFiltersChanged
-            )
-        }
+        GoalFilteringControls(
+            filters = filters,
+            categories = scheduledGoalsListUiState.categories,
+            onFiltersChanged = onFiltersChanged,
+            showCompletionFilter = true
+        )
         HorizontalDivider(
             modifier = Modifier
                 .fillMaxWidth()
@@ -194,19 +176,6 @@ fun ViewGoalsBody(
             thickness = 1.dp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
         )
-
-        if (showFilterSheet) {
-            GoalFilterSheet(
-                filters = filters,
-                categories = scheduledGoalsListUiState.categories,
-                showCompletionFilter = true,
-                onFiltersChanged = onFiltersChanged,
-                onDismiss = {
-                    showFilterSheet = false
-                }
-            )
-        }
-
         ScheduledGoalList(
             goals = scheduledGoalsListUiState.filteredScheduledGoals,
             categories = scheduledGoalsListUiState.categories,
@@ -371,7 +340,6 @@ fun ViewGoalsBodyPreview(){
             onMarkAsComplete = {_,_ ->},
             modifier = Modifier,
             onFiltersChanged = {},
-            onSearchQueryChanged = {},
             //filters = goalFilterState
         )
     }

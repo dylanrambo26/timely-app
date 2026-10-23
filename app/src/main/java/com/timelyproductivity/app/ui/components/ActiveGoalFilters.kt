@@ -24,6 +24,7 @@ import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.ui.filters.CompletionFilter
 import com.timelyproductivity.app.ui.filters.GoalFilterState
+import com.timelyproductivity.app.ui.filters.RecurrenceFilter
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 import com.timelyproductivity.app.util.enumNameToFirstLetterCapitalized
 
@@ -39,7 +40,8 @@ fun ActiveGoalFilters(
     val hasActiveFilters =
         filters.categoryIds.isNotEmpty() ||
                 filters.priorities.isNotEmpty() ||
-                filters.completionFilter != CompletionFilter.ALL
+                filters.completionFilter != CompletionFilter.ALL ||
+                filters.recurrenceFilter != RecurrenceFilter.ALL
 
     if (!hasActiveFilters) return
     Row(
@@ -48,7 +50,7 @@ fun ActiveGoalFilters(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ){
         LazyRow(
-            modifier = modifier.weight(1f),
+            modifier = Modifier.weight(1f),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically,
             contentPadding = PaddingValues(horizontal = 4.dp)
@@ -99,6 +101,20 @@ fun ActiveGoalFilters(
                     )
                 }
             }
+            if (filters.recurrenceFilter != RecurrenceFilter.ALL) {
+                item {
+                    FilterChipItem(
+                        label = filters.recurrenceFilter.name.enumNameToFirstLetterCapitalized(),
+                        onRemove = {
+                            onFiltersChanged(
+                                filters.copy(
+                                    recurrenceFilter = RecurrenceFilter.ALL
+                                )
+                            )
+                        }
+                    )
+                }
+            }
         }
         TextButton(
             onClick = {
@@ -142,8 +158,9 @@ fun ActiveGoalFiltersPreview(){
     TimeManagementAppTheme {
         ActiveGoalFilters(
             filters = GoalFilterState(
-                categoryIds = setOf(testGoalCategoriesSizeThreeWithColor[0].categoryId, testGoalCategoriesSizeThreeWithColor[1].categoryId),
-                priorities = setOf(GoalPriority.LOW)
+                //categoryIds = setOf(testGoalCategoriesSizeThreeWithColor[0].categoryId, testGoalCategoriesSizeThreeWithColor[1].categoryId),
+                priorities = setOf(GoalPriority.LOW),
+                recurrenceFilter = RecurrenceFilter.NON_RECURRING
             ),
             onFiltersChanged = {},
             categories = testGoalCategoriesSizeThreeWithColor

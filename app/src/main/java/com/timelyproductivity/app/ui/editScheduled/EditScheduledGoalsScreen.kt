@@ -20,6 +20,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -34,8 +37,13 @@ import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeFour
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.components.ActiveGoalFilters
+import com.timelyproductivity.app.ui.components.GoalFilterBar
+import com.timelyproductivity.app.ui.components.GoalFilterSheet
+import com.timelyproductivity.app.ui.components.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.lists.ScheduledGoalList
 import com.timelyproductivity.app.ui.components.time.DisplayTime
+import com.timelyproductivity.app.ui.filters.GoalFilterState
 import com.timelyproductivity.app.ui.navigation.NavigationDest
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 import com.timelyproductivity.app.ui.viewgoals.ScheduledGoalsListUiState
@@ -59,6 +67,7 @@ fun EditScheduledGoalsScreen(
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val scheduledGoalsListUiState by viewModel.scheduledGoalsListUiState.collectAsState()
+    val filters by viewModel.filters.collectAsState()
     Scaffold(
         topBar = {
             TimelySmallTopAppBar(stringResource(R.string.edit_todays_goals))
@@ -78,29 +87,40 @@ fun EditScheduledGoalsScreen(
             onAddGoal = {
                 scheduledGoalsListUiState.calendarEventId?.let(onAddGoalButtonClicked)
             },
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+
+            filters = filters,
+            onFiltersChanged = viewModel::updateFilters
         )
     }
 }
 
 @Composable
 fun EditScheduledGoalsBody(
-    //goalListUiState: GoalListUiState,
     scheduledGoalsListUiState: ScheduledGoalsListUiState,
     onDeleteGoal: (ScheduledGoal) -> Unit,
     onEditGoal: (ScheduledGoal) -> Unit,
     onAddGoal: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+
+    filters: GoalFilterState = GoalFilterState(),
+    onFiltersChanged: (GoalFilterState) -> Unit,
 ){
     Column(
         modifier = modifier
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        val filteredGoals = scheduledGoalsListUiState.scheduledGoalsList.nonActiveGoals()
+
+        GoalFilteringControls(
+            filters = filters,
+            categories = scheduledGoalsListUiState.categories,
+            onFiltersChanged = onFiltersChanged,
+            showCompletionFilter = false
+        )
 
         ScheduledGoalList(
-            goals = filteredGoals,
+            goals = scheduledGoalsListUiState.filteredScheduledGoals.nonActiveGoals(),
             categories = scheduledGoalsListUiState.categories,
             addCategoryColors = scheduledGoalsListUiState.useCategoryColorsEnabled,
             onDeleteGoal = onDeleteGoal,
@@ -187,11 +207,13 @@ fun EditScheduledGoalsBodyPreview(){
             scheduledGoalsListUiState = ScheduledGoalsListUiState(
                 scheduledGoalsList = testScheduledGoalsWithCategoriesSizeFour,
                 categories = testGoalCategoriesSizeThreeWithColor,
-                useCategoryColorsEnabled = true
+                useCategoryColorsEnabled = true,
+                filteredScheduledGoals = testScheduledGoalsWithCategoriesSizeFour
             ),
             onDeleteGoal = {},
             onEditGoal = {},
             onAddGoal = {},
+            onFiltersChanged = {},
         )
     }
 }

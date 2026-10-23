@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.timelyproductivity.app.R
@@ -48,6 +49,7 @@ import com.timelyproductivity.app.ui.theme.checkbox
 import com.timelyproductivity.app.ui.theme.completedGoal
 import com.timelyproductivity.app.ui.theme.toColor
 import com.timelyproductivity.app.util.MAX_NUMBER_OF_COUNTDOWN_REMINDERS
+import com.timelyproductivity.app.util.enumNameToFirstLetterCapitalized
 
 @Composable
 fun ScheduledGoalList(
@@ -217,7 +219,9 @@ fun GoalCard(
                 ){
                     Text(
                         text = scheduledGoal.scheduledGoalTitle,
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
 
                     Text(
@@ -225,43 +229,22 @@ fun GoalCard(
                             append("${scheduledGoal.scheduledHours}h ")
                             append("${scheduledGoal.scheduledMinutes}m")
 
-                            /*category?.let {
-                                append(" · Category: ${it.name}")
-                            }*/
-
-                            val priorityText = scheduledGoal.scheduledPriority
-                                ?.name
-                                ?.lowercase()
-                                ?.replaceFirstChar { it.uppercase() }
-                                ?: "None"
+                            val priorityText = scheduledGoal.scheduledPriority?.name?.enumNameToFirstLetterCapitalized()
 
                             scheduledGoal.scheduledPriority?.let {
                                 append(" · Priority: $priorityText")
                             }
-                        }
+                        },
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
                     val categoryName = category?.name ?: "None"
                     Text(
                         text = "Category: $categoryName",
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
-                    /*Text(
-                        text = "Goal: ${scheduledGoal.scheduledHours}h ${scheduledGoal.scheduledMinutes}m",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-
-                    val priorityText = scheduledGoal.scheduledPriority
-                        ?.name
-                        ?.lowercase()
-                        ?.replaceFirstChar { it.uppercase() }
-                        ?: "None"
-                    Text(
-                        text = "Priority: $priorityText",
-                        style = MaterialTheme.typography.bodySmall
-                    )
-
-                    */
-
                     GoalStatusText(scheduledGoal = scheduledGoal)
 
                 }

@@ -8,8 +8,12 @@ import com.timelyproductivity.app.data.goal.GoalsRepository
 import com.timelyproductivity.app.data.goal.category.GoalCategoriesRepository
 import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.goal.recurrence.GoalWithRecurrence
+import com.timelyproductivity.app.ui.filters.GoalFilterState
+import com.timelyproductivity.app.ui.filters.applyFilters
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -23,6 +27,10 @@ class GoalListViewModel(
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
     }
+
+    private val _filters = MutableStateFlow(GoalFilterState())
+    val filters: StateFlow<GoalFilterState> = _filters.asStateFlow()
+
     val goalListUiState: StateFlow<GoalListUiState> =
         combine(
             goalsRepository.getAllGoalsWithRecurrence(),
@@ -36,6 +44,11 @@ class GoalListViewModel(
                 totalMinutes = totalMinutes,
                 useCategoryColorsEnabled = useCategoryColorsEnabled
             )
+        }.combine(_filters){uiState, filters ->
+            uiState.copy(
+                filteredGoalList = uiState.goalList.applyFilters(filters)
+            )
+
         }.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
@@ -47,10 +60,15 @@ class GoalListViewModel(
             goalsRepository.deleteGoal(goal)
         }
     }
+
+    fun updateFilters(filters: GoalFilterState){
+        _filters.value = filters
+    }
 }
 
 data class GoalListUiState(
     val goalList: List<GoalWithRecurrence> = listOf(),
+    val filteredGoalList: List<GoalWithRecurrence> = listOf(),
     val categories: List<GoalCategory> = listOf(),
     val useCategoryColorsEnabled: Boolean = false,
     val totalMinutes: Int = 0,

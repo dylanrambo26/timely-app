@@ -31,6 +31,7 @@ import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.ui.filters.CompletionFilter
 import com.timelyproductivity.app.ui.filters.GoalFilterState
+import com.timelyproductivity.app.ui.filters.RecurrenceFilter
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 import com.timelyproductivity.app.ui.theme.categoryOrangeDark
 import com.timelyproductivity.app.util.enumNameToFirstLetterCapitalized
@@ -42,6 +43,7 @@ fun GoalFilterSheet(
     filters: GoalFilterState,
     categories: List<GoalCategory>,
     showCompletionFilter: Boolean = true,
+    showRecurrenceFilter: Boolean = false,
     onFiltersChanged: (GoalFilterState) -> Unit,
     onDismiss: () -> Unit,
 ) {
@@ -52,6 +54,7 @@ fun GoalFilterSheet(
             filters = filters,
             categories = categories,
             showCompletionFilter = showCompletionFilter,
+            showRecurrenceFilter = showRecurrenceFilter,
             onFiltersChanged = onFiltersChanged,
             onDismiss = onDismiss
         )
@@ -62,6 +65,7 @@ fun GoalFilterSheetContent(
     filters: GoalFilterState,
     categories: List<GoalCategory>,
     showCompletionFilter: Boolean = true,
+    showRecurrenceFilter: Boolean = false,
     onFiltersChanged: (GoalFilterState) -> Unit,
     onDismiss: () -> Unit,
 ){
@@ -181,6 +185,41 @@ fun GoalFilterSheetContent(
             }
         }
 
+        if(showRecurrenceFilter){
+            HorizontalDivider()
+
+            Text(
+                text = "Recurrence",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            RecurrenceFilter.entries.forEach { recurrence ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .selectable(
+                            selected = filters.recurrenceFilter == recurrence,
+                            onClick = {
+                                onFiltersChanged(
+                                    filters.copy(
+                                        recurrenceFilter = recurrence
+                                    )
+                                )
+                            },
+                            role = Role.RadioButton
+                        ),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    RadioButton(
+                        selected = filters.recurrenceFilter == recurrence,
+                        onClick = null
+                    )
+
+                    Text(recurrence.name.enumNameToFirstLetterCapitalized())
+                }
+            }
+        }
+
         Button(
             onClick = onDismiss,
             modifier = Modifier.fillMaxWidth()
@@ -238,7 +277,8 @@ fun GoalFilterSheetPreview(){
                 completionFilter = CompletionFilter.ALL
             ),
             onFiltersChanged = {},
-            onDismiss = {}
+            onDismiss = {},
+            showRecurrenceFilter = true
         )
     }
 }

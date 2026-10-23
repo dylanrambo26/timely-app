@@ -183,7 +183,8 @@ fun EditReusableGoalBody(
         Text(stringResource(R.string.existing_goal))
         GoalTemplateCard(
             goal = oldGoalDetails.toGoal(
-                categoryId = goalUiState.originalCategoryId
+                categoryId = goalUiState.originalCategoryId,
+                priority = goalUiState.originalPriority
             ),
             categories = goalUiState.goalCategories,
             addCategoryColors = goalUiState.useCategoryColorsEnabled,
@@ -193,7 +194,8 @@ fun EditReusableGoalBody(
         Text(stringResource(R.string.updated_goal))
         GoalTemplateCard(
             goal = goalUiState.goalDetails.toGoal(
-                categoryId = goalUiState.selectedCategoryId
+                categoryId = goalUiState.selectedCategoryId,
+                priority = goalUiState.priority
             ),
             categories = goalUiState.goalCategories,
             addCategoryColors = goalUiState.useCategoryColorsEnabled,

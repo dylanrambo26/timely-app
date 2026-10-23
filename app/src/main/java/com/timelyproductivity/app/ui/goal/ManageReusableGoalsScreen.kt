@@ -44,7 +44,9 @@ import com.timelyproductivity.app.data.goal.recurrence.GoalWithRecurrence
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testGoalsWithCategoriesSizeThree
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.components.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.lists.GoalTemplateList
+import com.timelyproductivity.app.ui.filters.GoalFilterState
 import com.timelyproductivity.app.ui.navigation.NavigationDest
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 
@@ -64,6 +66,7 @@ fun ManageReusableGoalsScreen(
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
+    val filters by goalListViewModel.filters.collectAsState()
 
     var goalPendingDeletion by remember {
         mutableStateOf<GoalWithRecurrence?>(null)
@@ -91,6 +94,9 @@ fun ManageReusableGoalsScreen(
                 }
             },
             onEditGoal = onEditGoal,
+
+            filters = filters,
+            onFiltersChanged = goalListViewModel::updateFilters,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -122,57 +128,52 @@ fun ManageReusableGoalsBody(
     goalListUiState: GoalListUiState,
     onDeleteGoal: (GoalWithRecurrence) -> Unit,
     onEditGoal: (Goal) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+
+    filters: GoalFilterState = GoalFilterState(),
+    onFiltersChanged: (GoalFilterState) -> Unit,
 ){
     Column(
         modifier = modifier
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        GoalFilteringControls(
+            filters = filters,
+            onFiltersChanged = onFiltersChanged,
+            showCompletionFilter = false,
+            showRecurrenceFilter = true,
+            categories = goalListUiState.categories
+        )
 
         GoalTemplateList(
-            goals = goalListUiState.goalList,
+            goals = goalListUiState.filteredGoalList,
             categories = goalListUiState.categories,
             addCategoryColors = goalListUiState.useCategoryColorsEnabled,
             onEditGoal = onEditGoal,
             onDeleteGoal = onDeleteGoal,
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth()
+                .padding(horizontal = 12.dp)
         )
-        HorizontalDivider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = dimensionResource(R.dimen.padding_medium_large)),
-            thickness = 1.dp,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-
-            )
         Row(
             modifier = Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.Center
-        ){
-            IconButton(
-                onClick = onCreateGoalButtonClicked,
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .size(100.dp),
+        ) {
+            Button(
+                onClick = onCreateGoalButtonClicked
             ) {
                 Icon(
                     imageVector = Icons.Default.AddCircle,
-                    contentDescription = stringResource(R.string.create_a_goal_from_scratch),
-                    modifier = Modifier
-                        .size(100.dp)
+                    contentDescription = null
                 )
+
+                Spacer(Modifier.width(8.dp))
+
+                Text(stringResource(R.string.create_a_goal_from_scratch))
             }
-            Spacer(modifier = Modifier.width(30.dp))
-            Text(
-                text = stringResource(R.string.create_a_goal_from_scratch),
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-            )
         }
     }
 }
@@ -255,10 +256,12 @@ fun ManageReusableGoalsBodyPreview(){
             goalListUiState = GoalListUiState(
                 goalList = testGoalsWithCategoriesSizeThree,
                 categories = testGoalCategoriesSizeThreeWithColor,
-                useCategoryColorsEnabled = true
+                useCategoryColorsEnabled = true,
+                filteredGoalList = testGoalsWithCategoriesSizeThree
             ),
             onDeleteGoal = {},
             onEditGoal = {},
+            onFiltersChanged = {}
         )
     }
 }

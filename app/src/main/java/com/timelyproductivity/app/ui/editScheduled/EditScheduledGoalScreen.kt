@@ -151,7 +151,8 @@ fun EditScheduledGoalBody(
         Text(stringResource(R.string.old_goal))
         GoalTemplateCard(
             goal = oldGoalDetails.toGoal(
-                categoryId = goalUiState.originalCategoryId
+                categoryId = goalUiState.originalCategoryId,
+                priority = goalUiState.originalPriority
             ),
             categories = goalUiState.goalCategories,
             addCategoryColors = goalUiState.useCategoryColorsEnabled
@@ -159,7 +160,8 @@ fun EditScheduledGoalBody(
         Text(stringResource(R.string.new_goal))
         GoalTemplateCard(
             goal = goalUiState.goalDetails.toGoal(
-                categoryId = goalUiState.selectedCategoryId
+                categoryId = goalUiState.selectedCategoryId,
+                priority = goalUiState.priority
             ),
             categories = goalUiState.goalCategories,
             addCategoryColors = goalUiState.useCategoryColorsEnabled

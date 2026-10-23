@@ -44,10 +44,12 @@ import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeFour
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.components.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.PermissionsDialog
 import com.timelyproductivity.app.ui.components.lists.ScheduledGoalList
 import com.timelyproductivity.app.ui.components.settings.ReminderEditorDialog
 import com.timelyproductivity.app.ui.components.settings.ReminderEditorUiState
+import com.timelyproductivity.app.ui.filters.GoalFilterState
 import com.timelyproductivity.app.ui.navigation.NavigationDest
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 import com.timelyproductivity.app.ui.viewgoals.ScheduledGoalsListUiState
@@ -69,6 +71,7 @@ fun CurrentTaskScreen(
     navigateBack: () -> Unit
 ){
     val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
+    val filters by scheduledGoalsListViewModel.filters.collectAsState()
     val currentTaskUiState by currentTaskViewModel.currentTaskUiState.collectAsState()
     val reminderEditorUiState by currentTaskViewModel.reminderEditorUiState.collectAsState()
 
@@ -128,6 +131,9 @@ fun CurrentTaskScreen(
             onSaveReminder = currentTaskViewModel::saveReminder,
             onDismissReminderDialog = currentTaskViewModel::closeReminderDialog,
 
+            filters = filters,
+            onFiltersChanged = scheduledGoalsListViewModel::updateFilters,
+
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -152,7 +158,10 @@ fun CurrentTaskBody(
     onReminderInputChanged: (String) -> Unit,
     onSaveReminder: () -> Unit,
     onDismissReminderDialog: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+
+    filters: GoalFilterState = GoalFilterState(),
+    onFiltersChanged: (GoalFilterState) -> Unit,
 ){
     var goalWaitingForPermissions by remember {
         mutableStateOf<ScheduledGoal?>(null)
@@ -223,11 +232,16 @@ fun CurrentTaskBody(
             .firstOrNull{
                 it.scheduledGoalId == currentTaskUiState.selectedGoal?.scheduledGoalId
             }
-        val filteredGoals = scheduledGoalsListUiState.scheduledGoalsList.incompleteGoals()
+        GoalFilteringControls(
+            filters = filters,
+            onFiltersChanged = onFiltersChanged,
+            categories = scheduledGoalsListUiState.categories,
+            showCompletionFilter = false
+        )
 
         //Display a goal list filtered for goals that are paused and not started only
         ScheduledGoalList(
-            goals = filteredGoals,
+            goals = scheduledGoalsListUiState.filteredScheduledGoals.incompleteGoals(),
             categories = scheduledGoalsListUiState.categories,
             selectedGoalId = currentTaskUiState.selectedGoal?.scheduledGoalId,
             onGoalClick = {scheduledGoal ->
@@ -333,7 +347,8 @@ fun CurrentTaskBodyPreview(){
             onSaveReminder = {},
             onReminderInputChanged = {},
             reminderEditorUiState = ReminderEditorUiState(),
-            onFinishCustomizeReminders = {}
+            onFinishCustomizeReminders = {},
+            onFiltersChanged = {}
         )
     }
 }
