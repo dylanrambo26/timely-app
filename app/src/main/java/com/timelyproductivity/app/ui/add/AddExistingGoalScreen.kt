@@ -12,8 +12,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -39,8 +41,10 @@ import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testGoalsWithCategoriesSizeThree
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.components.AddGoalButton
+import com.timelyproductivity.app.ui.components.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.lists.GoalTemplateList
 import com.timelyproductivity.app.ui.components.time.DisplayTime
+import com.timelyproductivity.app.ui.filters.GoalFilterState
 import com.timelyproductivity.app.ui.goal.GoalListUiState
 import com.timelyproductivity.app.ui.goal.GoalListViewModel
 import com.timelyproductivity.app.ui.navigation.NavigationDest
@@ -69,6 +73,7 @@ fun AddExistingGoalScreen(
 ){
     val showDurationError by scheduledGoalsViewModel.showDurationError.collectAsState()
     val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
+    val filters by goalListViewModel.filters.collectAsState()
     val scheduledGoalsListUiState by scheduledGoalsViewModel.scheduledGoalsListUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
@@ -99,7 +104,10 @@ fun AddExistingGoalScreen(
             modifier = Modifier.padding(innerPadding),
             onCreateGoalPressed = {
                 navigateToCreateGoal(scheduledGoalsViewModel.calendarEventId)
-            }
+            },
+
+            filters = filters,
+            onFiltersChanged = goalListViewModel::updateFilters
         )
     }
 }
@@ -112,7 +120,10 @@ fun AddExistingGoalBody(
     onAddGoalPressed: (Int) -> Unit,
     onCreateGoalPressed: () -> Unit,
     onCancelClicked: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+
+    filters: GoalFilterState = GoalFilterState(),
+    onFiltersChanged: (GoalFilterState) -> Unit,
 ){
     Column(
         modifier = modifier
@@ -141,11 +152,19 @@ fun AddExistingGoalBody(
                 )
             }
         } else {
+            GoalFilteringControls(
+                filters = filters,
+                categories = goalListUiState.categories,
+                onFiltersChanged = onFiltersChanged,
+                showRecurrenceFilter = true,
+                showCompletionFilter = false
+            )
+
             GoalTemplateList(
-                goals = goalListUiState.goalList,
+                goals = goalListUiState.filteredGoalList,
                 categories = goalListUiState.categories,
                 addCategoryColors = goalListUiState.useCategoryColorsEnabled,
-                onGoalClick = {goal ->
+                onGoalClick = { goal ->
                     selectedGoalId = goal.goalID
                 },
                 selectedGoalId = selectedGoalId,
@@ -154,7 +173,6 @@ fun AddExistingGoalBody(
                     .padding(dimensionResource(R.dimen.padding_medium))
             )
         }
-        DisplayTime(duration = scheduledGoalsListUiState.remainingMinutesInDay, title = stringResource(R.string.available_time_in_full_day))
 
         if(showDurationError){
             Text(
@@ -172,58 +190,28 @@ fun AddExistingGoalBody(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
         )
         Row(
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .weight(0.33f)
+                .padding(horizontal = 16.dp, vertical = 8.dp),
+            horizontalArrangement = Arrangement.Center
         ) {
-            //Cancel Button
-            Surface(
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable {
-                        onCancelClicked()
-                    }
-                    .padding(12.dp)
-                    .width(200.dp)
-                    .height(100.dp),
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            ){
-                Box(
-                    modifier = Modifier.padding(20.dp),
-                    contentAlignment = Alignment.Center
-                ){
-                    Text(
-                        stringResource(R.string.Cancel),
-                        textAlign = TextAlign.Center
-                    )
-                }
+            OutlinedButton(
+                onClick = onCancelClicked,
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    stringResource(R.string.Cancel),
+                    textAlign = TextAlign.Center
+                )
             }
-
-            //Add Goal Button
-            Surface(
-                modifier = Modifier
-                    .weight(1f)
-                    .clickable {
-                       selectedGoalId?.let { onAddGoalPressed(it) }
-                    }
-                    .padding(12.dp)
-                    .width(200.dp)
-                    .height(100.dp),
-                shape = RoundedCornerShape(12.dp),
-                color = MaterialTheme.colorScheme.onPrimaryContainer
-            ){
-                Box(
-                    modifier = Modifier.padding(20.dp),
-                    contentAlignment = Alignment.Center
-                ){
-                    Text(
-                        stringResource(R.string.add_goal),
-                        textAlign = TextAlign.Center
-                    )
-                }
+            Button(
+                onClick = { selectedGoalId?.let { onAddGoalPressed(it) } },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    stringResource(R.string.add_goal),
+                    textAlign = TextAlign.Center
+                )
             }
         }
     }
@@ -235,6 +223,7 @@ fun AddExistingGoalBodyPreview(){
         AddExistingGoalBody(
             goalListUiState = GoalListUiState(
                 goalList = testGoalsWithCategoriesSizeThree,
+                filteredGoalList = testGoalsWithCategoriesSizeThree,
                 categories = testGoalCategoriesSizeThreeWithColor,
                 useCategoryColorsEnabled = true,
             ),
@@ -243,7 +232,8 @@ fun AddExistingGoalBodyPreview(){
             onCancelClicked = {},
             modifier = Modifier,
             onCreateGoalPressed = {},
-            showDurationError = true
+            showDurationError = true,
+            onFiltersChanged = {}
         )
     }
 }
