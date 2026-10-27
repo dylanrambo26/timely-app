@@ -10,6 +10,7 @@ import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.goal.recurrence.GoalWithRecurrence
 import com.timelyproductivity.app.ui.filters.GoalFilterState
 import com.timelyproductivity.app.ui.filters.applyFilters
+import com.timelyproductivity.app.ui.sorting.applySorting
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -46,7 +47,13 @@ class GoalListViewModel(
             )
         }.combine(_filters){uiState, filters ->
             uiState.copy(
-                filteredGoalList = uiState.goalList.applyFilters(filters)
+                filteredGoalList = uiState.goalList
+                    .applyFilters(filters)
+                    .applySorting(
+                        sortOption = filters.sortOption,
+                        ascending = filters.sortAscending,
+                        categories = uiState.categories
+                    )
             )
 
         }.stateIn(

@@ -44,8 +44,8 @@ import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeFour
 import com.timelyproductivity.app.ui.AppViewModelProvider
-import com.timelyproductivity.app.ui.components.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.PermissionsDialog
+import com.timelyproductivity.app.ui.components.filters.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.lists.ScheduledGoalList
 import com.timelyproductivity.app.ui.components.settings.ReminderEditorDialog
 import com.timelyproductivity.app.ui.components.settings.ReminderEditorUiState
@@ -236,7 +236,9 @@ fun CurrentTaskBody(
             filters = filters,
             onFiltersChanged = onFiltersChanged,
             categories = scheduledGoalsListUiState.categories,
-            showCompletionFilter = false
+            showCompletionFilter = false,
+            resultCount = scheduledGoalsListUiState.filteredScheduledGoals.size,
+            totalCount = scheduledGoalsListUiState.scheduledGoalsList.size
         )
 
         //Display a goal list filtered for goals that are paused and not started only

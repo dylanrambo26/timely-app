@@ -20,9 +20,6 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -37,10 +34,7 @@ import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeFour
 import com.timelyproductivity.app.ui.AppViewModelProvider
-import com.timelyproductivity.app.ui.components.ActiveGoalFilters
-import com.timelyproductivity.app.ui.components.GoalFilterBar
-import com.timelyproductivity.app.ui.components.GoalFilterSheet
-import com.timelyproductivity.app.ui.components.GoalFilteringControls
+import com.timelyproductivity.app.ui.components.filters.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.lists.ScheduledGoalList
 import com.timelyproductivity.app.ui.components.time.DisplayTime
 import com.timelyproductivity.app.ui.filters.GoalFilterState
@@ -116,7 +110,9 @@ fun EditScheduledGoalsBody(
             filters = filters,
             categories = scheduledGoalsListUiState.categories,
             onFiltersChanged = onFiltersChanged,
-            showCompletionFilter = false
+            showCompletionFilter = false,
+            resultCount = scheduledGoalsListUiState.filteredScheduledGoals.size,
+            totalCount = scheduledGoalsListUiState.scheduledGoalsList.size
         )
 
         ScheduledGoalList(

@@ -4,11 +4,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
@@ -41,26 +39,19 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.timelyproductivity.app.R
 import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
-import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeFour
 import com.timelyproductivity.app.ui.AppViewModelProvider
-import com.timelyproductivity.app.ui.components.ActiveGoalFilters
-import com.timelyproductivity.app.ui.components.GoalFilterSheet
-import com.timelyproductivity.app.ui.components.ColorLegend
-import com.timelyproductivity.app.ui.components.GoalFilterBar
-import com.timelyproductivity.app.ui.components.GoalFilteringControls
-import com.timelyproductivity.app.ui.components.LegendItem
+import com.timelyproductivity.app.ui.components.filters.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.lists.ScheduledGoalList
+import com.timelyproductivity.app.ui.components.sorting.GoalSortOption
 import com.timelyproductivity.app.ui.components.time.DisplayTime
 import com.timelyproductivity.app.ui.filters.CompletionFilter
 import com.timelyproductivity.app.ui.filters.GoalFilterState
 import com.timelyproductivity.app.ui.filters.applyFilters
 import com.timelyproductivity.app.ui.navigation.NavigationDest
-import com.timelyproductivity.app.ui.settings.SettingsSwitch
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
-import com.timelyproductivity.app.ui.theme.completedGoal
 import com.timelyproductivity.app.util.formatLocalDateToCalendarDate
 import com.timelyproductivity.app.util.formatLocalDateToShorthandDate
 import java.time.LocalDate
@@ -156,7 +147,8 @@ fun ViewGoalsBody(
             displayedDay = scheduledGoalsListUiState.date,
             nextDayClicked = nextDayClicked,
             previousDayClicked = previousDayClicked,
-            totalMinutes = scheduledGoalsListUiState.totalMinutes
+            totalMinutes = scheduledGoalsListUiState.totalMinutes,
+            numScheduledGoals = scheduledGoalsListUiState.scheduledGoalsList.size
         )
 
         var showFilterSheet by rememberSaveable {
@@ -167,7 +159,9 @@ fun ViewGoalsBody(
             filters = filters,
             categories = scheduledGoalsListUiState.categories,
             onFiltersChanged = onFiltersChanged,
-            showCompletionFilter = true
+            showCompletionFilter = true,
+            resultCount = scheduledGoalsListUiState.filteredScheduledGoals.size,
+            totalCount = scheduledGoalsListUiState.scheduledGoalsList.size
         )
         HorizontalDivider(
             modifier = Modifier
@@ -253,6 +247,7 @@ fun ViewGoalsHeader(
     nextDayClicked: () -> Unit = {},
     displayedDay: LocalDate,
     totalMinutes: Int,
+    numScheduledGoals: Int
 ){
     Row(
         modifier = modifier
@@ -279,7 +274,7 @@ fun ViewGoalsHeader(
                 textAlign = TextAlign.Center
             )
             DisplayTime(
-                title = "Scheduled",
+                title = "$numScheduledGoals Goals Scheduled, ",
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 style = MaterialTheme.typography.bodySmall,
                 duration = totalMinutes
@@ -318,9 +313,11 @@ fun ViewGoalsBodyPreview(){
     TimeManagementAppTheme {
         val selectedDate = LocalDate.now()
         val goalFilterState = GoalFilterState(
-            categoryIds = setOf(testGoalCategoriesSizeThreeWithColor[0].categoryId, testGoalCategoriesSizeThreeWithColor[1].categoryId),
+            categoryIds = setOf(testGoalCategoriesSizeThreeWithColor[1].categoryId),
             priorities = setOf(),
-            completionFilter = CompletionFilter.ALL
+            completionFilter = CompletionFilter.ALL,
+            sortOption = GoalSortOption.PRIORITY,
+            sortAscending = true
         )
         ViewGoalsBody(
             isPastDate = {false},
@@ -340,7 +337,7 @@ fun ViewGoalsBodyPreview(){
             onMarkAsComplete = {_,_ ->},
             modifier = Modifier,
             onFiltersChanged = {},
-            //filters = goalFilterState
+            filters = goalFilterState
         )
     }
 }

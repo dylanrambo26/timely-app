@@ -71,3 +71,12 @@ fun List<GoalWithRecurrence>.applyFilters(
                 matchesRecurrence
     }
 }
+
+fun getFilterCount(
+    filters: GoalFilterState
+): Int {
+    return filters.categoryIds.size + filters.priorities.size +
+                (if (filters.completionFilter != CompletionFilter.ALL) 1 else 0) +
+                (if (filters.recurrenceFilter != RecurrenceFilter.ALL) 1 else 0) +
+                (if (filters.searchQuery.isNotBlank()) 1 else 0)
+}

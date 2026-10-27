@@ -1,8 +1,7 @@
-package com.timelyproductivity.app.ui.components
+package com.timelyproductivity.app.ui.components.filters
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -10,32 +9,43 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.text.toLowerCase
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
+import com.timelyproductivity.app.ui.components.sorting.GoalSortOption
 import com.timelyproductivity.app.ui.filters.CompletionFilter
 import com.timelyproductivity.app.ui.filters.GoalFilterState
 import com.timelyproductivity.app.ui.filters.RecurrenceFilter
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
-import com.timelyproductivity.app.ui.theme.categoryOrangeDark
 import com.timelyproductivity.app.util.enumNameToFirstLetterCapitalized
-import kotlin.collections.plus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -220,6 +230,33 @@ fun GoalFilterSheetContent(
             }
         }
 
+        HorizontalDivider()
+
+        Text(
+            text = "Sort Goals",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        GoalSortDropdown(
+            sortOption = filters.sortOption,
+            sortAscending = filters.sortAscending,
+            onSortOptionChanged = {option ->
+                onFiltersChanged(
+                    filters.copy(
+                        sortOption = option
+                    )
+                )
+            },
+            onSortAscendingChanged = {ascending ->
+                onFiltersChanged(
+                    filters.copy(
+                        sortAscending = ascending
+                    )
+                )
+            },
+
+        )
+
         Button(
             onClick = onDismiss,
             modifier = Modifier.fillMaxWidth()
@@ -229,6 +266,79 @@ fun GoalFilterSheetContent(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun GoalSortDropdown(
+    sortOption: GoalSortOption,
+    sortAscending: Boolean,
+    onSortOptionChanged: (GoalSortOption) -> Unit,
+    onSortAscendingChanged: (Boolean) -> Unit,
+    modifier: Modifier = Modifier
+){
+    var expanded by remember { mutableStateOf(false) }
+
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = it },
+            modifier = Modifier.weight(1f)
+        ) {
+            OutlinedTextField(
+                value = sortOption.displayName,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Sort by") },
+                trailingIcon = {
+                    ExposedDropdownMenuDefaults.TrailingIcon(
+                        expanded = expanded
+                    )
+                },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+            )
+
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                GoalSortOption.entries.forEach { option ->
+                    DropdownMenuItem(
+                        text = { Text(option.displayName) },
+                        onClick = {
+                            onSortOptionChanged(option)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        IconButton(
+            onClick = {
+                onSortAscendingChanged(!sortAscending)
+            },
+            enabled = sortOption != GoalSortOption.DEFAULT
+        ) {
+            Icon(
+                imageVector = if(sortAscending){
+                    Icons.Default.KeyboardArrowUp
+                } else {
+                    Icons.Default.KeyboardArrowDown
+                },
+                contentDescription = if (sortAscending) {
+                    "Sort descending"
+                } else {
+                    "Sort ascending"
+                }
+            )
+        }
+    }
+}
 
 @Composable
 private fun FilterCheckboxRow(
@@ -258,7 +368,7 @@ private fun FilterCheckboxRow(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, heightDp = 1000)
 @Composable
 fun GoalFilterSheetPreview(){
     TimeManagementAppTheme {

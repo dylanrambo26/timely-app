@@ -1,4 +1,4 @@
-package com.timelyproductivity.app.ui.components
+package com.timelyproductivity.app.ui.components.filters
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
+import com.timelyproductivity.app.ui.components.sorting.GoalSortOption
 import com.timelyproductivity.app.ui.filters.CompletionFilter
 import com.timelyproductivity.app.ui.filters.GoalFilterState
 import com.timelyproductivity.app.ui.filters.RecurrenceFilter
@@ -90,7 +91,7 @@ fun ActiveGoalFilters(
             if (filters.completionFilter != CompletionFilter.ALL) {
                 item {
                     FilterChipItem(
-                        label = filters.completionFilter.name,
+                        label = filters.completionFilter.name.enumNameToFirstLetterCapitalized(),
                         onRemove = {
                             onFiltersChanged(
                                 filters.copy(
@@ -160,7 +161,7 @@ fun ActiveGoalFiltersPreview(){
             filters = GoalFilterState(
                 //categoryIds = setOf(testGoalCategoriesSizeThreeWithColor[0].categoryId, testGoalCategoriesSizeThreeWithColor[1].categoryId),
                 priorities = setOf(GoalPriority.LOW),
-                recurrenceFilter = RecurrenceFilter.NON_RECURRING
+                sortOption = GoalSortOption.CATEGORY
             ),
             onFiltersChanged = {},
             categories = testGoalCategoriesSizeThreeWithColor

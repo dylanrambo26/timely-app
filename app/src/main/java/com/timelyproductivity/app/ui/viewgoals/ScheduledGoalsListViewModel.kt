@@ -12,6 +12,7 @@ import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalsRepository
 import com.timelyproductivity.app.ui.filters.GoalFilterState
 import com.timelyproductivity.app.ui.filters.applyFilters
+import com.timelyproductivity.app.ui.sorting.applySorting
 import com.timelyproductivity.app.util.MINUTES_IN_24_HOUR_DAY
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -84,7 +85,13 @@ class ScheduledGoalsListViewModel(
                     )
                 }.combine(_filters){uiState, filters ->
                     uiState.copy(
-                        filteredScheduledGoals = uiState.scheduledGoalsList.applyFilters(filters)
+                        filteredScheduledGoals = uiState.scheduledGoalsList
+                            .applyFilters(filters)
+                            .applySorting(
+                                sortOption = filters.sortOption,
+                                ascending = filters.sortAscending,
+                                categories = uiState.categories
+                            )
                     )
                 }
             }
