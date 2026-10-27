@@ -6,9 +6,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -23,7 +21,7 @@ import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 import com.timelyproductivity.app.ui.theme.completedGoal
 
 @Composable
-fun ColorLegend(
+fun ColorLegendColumn(
     items: List<LegendItem>,
     isCircleShape: Boolean = false,
     modifier: Modifier = Modifier
@@ -33,28 +31,60 @@ fun ColorLegend(
         modifier = modifier
     ) {
         items.forEach {item ->
-            Row(
-                verticalAlignment = Alignment.CenterVertically
-            ){
-                Box(
-                    modifier = Modifier
-                        .size(20.dp)
-                        .background(
-                            color = item.color,
-                            shape = if(isCircleShape) CircleShape else RectangleShape
-                        )
-                        .border(
-                            width = 3.dp,
-                            color = item.borderColor
-                        )
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Text(text = item.label)
-                Spacer(modifier = Modifier.width(16.dp))
-            }
+            ColorLegendItem(
+                item = item,
+                isCircleShape = isCircleShape
+            )
         }
     }
 
+}
+
+@Composable
+fun ColorLegendRow(
+    items: List<LegendItem>,
+    isCircleShape: Boolean = false,
+    modifier: Modifier = Modifier
+){
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier
+    ) {
+        items.forEach {item ->
+            ColorLegendItem(
+                item = item,
+                isCircleShape = isCircleShape
+            )
+        }
+    }
+}
+
+@Composable
+fun ColorLegendItem(
+    item: LegendItem,
+    isCircleShape: Boolean = false
+){
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ){
+        Box(
+            modifier = Modifier
+                .size(20.dp)
+                .background(
+                    color = item.color,
+                    shape = if(isCircleShape) CircleShape else RectangleShape
+                )
+                .border(
+                    width = 3.dp,
+                    color = item.borderColor
+                )
+        )
+        Text(
+            text = item.label,
+            style = MaterialTheme.typography.bodySmall
+        )
+    }
 }
 
 data class LegendItem(
@@ -67,7 +97,7 @@ data class LegendItem(
 @Composable
 fun ColorLegendPreview(){
     TimeManagementAppTheme {
-        ColorLegend(
+        ColorLegendRow(
             items = listOf(
                 LegendItem(
                     label = "= Test1",

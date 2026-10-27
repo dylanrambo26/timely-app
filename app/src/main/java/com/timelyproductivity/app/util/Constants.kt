@@ -1,6 +1,8 @@
 package com.timelyproductivity.app.util
 
 const val MINUTES_IN_24_HOUR_DAY = 1440
+const val MILLIS_IN_HOUR = 3_600_000L
+const val MILLIS_IN_MINUTE = 60_000L
 const val GOALDAOTEST_TOTAL_MINUTES = 345
 const val CALENDARGRIDSIZE = 42
 const val MIN_PERCENTAGE_FOR_LABEL = 5f

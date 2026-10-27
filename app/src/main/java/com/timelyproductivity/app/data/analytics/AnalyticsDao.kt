@@ -150,4 +150,42 @@ interface AnalyticsDao {
         startDate: LocalDate,
         endDate: LocalDate
     ): Flow<List<DailyAnalytics>>
+
+    @Query(
+        """
+                SELECT
+                    gc.categoryId AS categoryId,
+                    gc.name AS name,
+                    gc.color AS color,
+            
+                    SUM(
+                        (sg.scheduledHours * 60 + sg.scheduledMinutes) * 60000
+                    ) AS scheduledMillis,
+            
+                    SUM(
+                        MIN(
+                            sg.completedMillis,
+                            (sg.scheduledHours * 60 + sg.scheduledMinutes) * 60000
+                        )
+                    ) AS completedMillis
+            
+                FROM scheduled_goals AS sg
+            
+                INNER JOIN calendar_events AS ce
+                    ON sg.eventId = ce.eventId
+            
+                LEFT JOIN goal_categories AS gc
+                    ON sg.scheduledCategoryId = gc.categoryId
+            
+                WHERE ce.date BETWEEN :startDate AND :endDate
+            
+                GROUP BY sg.scheduledCategoryId
+            
+                ORDER BY scheduledMillis DESC
+    """
+    )
+    fun getCategoryStats(
+        startDate: LocalDate,
+        endDate: LocalDate
+    ): Flow<List<CategoryActivity>>
 }

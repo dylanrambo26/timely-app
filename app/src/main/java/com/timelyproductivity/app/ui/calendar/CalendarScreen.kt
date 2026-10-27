@@ -43,7 +43,7 @@ import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
 import com.timelyproductivity.app.data.generateTestDatesWithScheduledGoals
 import com.timelyproductivity.app.ui.AppViewModelProvider
-import com.timelyproductivity.app.ui.components.ColorLegend
+import com.timelyproductivity.app.ui.components.ColorLegendColumn
 import com.timelyproductivity.app.ui.components.LegendItem
 import com.timelyproductivity.app.ui.navigation.NavigationDest
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
@@ -129,7 +129,7 @@ fun CalendarBody(
             datesWithGoals = datesWithGoals,
             onDateSelected = onDateSelected,
         )
-        ColorLegend(
+        ColorLegendColumn(
             items = listOf(LegendItem(label = "Has Scheduled Goals", color = MaterialTheme.colorScheme.inversePrimary)),
             isCircleShape = true,
             modifier = Modifier.padding(16.dp)

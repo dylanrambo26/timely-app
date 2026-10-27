@@ -27,12 +27,14 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.timelyproductivity.app.R
 import com.timelyproductivity.app.data.generateTestDailyActivity
+import com.timelyproductivity.app.data.testCategoryStatsSizeThree
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.TimelyScaffold
-import com.timelyproductivity.app.ui.components.ColorLegend
+import com.timelyproductivity.app.ui.components.ColorLegendColumn
 import com.timelyproductivity.app.ui.components.LegendItem
 import com.timelyproductivity.app.ui.components.analytics.ActivityGridWeeklyMonthly
 import com.timelyproductivity.app.ui.components.analytics.ActivityGridYearly
+import com.timelyproductivity.app.ui.components.analytics.CategoryAnalyticsBarChart
 import com.timelyproductivity.app.ui.components.analytics.DonutChart
 import com.timelyproductivity.app.ui.components.time.DisplayTime
 import com.timelyproductivity.app.ui.navigation.NavigationDest
@@ -155,7 +157,7 @@ fun AnalyticsBody(
             partialPercentage = analyticsUiState.partialPercentage,
             unfinishedPercentage = analyticsUiState.unfinishedPercentage
         )
-        ColorLegend(
+        ColorLegendColumn(
             items = listOf(
                 LegendItem(
                     label = "Unfinished Time",
@@ -174,6 +176,10 @@ fun AnalyticsBody(
                 .padding(dimensionResource(R.dimen.padding_medium))
         )
 
+        CategoryAnalyticsBarChart(
+            categoryStats = analyticsUiState.categoryStats
+        )
+
         if(analyticsUiState.selectedPeriod != AnalyticsTimePeriod.YEARLY){
 
             ActivityGridWeeklyMonthly(
@@ -190,7 +196,7 @@ fun AnalyticsBody(
             )
         }
 
-        ColorLegend(
+        ColorLegendColumn(
             items = listOf(
                 LegendItem(
                     label = "70%-100% Completed Time",
@@ -226,7 +232,7 @@ fun AnalyticsBodyPreview(){
         val scheduledMillis = 11 * 60 * 60_000L
         val today = LocalDate.now()
         val monthlyOffset = today.withDayOfMonth(1).dayOfWeek.value % 7
-        val period = AnalyticsTimePeriod.YEARLY
+        val period = AnalyticsTimePeriod.MONTHLY
         val (startDate, endDate) = when(period){
             AnalyticsTimePeriod.WEEKLY ->
                 today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)) to
@@ -240,7 +246,7 @@ fun AnalyticsBodyPreview(){
         }
         AnalyticsBody(
             analyticsUiState = AnalyticsUiState(
-                selectedPeriod = AnalyticsTimePeriod.YEARLY,
+                selectedPeriod = period,
                 startDate = startDate,
                 endDate = endDate,
                 completedGoalCount = completedGoals,
@@ -251,7 +257,8 @@ fun AnalyticsBodyPreview(){
                 partialPercentage = 35.0f,
                 unfinishedPercentage = 35.0f,
                 gridOffset = monthlyOffset,
-                dailyActivity = generateTestDailyActivity(AnalyticsTimePeriod.YEARLY)
+                dailyActivity = generateTestDailyActivity(period),
+                categoryStats = testCategoryStatsSizeThree
             ),
             updateTimePeriod = {}
         )

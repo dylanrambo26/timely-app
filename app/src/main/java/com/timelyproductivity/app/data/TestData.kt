@@ -1,5 +1,6 @@
 package com.timelyproductivity.app.data
 
+import com.timelyproductivity.app.data.analytics.CategoryActivity
 import com.timelyproductivity.app.data.goal.Goal
 import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.goal.category.CategoryColor
@@ -11,6 +12,7 @@ import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.ui.analytics.AnalyticsTimePeriod
 import com.timelyproductivity.app.ui.analytics.DailyActivity
+import com.timelyproductivity.app.util.MILLIS_IN_MINUTE
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
@@ -131,6 +133,24 @@ val testGoalCategoriesSizeThreeWithColor = listOf(
         name = "Exercise",
         color = CategoryColor.ORANGE
     )
+)
+
+val testCategoryStatsSizeThree = listOf(
+    CategoryActivity(
+        category = testGoalCategoriesSizeThreeWithColor[0],
+        completedMillis = (60_000 * 60 * 4) + (MILLIS_IN_MINUTE * 5),
+        scheduledMillis = 60_000 * 60 * 5,
+    ),
+    CategoryActivity(
+        category = testGoalCategoriesSizeThreeWithColor[1],
+        completedMillis = (60_000 * 60 * 3) + (MILLIS_IN_MINUTE * 35),
+        scheduledMillis = 60_000 * 60 * 6,
+    ),
+    CategoryActivity(
+        category = testGoalCategoriesSizeThreeWithColor[2],
+        completedMillis = (60_000 * 60 * 1) + (MILLIS_IN_MINUTE * 25),
+        scheduledMillis = 60_000 * 60 * 3,
+    ),
 )
 
 val testGoalCounts = listOf(
