@@ -46,7 +46,6 @@ class ScheduledGoalsListViewModel(
     val showDurationError = _showDurationError.asStateFlow()
 
     private val _filters = MutableStateFlow(GoalFilterState())
-    val filters: StateFlow<GoalFilterState> = _filters.asStateFlow()
 
     init{
         viewModelScope.launch {
@@ -56,6 +55,21 @@ class ScheduledGoalsListViewModel(
             _date.value = calendarEventsRepository.getEventById(calendarEventId)?.date
         }
     }
+
+    val filters: StateFlow<GoalFilterState> = combine(
+        _filters,
+        userPreferencesRepository.goalSortOption,
+        userPreferencesRepository.goalSortAscending
+    ){localFilters, sortOption, sortAscending ->
+        localFilters.copy(
+            sortOption = sortOption,
+            sortAscending = sortAscending
+        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(TIMEOUT_MILLIS),
+        initialValue = GoalFilterState()
+    )
 
     val scheduledGoalsListUiState =
         _calendarEventId
@@ -83,7 +97,7 @@ class ScheduledGoalsListViewModel(
                         remainingMinutesInDay = MINUTES_IN_24_HOUR_DAY - totalMinutes,
                         useCategoryColorsEnabled = useCategoryColorsEnabled
                     )
-                }.combine(_filters){uiState, filters ->
+                }.combine(filters){uiState, filters ->
                     uiState.copy(
                         filteredScheduledGoals = uiState.scheduledGoalsList
                             .applyFilters(filters)
@@ -179,8 +193,24 @@ class ScheduledGoalsListViewModel(
         }
     }
 
-    fun updateFilters(filters: GoalFilterState){
-        _filters.value = filters
+    fun updateFilters(newFilters: GoalFilterState){
+        val currentFilters = filters.value
+
+        _filters.value = newFilters
+
+        viewModelScope.launch {
+            if(newFilters.sortOption != currentFilters.sortOption){
+                userPreferencesRepository.setGoalSortOption(
+                    newFilters.sortOption
+                )
+            }
+
+            if(newFilters.sortAscending != currentFilters.sortAscending){
+                userPreferencesRepository.setGoalSortAscending(
+                    newFilters.sortAscending
+                )
+            }
+        }
     }
 
 }

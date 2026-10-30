@@ -7,7 +7,9 @@ import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.core.intPreferencesKey
+import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.core.stringSetPreferencesKey
+import com.timelyproductivity.app.ui.components.sorting.GoalSortOption
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.map
@@ -43,6 +45,10 @@ class UserPreferencesRepository(
         val USE_CATEGORY_COLORS_ENABLED = booleanPreferencesKey(
             "use_category_colors_enabled"
         )
+
+        val GOAL_SORT_OPTION = stringPreferencesKey("goal_sort_option")
+
+        val GOAL_SORT_ASCENDING = booleanPreferencesKey("goal_sort_ascending")
 
         const val TAG = "UserPreferencesRepo"
     }
@@ -98,6 +104,20 @@ class UserPreferencesRepository(
             preferences[USE_CATEGORY_COLORS_ENABLED] ?: false
         }
 
+    val goalSortOption: Flow<GoalSortOption> =
+        preferencesFlow.map { preferences ->
+            preferences[GOAL_SORT_OPTION]?.let { value ->
+                GoalSortOption.entries.firstOrNull{
+                    it.name == value
+                }
+            }?: GoalSortOption.DEFAULT
+        }
+
+    val goalSortAscending: Flow<Boolean> =
+        preferencesFlow.map { preferences ->
+            preferences[GOAL_SORT_ASCENDING] ?: true
+        }
+
     suspend fun saveCurrentTaskID(currentTaskID: Int){
         dataStore.edit { preferences ->
             preferences[CURRENT_TASK_ID] = currentTaskID
@@ -149,6 +169,18 @@ class UserPreferencesRepository(
     suspend fun setUseCategoryColorsEnabled(enabled: Boolean){
         dataStore.edit { preferences ->
             preferences[USE_CATEGORY_COLORS_ENABLED] = enabled
+        }
+    }
+
+    suspend fun setGoalSortOption(option: GoalSortOption){
+        dataStore.edit { preferences ->
+            preferences[GOAL_SORT_OPTION] = option.name
+        }
+    }
+
+    suspend fun setGoalSortAscending(ascending: Boolean){
+        dataStore.edit { preferences ->
+            preferences[GOAL_SORT_ASCENDING] = ascending
         }
     }
 }
