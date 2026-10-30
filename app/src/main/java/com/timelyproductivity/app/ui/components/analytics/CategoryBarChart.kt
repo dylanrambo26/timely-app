@@ -11,11 +11,22 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,14 +39,28 @@ import com.timelyproductivity.app.data.testCategoryStatsSizeThree
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 import com.timelyproductivity.app.ui.theme.toColor
 import com.timelyproductivity.app.util.MILLIS_IN_MINUTE
+import java.time.LocalDate
 import java.util.Locale
 
 @Composable
 fun CategoryAnalyticsBarChart(
     categoryStats: List<CategoryActivity>,
+    startDate: LocalDate,
+    endDate: LocalDate,
     modifier: Modifier = Modifier
 ){
     val maxNumScheduledGoals = categoryStats.maxOfOrNull { it.numScheduledGoals } ?: 0
+    var isExpanded by rememberSaveable(
+        startDate, endDate
+    ) {
+        mutableStateOf(false)
+    }
+
+    val visibleCategories = if(isExpanded){
+        categoryStats
+    } else {
+        categoryStats.take(5)
+    }
 
     Column(
         modifier = modifier
@@ -117,8 +142,8 @@ fun CategoryAnalyticsBarChart(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant
             )
-        } else {
-            categoryStats.forEach { activity ->
+        } else{
+            visibleCategories.forEach { activity ->
                 CategoryAnalyticsBar(
                     categoryName = activity.category?.name ?: "Uncategorized",
                     numCompletedGoals = activity.numCompleteGoals,
@@ -127,6 +152,38 @@ fun CategoryAnalyticsBarChart(
                     categoryColor = activity.category?.color?.toColor()
                         ?: MaterialTheme.colorScheme.primary
                 )
+            }
+
+            if (categoryStats.size > 5){
+                TextButton(
+                    onClick = {
+                        isExpanded = !isExpanded
+                    },
+                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                ) {
+                    Text(
+                        if(isExpanded){
+                            "Show less"
+                        } else {
+                            "Show all (${categoryStats.size}"
+                        }
+                    )
+
+                    Spacer(Modifier.width(4.dp))
+
+                    Icon(
+                        imageVector = if(isExpanded){
+                            Icons.Default.ExpandLess
+                        } else {
+                            Icons.Default.ExpandMore
+                        },
+                        contentDescription = if(isExpanded){
+                            "Show less categories"
+                        } else {
+                            "Show more categories"
+                        }
+                    )
+                }
             }
         }
     }
@@ -248,6 +305,8 @@ fun CategoryAnalyticsBarChartPreview(){
     TimeManagementAppTheme {
         CategoryAnalyticsBarChart(
             categoryStats = testCategoryStatsSizeThree.sortedByDescending { it.numScheduledGoals },
+            startDate = LocalDate.of(2026, 10, 1),
+            endDate = LocalDate.of(2026, 10, 31)
         )
     }
 }

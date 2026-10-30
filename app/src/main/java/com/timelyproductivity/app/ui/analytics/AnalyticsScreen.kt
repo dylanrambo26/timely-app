@@ -177,7 +177,9 @@ fun AnalyticsBody(
         )
 
         CategoryAnalyticsBarChart(
-            categoryStats = analyticsUiState.categoryStats
+            categoryStats = analyticsUiState.categoryStats,
+            startDate = analyticsUiState.startDate,
+            endDate = analyticsUiState.endDate
         )
 
         if(analyticsUiState.selectedPeriod != AnalyticsTimePeriod.YEARLY){
