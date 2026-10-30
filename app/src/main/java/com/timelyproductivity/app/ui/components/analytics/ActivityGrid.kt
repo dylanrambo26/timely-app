@@ -17,9 +17,17 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.layout.positionInParent
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -31,6 +39,7 @@ import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 import com.timelyproductivity.app.ui.theme.activityGridYellow
 import com.timelyproductivity.app.ui.theme.completedGoal
 import java.time.LocalDate
+import kotlin.math.roundToInt
 
 @Composable
 fun ActivityGridWeeklyMonthly(
@@ -82,19 +91,69 @@ fun ActivityGridYearly(
         modifier = Modifier.padding(dimensionResource(R.dimen.padding_medium)),
         horizontalArrangement = Arrangement.spacedBy(16.dp)
     ){
+
+        val scrollState = rememberScrollState()
+        val currentMonth = LocalDate.now().monthValue
+
+        var currentMonthWidth by remember {
+            mutableIntStateOf(0)
+        }
+
+        var currentMonthStart by remember {
+            mutableIntStateOf(0)
+        }
+
+        var viewportWidth by remember {
+            mutableIntStateOf(0)
+        }
+
+        LaunchedEffect(
+            year,
+            currentMonthStart,
+            currentMonthWidth,
+            viewportWidth
+        ) {
+            if (
+                year == LocalDate.now().year &&
+                currentMonthWidth > 0 &&
+                viewportWidth > 0
+            ) {
+                val targetScroll =
+                    currentMonthStart +
+                            currentMonthWidth / 2 -
+                            viewportWidth / 2
+
+                scrollState.scrollTo(
+                    targetScroll.coerceIn(0, scrollState.maxValue)
+                )
+            }
+        }
+
         WeekdayLabelsVertical()
         Row(
             modifier = modifier
                 .weight(1f)
-                .horizontalScroll(rememberScrollState()),
-            horizontalArrangement = Arrangement.spacedBy(32.dp)
+                .onSizeChanged{
+                    viewportWidth = it.width
+                }
+                .horizontalScroll(scrollState),
+            horizontalArrangement = Arrangement.spacedBy(32.dp),
         ){
             (1..12).forEach { month ->
-                HorizontalMonthGrid(
-                    year = year,
-                    month = month,
-                    dailyActivity = dailyActivity
-                )
+                Box(
+                    modifier = Modifier.onGloballyPositioned { coordinates ->
+                        if (month == currentMonth) {
+                            currentMonthStart = coordinates.positionInParent().x.roundToInt()
+                            currentMonthWidth = coordinates.size.width
+                        }
+                    }
+                ) {
+                    HorizontalMonthGrid(
+                        year = year,
+                        month = month,
+                        dailyActivity = dailyActivity
+                    )
+                }
             }
         }
     }

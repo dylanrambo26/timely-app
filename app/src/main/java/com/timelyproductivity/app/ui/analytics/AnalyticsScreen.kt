@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
@@ -24,9 +25,12 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.room.util.TableInfo
 import com.timelyproductivity.app.R
 import com.timelyproductivity.app.data.generateTestDailyActivity
+import com.timelyproductivity.app.data.testAnalyticsUiState
 import com.timelyproductivity.app.data.testCategoryStatsSizeThree
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.TimelyScaffold
@@ -34,6 +38,7 @@ import com.timelyproductivity.app.ui.components.ColorLegendColumn
 import com.timelyproductivity.app.ui.components.LegendItem
 import com.timelyproductivity.app.ui.components.analytics.ActivityGridWeeklyMonthly
 import com.timelyproductivity.app.ui.components.analytics.ActivityGridYearly
+import com.timelyproductivity.app.ui.components.analytics.AnalyticsSummary
 import com.timelyproductivity.app.ui.components.analytics.CategoryAnalyticsBarChart
 import com.timelyproductivity.app.ui.components.analytics.DonutChart
 import com.timelyproductivity.app.ui.components.time.DisplayTime
@@ -92,39 +97,32 @@ fun AnalyticsBody(
             .verticalScroll(rememberScrollState()),
         horizontalAlignment = Alignment.CenterHorizontally
     ){
-        Row(
+        val options = AnalyticsTimePeriod.entries
+
+        SingleChoiceSegmentedButtonRow(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(dimensionResource(R.dimen.padding_small)),
-            horizontalArrangement = Arrangement.Center
+                .padding(horizontal = 16.dp, vertical = 8.dp)
         ) {
-            val options = AnalyticsTimePeriod.entries
-
-            SingleChoiceSegmentedButtonRow(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(dimensionResource(R.dimen.padding_medium))
-            ) {
-                options.forEachIndexed {index, period ->
-                    SegmentedButton(
-                        selected = analyticsUiState.selectedPeriod == period,
-                        onClick = {
-                            updateTimePeriod(period)
-                        },
-                        shape = SegmentedButtonDefaults.itemShape(
-                            index = index,
-                            count = options.size
-                        ),
-                        icon = {}
-                    ) {
-                        Text(
-                            text = when(period){
-                                AnalyticsTimePeriod.WEEKLY -> "Weekly"
-                                AnalyticsTimePeriod.MONTHLY -> "Monthly"
-                                AnalyticsTimePeriod.YEARLY -> "Yearly"
-                            }
-                        )
-                    }
+            options.forEachIndexed {index, period ->
+                SegmentedButton(
+                    selected = analyticsUiState.selectedPeriod == period,
+                    onClick = {
+                        updateTimePeriod(period)
+                    },
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = index,
+                        count = options.size
+                    ),
+                    icon = {}
+                ) {
+                    Text(
+                        text = when(period){
+                            AnalyticsTimePeriod.WEEKLY -> "Weekly"
+                            AnalyticsTimePeriod.MONTHLY -> "Monthly"
+                            AnalyticsTimePeriod.YEARLY -> "Yearly"
+                        }
+                    )
                 }
             }
         }
@@ -133,92 +131,128 @@ fun AnalyticsBody(
             textAlign = TextAlign.Center,
             style = MaterialTheme.typography.titleLarge,
             modifier = Modifier
-                .padding(dimensionResource(R.dimen.padding_medium))
+                .padding(vertical = 8.dp, horizontal = 16.dp)
                 .fillMaxWidth()
         )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = dimensionResource(R.dimen.padding_medium)),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            AnalyticsSummary(
+                uiState = analyticsUiState
+            )
+            HorizontalDivider()
 
-        Text(
-            text = stringResource(R.string.completed_goals_in_date_range) + " ${analyticsUiState.completedGoalCount}",
-            modifier = Modifier
-                .padding(dimensionResource(R.dimen.padding_medium))
-        )
-        DisplayTime(millisToMinutes(analyticsUiState.totalCompletedMillis), stringResource(R.string.total_completed_time_in_date_range))
-        DisplayTime(millisToMinutes(analyticsUiState.averageCompletedMillis), stringResource(R.string.average_completed_time_in_date_range))
-        Text(
-            text = stringResource(
-                R.string.scheduled_time_utilized,
-                analyticsUiState.scheduledTimeUtilization
-            ),
-            modifier = Modifier
-                .padding(dimensionResource(R.dimen.padding_medium))
-        )
-        DonutChart(
-            completedPercentage = analyticsUiState.completedPercentage,
-            partialPercentage = analyticsUiState.partialPercentage,
-            unfinishedPercentage = analyticsUiState.unfinishedPercentage
-        )
-        ColorLegendColumn(
-            items = listOf(
-                LegendItem(
-                    label = "Unfinished Time",
-                    color = MaterialTheme.colorScheme.error
-                ),
-                LegendItem(
-                    label = "Partially Completed Time",
-                    color = MaterialTheme.colorScheme.primary
-                ),
-                LegendItem(
-                    label = "Completed Time",
-                    color = MaterialTheme.colorScheme.completedGoal
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
+                Text(
+                    text = "Time Utilization",
+                    modifier = Modifier.align(Alignment.Start),
+                    style = MaterialTheme.typography.titleMedium
                 )
-            ),
-            modifier = Modifier
-                .padding(dimensionResource(R.dimen.padding_medium))
-        )
-
-        CategoryAnalyticsBarChart(
-            categoryStats = analyticsUiState.categoryStats,
-            startDate = analyticsUiState.startDate,
-            endDate = analyticsUiState.endDate
-        )
-
-        if(analyticsUiState.selectedPeriod != AnalyticsTimePeriod.YEARLY){
-
-            ActivityGridWeeklyMonthly(
-                dailyActivity = analyticsUiState.dailyActivity,
-                offset = analyticsUiState.gridOffset,
-                displayStartDate = analyticsUiState.startDate,
-                displayEndDate = analyticsUiState.endDate
-            )
-        }
-        else{
-            ActivityGridYearly(
-                dailyActivity = analyticsUiState.dailyActivity,
-                year = analyticsUiState.startDate.year,
-            )
-        }
-
-        ColorLegendColumn(
-            items = listOf(
-                LegendItem(
-                    label = "70%-100% Completed Time",
-                    color = MaterialTheme.colorScheme.completedGoal
-                ),
-                LegendItem(
-                    label = "40%-69% Completed Time",
-                    color = MaterialTheme.colorScheme.activityGridYellow
-                ),
-                LegendItem(
-                    label = "Under 40% Completed Time",
-                    color = MaterialTheme.colorScheme.error
-                ),
-                LegendItem(
-                    label = "Today",
-                    color = Color.Transparent,
-                    borderColor = MaterialTheme.colorScheme.primary
+                DonutChart(
+                    completedPercentage = analyticsUiState.completedPercentage,
+                    partialPercentage = analyticsUiState.partialPercentage,
+                    unfinishedPercentage = analyticsUiState.unfinishedPercentage
                 )
-            )
-        )
+                ColorLegendColumn(
+                    items = listOf(
+                        LegendItem(
+                            label = "Unfinished Time",
+                            color = MaterialTheme.colorScheme.error
+                        ),
+                        LegendItem(
+                            label = "Partially Completed Time",
+                            color = MaterialTheme.colorScheme.primary
+                        ),
+                        LegendItem(
+                            label = "Completed Time",
+                            color = MaterialTheme.colorScheme.completedGoal
+                        )
+                    ),
+                    modifier = Modifier
+                        .padding(dimensionResource(R.dimen.padding_medium))
+                )
+            }
+
+            HorizontalDivider()
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ){
+                Text(
+                    text = "Completed Goals by Category",
+                    modifier = Modifier.align(Alignment.Start),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                CategoryAnalyticsBarChart(
+                    categoryStats = analyticsUiState.categoryStats,
+                    startDate = analyticsUiState.startDate,
+                    endDate = analyticsUiState.endDate
+                )
+            }
+
+            HorizontalDivider()
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(
+                    text = "Daily Activity",
+                    modifier = Modifier.align(Alignment.Start),
+                    style = MaterialTheme.typography.titleMedium
+                )
+
+                if(analyticsUiState.selectedPeriod != AnalyticsTimePeriod.YEARLY){
+
+                    ActivityGridWeeklyMonthly(
+                        dailyActivity = analyticsUiState.dailyActivity,
+                        offset = analyticsUiState.gridOffset,
+                        displayStartDate = analyticsUiState.startDate,
+                        displayEndDate = analyticsUiState.endDate
+                    )
+                }
+                else{
+                    ActivityGridYearly(
+                        dailyActivity = analyticsUiState.dailyActivity,
+                        year = analyticsUiState.startDate.year,
+                    )
+                }
+
+                ColorLegendColumn(
+                    items = listOf(
+                        LegendItem(
+                            label = "70%-100% Completed Time",
+                            color = MaterialTheme.colorScheme.completedGoal
+                        ),
+                        LegendItem(
+                            label = "40%-69% Completed Time",
+                            color = MaterialTheme.colorScheme.activityGridYellow
+                        ),
+                        LegendItem(
+                            label = "Under 40% Completed Time",
+                            color = MaterialTheme.colorScheme.error
+                        ),
+                        LegendItem(
+                            label = "Today",
+                            color = Color.Transparent,
+                            borderColor = MaterialTheme.colorScheme.primary
+                        )
+                    )
+                )
+            }
+        }
     }
 }
 
@@ -229,39 +263,8 @@ fun AnalyticsBody(
 @Composable
 fun AnalyticsBodyPreview(){
     TimeManagementAppTheme {
-        val completedMillis = 10 * 60 * 60_000L
-        val completedGoals = 10
-        val scheduledMillis = 11 * 60 * 60_000L
-        val today = LocalDate.now()
-        val monthlyOffset = today.withDayOfMonth(1).dayOfWeek.value % 7
-        val period = AnalyticsTimePeriod.MONTHLY
-        val (startDate, endDate) = when(period){
-            AnalyticsTimePeriod.WEEKLY ->
-                today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)) to
-                        today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY))
-
-            AnalyticsTimePeriod.MONTHLY ->
-                today.withDayOfMonth(1) to today.withDayOfMonth(today.lengthOfMonth())
-
-            AnalyticsTimePeriod.YEARLY ->
-                today.withDayOfYear(1) to today.withDayOfYear(today.lengthOfYear())
-        }
         AnalyticsBody(
-            analyticsUiState = AnalyticsUiState(
-                selectedPeriod = period,
-                startDate = startDate,
-                endDate = endDate,
-                completedGoalCount = completedGoals,
-                totalCompletedMillis = completedMillis,
-                averageCompletedMillis = completedMillis / completedGoals,
-                scheduledTimeUtilization = completedMillis.toDouble() / scheduledMillis * 100,
-                completedPercentage = 30.0f,
-                partialPercentage = 35.0f,
-                unfinishedPercentage = 35.0f,
-                gridOffset = monthlyOffset,
-                dailyActivity = generateTestDailyActivity(period),
-                categoryStats = testCategoryStatsSizeThree
-            ),
+            analyticsUiState = testAnalyticsUiState,
             updateTimePeriod = {}
         )
     }

@@ -11,6 +11,7 @@ import com.timelyproductivity.app.data.goal.recurrence.GoalWithRecurrence
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.ui.analytics.AnalyticsTimePeriod
+import com.timelyproductivity.app.ui.analytics.AnalyticsUiState
 import com.timelyproductivity.app.ui.analytics.DailyActivity
 import com.timelyproductivity.app.util.MILLIS_IN_MINUTE
 import java.time.DayOfWeek
@@ -337,6 +338,43 @@ fun generateTestDailyActivity(
 
     return dailyActivity
 }
+
+val analyticsTestPeriod = AnalyticsTimePeriod.MONTHLY
+val today = LocalDate.now()
+val startDateEndDate = generateStartDateEndDate()
+val completedMillis = 10 * 60 * 60_000L
+val completedGoals = 10
+val scheduledMillis = 11 * 60 * 60_000L
+
+fun generateStartDateEndDate(): Pair<LocalDate, LocalDate> {
+    return when(analyticsTestPeriod){
+        AnalyticsTimePeriod.WEEKLY ->
+            today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)) to
+                    today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY))
+
+        AnalyticsTimePeriod.MONTHLY ->
+            today.withDayOfMonth(1) to today.withDayOfMonth(today.lengthOfMonth())
+
+        AnalyticsTimePeriod.YEARLY ->
+            today.withDayOfYear(1) to today.withDayOfYear(today.lengthOfYear())
+    }
+}
+
+val testAnalyticsUiState = AnalyticsUiState(
+    selectedPeriod = analyticsTestPeriod,
+    startDate = startDateEndDate.first,
+    endDate = startDateEndDate.second,
+    completedGoalCount = completedGoals,
+    totalCompletedMillis = completedMillis,
+    averageCompletedMillis = completedMillis / completedGoals,
+    scheduledTimeUtilization = completedMillis.toDouble() / scheduledMillis * 100,
+    completedPercentage = 30.0f,
+    partialPercentage = 35.0f,
+    unfinishedPercentage = 35.0f,
+    gridOffset = today.withDayOfMonth(1).dayOfWeek.value % 7,
+    dailyActivity = generateTestDailyActivity(analyticsTestPeriod),
+    categoryStats = testCategoryStatsSizeThree
+)
 
 fun generateTestDatesWithScheduledGoals(
     startDate: LocalDate,
