@@ -157,17 +157,15 @@ interface AnalyticsDao {
                     gc.categoryId AS categoryId,
                     gc.name AS name,
                     gc.color AS color,
-            
+                    
+                    COUNT(*) AS numScheduledGoals,
+                    
                     SUM(
-                        (sg.scheduledHours * 60 + sg.scheduledMinutes) * 60000
-                    ) AS scheduledMillis,
-            
-                    SUM(
-                        MIN(
-                            sg.completedMillis,
-                            (sg.scheduledHours * 60 + sg.scheduledMinutes) * 60000
-                        )
-                    ) AS completedMillis
+                        CASE
+                            WHEN sg.status = 'COMPLETED' THEN 1
+                            ELSE 0
+                        END
+                    ) AS numCompleteGoals
             
                 FROM scheduled_goals AS sg
             
@@ -181,7 +179,7 @@ interface AnalyticsDao {
             
                 GROUP BY sg.scheduledCategoryId
             
-                ORDER BY scheduledMillis DESC
+                ORDER BY numScheduledGoals DESC
     """
     )
     fun getCategoryStats(

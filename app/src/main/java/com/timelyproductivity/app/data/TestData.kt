@@ -138,18 +138,18 @@ val testGoalCategoriesSizeThreeWithColor = listOf(
 val testCategoryStatsSizeThree = listOf(
     CategoryActivity(
         category = testGoalCategoriesSizeThreeWithColor[0],
-        completedMillis = (60_000 * 60 * 4) + (MILLIS_IN_MINUTE * 5),
-        scheduledMillis = 60_000 * 60 * 5,
+        numCompleteGoals = 8,
+        numScheduledGoals = 10
     ),
     CategoryActivity(
         category = testGoalCategoriesSizeThreeWithColor[1],
-        completedMillis = (60_000 * 60 * 3) + (MILLIS_IN_MINUTE * 35),
-        scheduledMillis = 60_000 * 60 * 6,
+        numCompleteGoals = 4,
+        numScheduledGoals = 6
     ),
     CategoryActivity(
         category = testGoalCategoriesSizeThreeWithColor[2],
-        completedMillis = (60_000 * 60 * 1) + (MILLIS_IN_MINUTE * 25),
-        scheduledMillis = 60_000 * 60 * 3,
+        numCompleteGoals = 1,
+        numScheduledGoals = 3
     ),
 )
 

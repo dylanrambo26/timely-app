@@ -35,7 +35,7 @@ fun CategoryAnalyticsBarChart(
     categoryStats: List<CategoryActivity>,
     modifier: Modifier = Modifier
 ){
-    val maxScheduledMillis = categoryStats.maxOfOrNull { it.scheduledMillis } ?: 0L
+    val maxNumScheduledGoals = categoryStats.maxOfOrNull { it.numScheduledGoals } ?: 0
 
     Column(
         modifier = modifier
@@ -44,7 +44,7 @@ fun CategoryAnalyticsBarChart(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = "Time by Category",
+            text = "Completed Goals by Category",
             style = MaterialTheme.typography.titleMedium
         )
 
@@ -121,9 +121,9 @@ fun CategoryAnalyticsBarChart(
             categoryStats.forEach { activity ->
                 CategoryAnalyticsBar(
                     categoryName = activity.category?.name ?: "Uncategorized",
-                    completedMillis = activity.completedMillis,
-                    scheduledMillis = activity.scheduledMillis,
-                    maxScheduledMillis = maxScheduledMillis,
+                    numCompletedGoals = activity.numCompleteGoals,
+                    numScheduledGoals = activity.numScheduledGoals,
+                    maxNumScheduledGoals = maxNumScheduledGoals,
                     categoryColor = activity.category?.color?.toColor()
                         ?: MaterialTheme.colorScheme.primary
                 )
@@ -135,41 +135,40 @@ fun CategoryAnalyticsBarChart(
 @Composable
 fun CategoryAnalyticsBar(
     categoryName: String,
-    completedMillis: Long,
-    scheduledMillis: Long,
-    maxScheduledMillis: Long,
+    numCompletedGoals: Int,
+    numScheduledGoals: Int,
+    maxNumScheduledGoals: Int,
     categoryColor: Color,
     modifier: Modifier = Modifier
 ) {
-    val completed = completedMillis.coerceIn(0L, scheduledMillis)
-    val incomplete = (scheduledMillis - completed).coerceAtLeast(0L)
+    //val completed = numCompletedGoals.coerceIn(0L, scheduledMillis)
+    //val incomplete = (scheduledMillis - completed).coerceAtLeast(0L)
 
     val completedFraction =
-        if (maxScheduledMillis > 0L) {
-            completed.toFloat() / maxScheduledMillis
-        } else 0f
-
-    val incompleteFraction =
-        if (maxScheduledMillis > 0L) {
-            incomplete.toFloat() / maxScheduledMillis
-        } else 0f
-
-    val remainingFraction = (1f - completedFraction - incompleteFraction).coerceAtLeast(0f)
-
-    val completionPercentage =
-        if (scheduledMillis > 0f){
-            completed.toFloat() / scheduledMillis * 100f
+        if (maxNumScheduledGoals > 0) {
+            numCompletedGoals.toFloat() / maxNumScheduledGoals
         } else {
             0f
         }
 
-    val totalCompletedMinutes = completed / MILLIS_IN_MINUTE
-    val completedHours = totalCompletedMinutes / 60
-    val completedMinutes = totalCompletedMinutes % 60
+    val incompleteFraction =
+        if (maxNumScheduledGoals > 0) {
+            (numScheduledGoals - numCompletedGoals).toFloat() /
+                    maxNumScheduledGoals
+        } else {
+            0f
+        }
 
-    val totalScheduledMinutes = scheduledMillis.coerceIn(0L, scheduledMillis) / MILLIS_IN_MINUTE
-    val scheduledHours = totalScheduledMinutes / 60
-    val scheduledMinutes = totalScheduledMinutes % 60
+    val remainingFraction =
+        (1f - completedFraction - incompleteFraction)
+            .coerceAtLeast(0f)
+
+    val completionPercentage =
+        if (numScheduledGoals > 0f){
+            numCompletedGoals.toFloat() / numScheduledGoals * 100f
+        } else {
+            0f
+        }
 
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -185,8 +184,7 @@ fun CategoryAnalyticsBar(
             )
 
             Text(
-                text = "${completedHours}h ${completedMinutes}m " +
-                        "/ ${scheduledHours}h ${scheduledMinutes}m " +
+                text = "$numCompletedGoals / $numScheduledGoals" +
                         "· ${String.format(Locale.ROOT, "%.1f", completionPercentage)}%",
                 style = MaterialTheme.typography.bodySmall
             )
@@ -236,9 +234,9 @@ fun CategoryAnalyticsBarPreview(){
     TimeManagementAppTheme {
         CategoryAnalyticsBar(
             categoryName = "School",
-            completedMillis = (60_000 * 60 * 4) + (MILLIS_IN_MINUTE * 5),
-            scheduledMillis = 60_000 * 60 * 5,
-            maxScheduledMillis = 60_000 * 60 * 5,
+            numCompletedGoals = 8,
+            numScheduledGoals = 10,
+            maxNumScheduledGoals = 10,
             categoryColor = CategoryColor.BLUE.toColor()
         )
     }
@@ -249,7 +247,7 @@ fun CategoryAnalyticsBarPreview(){
 fun CategoryAnalyticsBarChartPreview(){
     TimeManagementAppTheme {
         CategoryAnalyticsBarChart(
-            categoryStats = testCategoryStatsSizeThree.sortedByDescending { it.scheduledMillis },
+            categoryStats = testCategoryStatsSizeThree.sortedByDescending { it.numScheduledGoals },
         )
     }
 }

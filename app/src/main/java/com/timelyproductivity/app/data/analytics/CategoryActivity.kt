@@ -7,6 +7,10 @@ data class CategoryActivity(
     @Embedded
     val category: GoalCategory?,
 
-    val scheduledMillis: Long,
-    val completedMillis: Long,
+    val numCompleteGoals: Int,
+    val numScheduledGoals: Int,
+
+    //Maybe add back later
+    /*val scheduledMillis: Long,
+    val completedMillis: Long,*/
 )
