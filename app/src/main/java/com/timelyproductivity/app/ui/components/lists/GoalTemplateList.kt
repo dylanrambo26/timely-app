@@ -3,9 +3,11 @@ package com.timelyproductivity.app.ui.components.lists
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,6 +26,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.timelyproductivity.app.data.goal.Goal
@@ -33,6 +36,7 @@ import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testGoalsWithCategoriesSizeThree
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 import com.timelyproductivity.app.ui.theme.toColor
+import com.timelyproductivity.app.util.enumNameToFirstLetterCapitalized
 import com.timelyproductivity.app.util.toShortLabel
 import java.time.DayOfWeek
 
@@ -59,11 +63,12 @@ fun GoalTemplateList(
     LazyColumn(
         state = listState,
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         items(
-            goals
+            goals,
+            key = {it.goal.goalID}
         ) { goalWithRecurrence ->
             val isSelected = goalWithRecurrence.goal.goalID == selectedGoalId
             GoalTemplateCard(
@@ -102,7 +107,7 @@ fun GoalTemplateCard(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(horizontal = 8.dp)
             .then(
                 if (onGoalClick != null) {
                     Modifier.clickable { onGoalClick(goal) }
@@ -130,72 +135,83 @@ fun GoalTemplateCard(
             MaterialTheme.colorScheme.secondaryContainer
         }
     ) {
-
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .padding(16.dp),
         ) {
-            Column(
-                modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
-            ){
-                Text(
-                    text = goal.goalTitle,
-                    style = MaterialTheme.typography.titleMedium
-                )
-
-                Text(
-                    text = "Duration: ${goal.hours}h ${goal.minutes}m",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-
-                val categoryName = category?.name ?: "None"
-                Text(
-                    text = "Category: $categoryName",
-                    style = MaterialTheme.typography.bodySmall
-                )
-
-                val isRecurring = recurringDays != null
-
-                if(isRecurring){
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(
+                    modifier = Modifier.weight(1f),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ){
                     Text(
-                        text = "Recurring: " + recurringDays
-                            .sortedBy { it.value % 7}
-                            .joinToString(", ") {day ->
-                                day.toShortLabel()
-                            },
-                        style = MaterialTheme.typography.labelSmall
+                        text = goal.goalTitle,
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
-                }
-                else{
                     Text(
-                        text = "",
-                        style = MaterialTheme.typography.labelSmall
+                        text = buildString {
+                            append("${goal.hours}h ")
+                            append("${goal.minutes}m")
+                            val priorityText = goal.priority?.name?.enumNameToFirstLetterCapitalized()
+
+                            goal.priority?.let {
+                                append(" · Priority: $priorityText")
+                            }
+                        },
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
-                }
+                    val categoryName = category?.name ?: "None"
+                    Text(
+                        text = "Category: $categoryName",
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
 
-            }
-
-            if (onDeleteGoal != null || onEditGoal != null){
-                Row {
-                    if (onDeleteGoal != null) {
-                        IconButton(onClick = {onDeleteGoal(goal)})
-                        {
-                            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+                    Box(
+                        modifier = Modifier.heightIn(min = 20.dp),
+                        contentAlignment = Alignment.CenterStart
+                    ) {
+                        recurringDays?.let { days ->
+                            Text(
+                                text = "Recurring: " + days
+                                    .sortedBy { it.value % 7 }
+                                    .joinToString(", ") { it.toShortLabel() },
+                                style = MaterialTheme.typography.labelSmall,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
                         }
                     }
-                    if (onEditGoal != null){
-                        IconButton(onClick = {onEditGoal(goal) })
-                        {
-                            Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
+                }
+
+                if (onDeleteGoal != null || onEditGoal != null){
+                    Row {
+                        if (onDeleteGoal != null) {
+                            IconButton(onClick = {onDeleteGoal(goal)})
+                            {
+                                Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+                            }
+                        }
+                        if (onEditGoal != null){
+                            IconButton(onClick = {onEditGoal(goal) })
+                            {
+                                Icon(imageVector = Icons.Default.Edit, contentDescription = "Edit")
+                            }
                         }
                     }
                 }
             }
         }
+
     }
 }
 

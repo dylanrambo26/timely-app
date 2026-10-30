@@ -33,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.timelyproductivity.app.R
@@ -48,6 +49,7 @@ import com.timelyproductivity.app.ui.theme.checkbox
 import com.timelyproductivity.app.ui.theme.completedGoal
 import com.timelyproductivity.app.ui.theme.toColor
 import com.timelyproductivity.app.util.MAX_NUMBER_OF_COUNTDOWN_REMINDERS
+import com.timelyproductivity.app.util.enumNameToFirstLetterCapitalized
 
 @Composable
 fun ScheduledGoalList(
@@ -85,7 +87,7 @@ fun ScheduledGoalList(
     LazyColumn(
         state = listState,
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (goals.isEmpty()){
@@ -166,7 +168,7 @@ fun GoalCard(
     Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .padding(horizontal = 8.dp)
             .then(
                 if(onGoalClick != null){
                     Modifier.clickable {
@@ -213,24 +215,36 @@ fun GoalCard(
                 Column(
                     modifier = Modifier
                         .weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ){
                     Text(
                         text = scheduledGoal.scheduledGoalTitle,
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
 
                     Text(
-                        text = "Goal: ${scheduledGoal.scheduledHours}h ${scheduledGoal.scheduledMinutes}m",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                        text = buildString {
+                            append("${scheduledGoal.scheduledHours}h ")
+                            append("${scheduledGoal.scheduledMinutes}m")
 
+                            val priorityText = scheduledGoal.scheduledPriority?.name?.enumNameToFirstLetterCapitalized()
+
+                            scheduledGoal.scheduledPriority?.let {
+                                append(" · Priority: $priorityText")
+                            }
+                        },
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
                     val categoryName = category?.name ?: "None"
                     Text(
                         text = "Category: $categoryName",
-                        style = MaterialTheme.typography.bodySmall
+                        style = MaterialTheme.typography.bodySmall,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis
                     )
-
                     GoalStatusText(scheduledGoal = scheduledGoal)
 
                 }
@@ -265,6 +279,7 @@ fun GoalCard(
                     )
                 }
             }
+
             AnimatedVisibility(
                 visible = isSelected && showCountdownReminders
             ) {

@@ -12,6 +12,7 @@ import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.goal.category.GoalCategoriesRepository
 import com.timelyproductivity.app.data.goal.category.GoalCategory
+import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalsRepository
 import com.timelyproductivity.app.ui.categories.CategoryEditorActions
@@ -197,6 +198,12 @@ class EditScheduledGoalViewModel(
 
             categoryEditor.closeCategoryDialog()
         }
+    }
+
+    fun selectPriority(priority: GoalPriority?){
+        goalUiState = goalUiState.copy(
+            priority = priority
+        )
     }
 }
 

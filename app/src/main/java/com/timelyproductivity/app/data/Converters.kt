@@ -3,6 +3,7 @@ package com.timelyproductivity.app.data
 import androidx.room.TypeConverter
 import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.goal.category.CategoryColor
+import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import java.time.DayOfWeek
 import java.time.LocalDate
 
@@ -56,5 +57,15 @@ class Converters {
     @TypeConverter
     fun toCategoryColor(colorString: String): CategoryColor{
         return CategoryColor.valueOf(colorString)
+    }
+
+    @TypeConverter
+    fun fromGoalPriority(priority: GoalPriority): String {
+        return priority.name
+    }
+
+    @TypeConverter
+    fun toGoalPriority(priority: String): GoalPriority{
+        return GoalPriority.valueOf(priority)
     }
 }

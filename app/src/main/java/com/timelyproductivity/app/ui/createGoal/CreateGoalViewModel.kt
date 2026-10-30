@@ -1,5 +1,6 @@
 package com.timelyproductivity.app.ui.createGoal
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -14,6 +15,7 @@ import com.timelyproductivity.app.data.goal.GoalsRepository
 import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.goal.category.GoalCategoriesRepository
 import com.timelyproductivity.app.data.goal.category.GoalCategory
+import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.goal.recurrence.CreateRecurrenceUseCase
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalsRepository
@@ -168,7 +170,8 @@ class CreateGoalViewModel(
         }
 
         val goal = goalUiState.goalDetails.toGoal(
-            categoryId = goalUiState.selectedCategoryId
+            categoryId = goalUiState.selectedCategoryId,
+            priority = goalUiState.priority
         )
         val goalId = goalsRepository.insertGoal(goal)
 
@@ -205,7 +208,8 @@ class CreateGoalViewModel(
         }
 
         val goal = goalUiState.goalDetails.toGoal(
-            categoryId = goalUiState.selectedCategoryId
+            categoryId = goalUiState.selectedCategoryId,
+            priority = goalUiState.priority
         )
         val goalTotalMinutes = goal.hours * 60 + goal.minutes
 
@@ -224,23 +228,35 @@ class CreateGoalViewModel(
         }
 
         val goalId = goalsRepository.insertGoal(goal)
-        scheduledGoalsRepository.insertScheduledGoal(
-            ScheduledGoal(
-                goalId = goalId,
-                eventId = eventId,
-                scheduledGoalTitle = goal.goalTitle,
-                scheduledHours = goal.hours,
-                scheduledMinutes = goal.minutes,
-                scheduledCategoryId = goal.categoryId,
-                recurrenceRuleId = null
-            )
+        val scheduledGoal = ScheduledGoal(
+            goalId = goalId,
+            eventId = eventId,
+            scheduledGoalTitle = goal.goalTitle,
+            scheduledHours = goal.hours,
+            scheduledMinutes = goal.minutes,
+            scheduledCategoryId = goal.categoryId,
+            scheduledPriority = goal.priority,
+            recurrenceRuleId = null
         )
+
+        Log.d(
+            "CreateGoalViewModel",
+            "Scheduled goal priority before insert: ${scheduledGoal.scheduledPriority}"
+        )
+
+        scheduledGoalsRepository.insertScheduledGoal(scheduledGoal)
         onNavigate(eventId)
     }
 
     fun selectCategory(categoryId: Int?){
         goalUiState = goalUiState.copy(
             selectedCategoryId = categoryId
+        )
+    }
+
+    fun selectPriority(priority: GoalPriority?){
+        goalUiState = goalUiState.copy(
+            priority = priority
         )
     }
 
@@ -306,6 +322,9 @@ data class GoalUiState(
     val selectedCategoryId: Int? = null,
     val originalCategoryId: Int? = null,
     val useCategoryColorsEnabled: Boolean = false,
+
+    val priority: GoalPriority? = null,
+    val originalPriority: GoalPriority? = null
 )
 
 data class GoalDetails(
@@ -316,13 +335,15 @@ data class GoalDetails(
 )
 
 fun GoalDetails.toGoal(
-    categoryId: Int? = null
+    categoryId: Int? = null,
+    priority: GoalPriority? = null
 ): Goal = Goal(
     goalID = id,
     goalTitle = title,
     hours = hours.toIntOrNull() ?: 0,
     minutes = minutes.toIntOrNull() ?: 0,
-    categoryId = categoryId
+    categoryId = categoryId,
+    priority = priority
 )
 
 fun Goal.toGoalUiState(isEntryValid: Boolean = false): GoalUiState = GoalUiState(

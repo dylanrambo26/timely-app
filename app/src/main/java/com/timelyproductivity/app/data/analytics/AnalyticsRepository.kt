@@ -12,4 +12,5 @@ interface AnalyticsRepository {
     fun getCompletedScheduledMillis(startDate: LocalDate, endDate: LocalDate): Flow<Long>
 
     fun getDailyAnalytics(startDate: LocalDate, endDate: LocalDate): Flow<List<DailyAnalytics>>
+    fun getCategoryStats(startDate: LocalDate, endDate: LocalDate): Flow<List<CategoryActivity>>
 }

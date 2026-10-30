@@ -1,15 +1,19 @@
 package com.timelyproductivity.app.data
 
+import com.timelyproductivity.app.data.analytics.CategoryActivity
 import com.timelyproductivity.app.data.goal.Goal
 import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
 import com.timelyproductivity.app.data.goal.category.GoalCategory
+import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.goal.recurrence.GoalWithRecurrence
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.ui.analytics.AnalyticsTimePeriod
+import com.timelyproductivity.app.ui.analytics.AnalyticsUiState
 import com.timelyproductivity.app.ui.analytics.DailyActivity
+import com.timelyproductivity.app.util.MILLIS_IN_MINUTE
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
@@ -63,6 +67,7 @@ val testScheduledGoalsSizeThree: List<ScheduledGoal>
                 scheduledGoalTitle = goal1.goalTitle,
                 scheduledHours = goal1.hours,
                 scheduledMinutes = goal1.minutes,
+                scheduledPriority = GoalPriority.HIGH
             ),
             ScheduledGoal(
                 scheduledGoalId = 1,
@@ -74,6 +79,7 @@ val testScheduledGoalsSizeThree: List<ScheduledGoal>
                 scheduledGoalTitle = goal2.goalTitle,
                 scheduledHours = goal2.hours,
                 scheduledMinutes = goal2.minutes,
+                scheduledPriority = GoalPriority.MEDIUM
             ),
         ScheduledGoal(
                 scheduledGoalId = 2,
@@ -85,6 +91,7 @@ val testScheduledGoalsSizeThree: List<ScheduledGoal>
                 scheduledGoalTitle = goal3.goalTitle,
                 scheduledHours = goal3.hours,
                 scheduledMinutes = goal3.minutes,
+                scheduledPriority = GoalPriority.LOW
         ),
     )
 
@@ -127,6 +134,24 @@ val testGoalCategoriesSizeThreeWithColor = listOf(
         name = "Exercise",
         color = CategoryColor.ORANGE
     )
+)
+
+val testCategoryStatsSizeThree = listOf(
+    CategoryActivity(
+        category = testGoalCategoriesSizeThreeWithColor[0],
+        numCompleteGoals = 8,
+        numScheduledGoals = 10
+    ),
+    CategoryActivity(
+        category = testGoalCategoriesSizeThreeWithColor[1],
+        numCompleteGoals = 4,
+        numScheduledGoals = 6
+    ),
+    CategoryActivity(
+        category = testGoalCategoriesSizeThreeWithColor[2],
+        numCompleteGoals = 1,
+        numScheduledGoals = 3
+    ),
 )
 
 val testGoalCounts = listOf(
@@ -193,7 +218,8 @@ val testScheduledGoalsWithCategoriesSizeFour: List<ScheduledGoal>
             scheduledGoalTitle = goal1.goalTitle,
             scheduledHours = goal1.hours,
             scheduledMinutes = goal1.minutes,
-            scheduledCategoryId = 0
+            scheduledCategoryId = 0,
+            scheduledPriority = GoalPriority.HIGH
         ),
         ScheduledGoal(
             scheduledGoalId = 1,
@@ -205,7 +231,8 @@ val testScheduledGoalsWithCategoriesSizeFour: List<ScheduledGoal>
             scheduledGoalTitle = goal2.goalTitle,
             scheduledHours = goal2.hours,
             scheduledMinutes = goal2.minutes,
-            scheduledCategoryId = 1
+            scheduledCategoryId = 1,
+            scheduledPriority = GoalPriority.MEDIUM
         ),
         ScheduledGoal(
             scheduledGoalId = 2,
@@ -217,7 +244,8 @@ val testScheduledGoalsWithCategoriesSizeFour: List<ScheduledGoal>
             scheduledGoalTitle = goal3.goalTitle,
             scheduledHours = goal3.hours,
             scheduledMinutes = goal3.minutes,
-            scheduledCategoryId = 2
+            scheduledCategoryId = 2,
+            scheduledPriority = GoalPriority.LOW
         ),
         ScheduledGoal(
             scheduledGoalId = 3,
@@ -229,7 +257,8 @@ val testScheduledGoalsWithCategoriesSizeFour: List<ScheduledGoal>
             scheduledGoalTitle = goal3.goalTitle,
             scheduledHours = goal3.hours,
             scheduledMinutes = goal3.minutes,
-            scheduledCategoryId = null
+            scheduledCategoryId = null,
+            scheduledPriority = null
         )
 
     )
@@ -238,19 +267,22 @@ val testGoalsWithCategoriesSizeThree: List<GoalWithRecurrence>
     get() = listOf(
         GoalWithRecurrence(
             goal = goal1.copy(
-                categoryId = 0
+                categoryId = 0,
+                priority = GoalPriority.HIGH
             ),
             recurrenceRule = recurrenceRule1
         ),
         GoalWithRecurrence(
             goal = goal2.copy(
-                categoryId = 1
+                categoryId = 1,
+                priority = GoalPriority.MEDIUM
             ),
             recurrenceRule = recurrenceRule2
         ),
         GoalWithRecurrence(
             goal = goal3.copy(
-                categoryId = 2
+                categoryId = 2,
+                priority = GoalPriority.LOW
             ),
             recurrenceRule = null
         )
@@ -306,6 +338,43 @@ fun generateTestDailyActivity(
 
     return dailyActivity
 }
+
+val analyticsTestPeriod = AnalyticsTimePeriod.MONTHLY
+val today = LocalDate.now()
+val startDateEndDate = generateStartDateEndDate()
+val completedMillis = 10 * 60 * 60_000L
+val completedGoals = 10
+val scheduledMillis = 11 * 60 * 60_000L
+
+fun generateStartDateEndDate(): Pair<LocalDate, LocalDate> {
+    return when(analyticsTestPeriod){
+        AnalyticsTimePeriod.WEEKLY ->
+            today.with(TemporalAdjusters.previousOrSame(DayOfWeek.SUNDAY)) to
+                    today.with(TemporalAdjusters.nextOrSame(DayOfWeek.SATURDAY))
+
+        AnalyticsTimePeriod.MONTHLY ->
+            today.withDayOfMonth(1) to today.withDayOfMonth(today.lengthOfMonth())
+
+        AnalyticsTimePeriod.YEARLY ->
+            today.withDayOfYear(1) to today.withDayOfYear(today.lengthOfYear())
+    }
+}
+
+val testAnalyticsUiState = AnalyticsUiState(
+    selectedPeriod = analyticsTestPeriod,
+    startDate = startDateEndDate.first,
+    endDate = startDateEndDate.second,
+    completedGoalCount = completedGoals,
+    totalCompletedMillis = completedMillis,
+    averageCompletedMillis = completedMillis / completedGoals,
+    scheduledTimeUtilization = completedMillis.toDouble() / scheduledMillis * 100,
+    completedPercentage = 30.0f,
+    partialPercentage = 35.0f,
+    unfinishedPercentage = 35.0f,
+    gridOffset = today.withDayOfMonth(1).dayOfWeek.value % 7,
+    dailyActivity = generateTestDailyActivity(analyticsTestPeriod),
+    categoryStats = testCategoryStatsSizeThree
+)
 
 fun generateTestDatesWithScheduledGoals(
     startDate: LocalDate,

@@ -8,6 +8,7 @@ import com.timelyproductivity.app.data.calendar.CalendarEvent
 import com.timelyproductivity.app.data.goal.Goal
 import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.goal.category.GoalCategory
+import com.timelyproductivity.app.data.goal.priority.GoalPriority
 
 @Entity(
     // Don't delete scheduled goals when associated reusable goal is deleted
@@ -54,6 +55,7 @@ data class ScheduledGoal(
     val scheduledHours: Int,
     val scheduledMinutes: Int,
     val scheduledCategoryId: Int? = null,
+    val scheduledPriority: GoalPriority? = null,
 
     val recurrenceRuleId: Int? = null
 )

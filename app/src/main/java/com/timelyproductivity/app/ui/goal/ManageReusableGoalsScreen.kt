@@ -8,15 +8,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -30,7 +27,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -44,7 +40,9 @@ import com.timelyproductivity.app.data.goal.recurrence.GoalWithRecurrence
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testGoalsWithCategoriesSizeThree
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.components.filters.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.lists.GoalTemplateList
+import com.timelyproductivity.app.ui.filters.GoalFilterState
 import com.timelyproductivity.app.ui.navigation.NavigationDest
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 
@@ -64,6 +62,7 @@ fun ManageReusableGoalsScreen(
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
+    val filters by goalListViewModel.filters.collectAsState()
 
     var goalPendingDeletion by remember {
         mutableStateOf<GoalWithRecurrence?>(null)
@@ -91,6 +90,9 @@ fun ManageReusableGoalsScreen(
                 }
             },
             onEditGoal = onEditGoal,
+
+            filters = filters,
+            onFiltersChanged = goalListViewModel::updateFilters,
             modifier = Modifier.padding(innerPadding)
         )
     }
@@ -122,57 +124,54 @@ fun ManageReusableGoalsBody(
     goalListUiState: GoalListUiState,
     onDeleteGoal: (GoalWithRecurrence) -> Unit,
     onEditGoal: (Goal) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+
+    filters: GoalFilterState = GoalFilterState(),
+    onFiltersChanged: (GoalFilterState) -> Unit,
 ){
     Column(
         modifier = modifier
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        GoalFilteringControls(
+            filters = filters,
+            onFiltersChanged = onFiltersChanged,
+            showCompletionFilter = false,
+            showRecurrenceFilter = true,
+            categories = goalListUiState.categories,
+            resultCount = goalListUiState.filteredGoalList.size,
+            totalCount = goalListUiState.goalList.size
+        )
 
         GoalTemplateList(
-            goals = goalListUiState.goalList,
+            goals = goalListUiState.filteredGoalList,
             categories = goalListUiState.categories,
             addCategoryColors = goalListUiState.useCategoryColorsEnabled,
             onEditGoal = onEditGoal,
             onDeleteGoal = onDeleteGoal,
             modifier = Modifier
                 .weight(1f)
-                .fillMaxWidth()
+                .padding(horizontal = 12.dp)
         )
-        HorizontalDivider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = dimensionResource(R.dimen.padding_medium_large)),
-            thickness = 1.dp,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-
-            )
         Row(
             modifier = Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 8.dp),
             horizontalArrangement = Arrangement.Center
-        ){
-            IconButton(
-                onClick = onCreateGoalButtonClicked,
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .size(100.dp),
+        ) {
+            Button(
+                onClick = onCreateGoalButtonClicked
             ) {
                 Icon(
                     imageVector = Icons.Default.AddCircle,
-                    contentDescription = stringResource(R.string.create_a_goal_from_scratch),
-                    modifier = Modifier
-                        .size(100.dp)
+                    contentDescription = null
                 )
+
+                Spacer(Modifier.width(8.dp))
+
+                Text(stringResource(R.string.create_a_goal_from_scratch))
             }
-            Spacer(modifier = Modifier.width(30.dp))
-            Text(
-                text = stringResource(R.string.create_a_goal_from_scratch),
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-            )
         }
     }
 }
@@ -255,10 +254,12 @@ fun ManageReusableGoalsBodyPreview(){
             goalListUiState = GoalListUiState(
                 goalList = testGoalsWithCategoriesSizeThree,
                 categories = testGoalCategoriesSizeThreeWithColor,
-                useCategoryColorsEnabled = true
+                useCategoryColorsEnabled = true,
+                filteredGoalList = testGoalsWithCategoriesSizeThree
             ),
             onDeleteGoal = {},
             onEditGoal = {},
+            onFiltersChanged = {}
         )
     }
 }

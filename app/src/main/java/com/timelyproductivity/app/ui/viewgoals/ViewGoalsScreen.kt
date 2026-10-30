@@ -7,23 +7,27 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowLeft
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -39,18 +43,17 @@ import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeFour
 import com.timelyproductivity.app.ui.AppViewModelProvider
-import com.timelyproductivity.app.ui.components.ColorLegend
-import com.timelyproductivity.app.ui.components.LegendItem
+import com.timelyproductivity.app.ui.components.filters.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.lists.ScheduledGoalList
+import com.timelyproductivity.app.ui.components.sorting.GoalSortOption
 import com.timelyproductivity.app.ui.components.time.DisplayTime
+import com.timelyproductivity.app.ui.filters.CompletionFilter
+import com.timelyproductivity.app.ui.filters.GoalFilterState
+import com.timelyproductivity.app.ui.filters.applyFilters
 import com.timelyproductivity.app.ui.navigation.NavigationDest
-import com.timelyproductivity.app.ui.settings.SettingsSwitch
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
-import com.timelyproductivity.app.ui.theme.completedGoal
-import com.timelyproductivity.app.util.completedGoals
 import com.timelyproductivity.app.util.formatLocalDateToCalendarDate
 import com.timelyproductivity.app.util.formatLocalDateToShorthandDate
-import com.timelyproductivity.app.util.incompleteGoals
 import java.time.LocalDate
 
 object ViewGoalsDestination : NavigationDest{
@@ -71,6 +74,7 @@ fun ViewGoalsScreen(
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
+    val filters by scheduledGoalsListViewModel.filters.collectAsState()
     val formattedDate = formatLocalDateToShorthandDate(scheduledGoalsListUiState.date, "Today's")
     Scaffold(
         topBar = {
@@ -110,9 +114,10 @@ fun ViewGoalsScreen(
                     navigateToViewGoals(eventId)
                 }
             },
-            formattedDate = formattedDate,
             onMarkAsComplete = scheduledGoalsListViewModel::setComplete,
-            onUseCategoryColorsCheckedChange = scheduledGoalsListViewModel::setCategoryColorsEnabled
+
+            filters = filters,
+            onFiltersChanged = scheduledGoalsListViewModel::updateFilters
         )
     }
 }
@@ -128,10 +133,10 @@ fun ViewGoalsBody(
     onEditGoalsClicked: () -> Unit,
     onMarkAsComplete: (ScheduledGoal, Boolean) -> Unit,
 
-    onUseCategoryColorsCheckedChange: (Boolean) -> Unit,
+    filters: GoalFilterState = GoalFilterState(),
+    onFiltersChanged: (GoalFilterState) -> Unit,
 
     modifier: Modifier = Modifier,
-    formattedDate: String = ""
 ){
     Column(
         modifier = modifier
@@ -141,11 +146,32 @@ fun ViewGoalsBody(
         ViewGoalsHeader(
             displayedDay = scheduledGoalsListUiState.date,
             nextDayClicked = nextDayClicked,
-            previousDayClicked = previousDayClicked
+            previousDayClicked = previousDayClicked,
+            totalMinutes = scheduledGoalsListUiState.totalMinutes,
+            numScheduledGoals = scheduledGoalsListUiState.scheduledGoalsList.size
         )
-        val orderedGoalList = scheduledGoalsListUiState.scheduledGoalsList.completedGoals() + scheduledGoalsListUiState.scheduledGoalsList.incompleteGoals()
+
+        var showFilterSheet by rememberSaveable {
+            mutableStateOf(false)
+        }
+
+        GoalFilteringControls(
+            filters = filters,
+            categories = scheduledGoalsListUiState.categories,
+            onFiltersChanged = onFiltersChanged,
+            showCompletionFilter = true,
+            resultCount = scheduledGoalsListUiState.filteredScheduledGoals.size,
+            totalCount = scheduledGoalsListUiState.scheduledGoalsList.size
+        )
+        HorizontalDivider(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 4.dp),
+            thickness = 1.dp,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+        )
         ScheduledGoalList(
-            goals = orderedGoalList,
+            goals = scheduledGoalsListUiState.filteredScheduledGoals,
             categories = scheduledGoalsListUiState.categories,
             addCompletionColor = true,
             addCategoryColors = scheduledGoalsListUiState.useCategoryColorsEnabled,
@@ -153,91 +179,33 @@ fun ViewGoalsBody(
             onCompleteChange = onMarkAsComplete,
             modifier = Modifier
                 .weight(1f)
-                .padding(dimensionResource(R.dimen.padding_medium))
-        )
-        HorizontalDivider(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = dimensionResource(R.dimen.padding_medium_large)),
-            thickness = 1.dp,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
-
-            )
-
-        SettingsSwitch(
-            text = "Use category colors",
-            checked = scheduledGoalsListUiState.useCategoryColorsEnabled,
-            onCheckedChange = onUseCategoryColorsCheckedChange
-        )
-
-        DisplayTime(
-            duration = scheduledGoalsListUiState.totalMinutes,
-            title = stringResource(R.string.current_filled_time)
-        )
-        ColorLegend(
-            items = listOf(
-                LegendItem(
-                    label = "= Completed",
-                    color = MaterialTheme.colorScheme.completedGoal
-                ),
-                LegendItem(
-                    label = "= Incomplete",
-                    color = MaterialTheme.colorScheme.secondaryContainer
-                )
-            )
+                .padding(horizontal = 12.dp)
         )
         if (!isPastDate()){
             Row(
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .weight(0.33f)
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                //Edit Log Button
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .weight(1f)
+                OutlinedButton(
+                    onClick = onEditGoalsClicked,
+                    modifier = Modifier.weight(1f)
                 ) {
-                    IconButton(
-                        onClick = onEditGoalsClicked,
-                        modifier = Modifier.size(100.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Edit,
-                            contentDescription = stringResource(R.string.edit_goals_for_date, formattedDate),
-                            modifier = Modifier
-                                .size(100.dp)
-                        )
-                    }
-                    Spacer(modifier = Modifier.width(16.dp))
+                    Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.edit_goals_for_date))
+                    Spacer(Modifier.width(8.dp))
                     Text(
-                        text = stringResource(
-                            R.string.edit_goals_for_date,
-                            formattedDate
-                        ),
+                        text = "Edit",
                         textAlign = TextAlign.Center
                     )
                 }
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier
-                        .weight(1f)
+                Button(
+                    onClick = onAddGoal,
+                    modifier = Modifier.weight(1f)
                 ) {
-                    IconButton(
-                        onClick = onAddGoal,
-                        modifier = Modifier
-                            .size(100.dp),
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.AddCircle,
-                            contentDescription = stringResource(R.string.add_goal),
-                            modifier = Modifier
-                                .size(100.dp)
-                        )
-                    }
+                    Icon(Icons.Default.AddCircle, contentDescription = stringResource(R.string.add_goal))
+                    Spacer(Modifier.width(8.dp))
                     Text(
                         text = stringResource(R.string.add_goal),
                         textAlign = TextAlign.Center
@@ -274,15 +242,17 @@ fun ViewGoalsBody(
 
 @Composable
 fun ViewGoalsHeader(
+    modifier: Modifier = Modifier,
     previousDayClicked: () -> Unit = {},
     nextDayClicked: () -> Unit = {},
     displayedDay: LocalDate,
-    modifier: Modifier = Modifier
+    totalMinutes: Int,
+    numScheduledGoals: Int
 ){
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ){
@@ -295,10 +265,22 @@ fun ViewGoalsHeader(
             )
         }
 
-        Text(
-            text = formatLocalDateToCalendarDate(displayedDay),
-            textAlign = TextAlign.Center
-        )
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ){
+            Text(
+                text = formatLocalDateToCalendarDate(displayedDay),
+                textAlign = TextAlign.Center
+            )
+            DisplayTime(
+                title = "$numScheduledGoals Goals Scheduled, ",
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                style = MaterialTheme.typography.bodySmall,
+                duration = totalMinutes
+            )
+        }
+
 
         IconButton(
             onClick = nextDayClicked
@@ -329,11 +311,19 @@ fun ViewGoalsTobBarPreview(){
 @Composable
 fun ViewGoalsBodyPreview(){
     TimeManagementAppTheme {
-        val selectedDate = LocalDate.of(2026, 7,6)
+        val selectedDate = LocalDate.now()
+        val goalFilterState = GoalFilterState(
+            categoryIds = setOf(testGoalCategoriesSizeThreeWithColor[1].categoryId),
+            priorities = setOf(),
+            completionFilter = CompletionFilter.ALL,
+            sortOption = GoalSortOption.PRIORITY,
+            sortAscending = true
+        )
         ViewGoalsBody(
             isPastDate = {false},
             scheduledGoalsListUiState = ScheduledGoalsListUiState(
                 scheduledGoalsList = testScheduledGoalsWithCategoriesSizeFour,
+                filteredScheduledGoals = testScheduledGoalsWithCategoriesSizeFour.applyFilters(goalFilterState),
                 categories = testGoalCategoriesSizeThreeWithColor,
                 date = selectedDate,
                 totalMinutes = 120,
@@ -341,13 +331,13 @@ fun ViewGoalsBodyPreview(){
             ),
             onAddGoal = {},
             onEditGoalsClicked = {},
-            formattedDate = formatLocalDateToShorthandDate(selectedDate, "Today's"),
             navigateToCalendar = {},
             nextDayClicked = {},
             previousDayClicked = {},
             onMarkAsComplete = {_,_ ->},
             modifier = Modifier,
-            onUseCategoryColorsCheckedChange = {}
+            onFiltersChanged = {},
+            filters = goalFilterState
         )
     }
 }

@@ -32,11 +32,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.timelyproductivity.app.R
 import com.timelyproductivity.app.data.goal.category.CategoryColor
 import com.timelyproductivity.app.data.goal.category.GoalCategory
+import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.TimelyScaffold
 import com.timelyproductivity.app.ui.categories.CategoryEditorUiState
 import com.timelyproductivity.app.ui.components.ErrorMessageBox
+import com.timelyproductivity.app.ui.components.PriorityDropdown
 import com.timelyproductivity.app.ui.components.RecurrenceOptions
 import com.timelyproductivity.app.ui.components.RecurringGoalBody
 import com.timelyproductivity.app.ui.components.categories.CategoryDropdown
@@ -119,6 +121,8 @@ fun EditReusableGoalScreen(
             onDismissCategoryDialog = viewModel::closeCategoryDialog,
             onColorSelected = viewModel::updateCategoryColor,
 
+            onPrioritySelected = viewModel::selectPriority,
+
             modifier = modifier.padding(innerPadding)
         )
     }
@@ -147,6 +151,9 @@ fun EditReusableGoalBody(
     onSaveCategory: () -> Unit,
     onDismissCategoryDialog: () -> Unit,
     onColorSelected: (CategoryColor) -> Unit,
+
+    onPrioritySelected: (GoalPriority?) -> Unit,
+
     modifier: Modifier = Modifier
 ){
     if(categoryEditorUiState.isVisible){
@@ -176,7 +183,8 @@ fun EditReusableGoalBody(
         Text(stringResource(R.string.existing_goal))
         GoalTemplateCard(
             goal = oldGoalDetails.toGoal(
-                categoryId = goalUiState.originalCategoryId
+                categoryId = goalUiState.originalCategoryId,
+                priority = goalUiState.originalPriority
             ),
             categories = goalUiState.goalCategories,
             addCategoryColors = goalUiState.useCategoryColorsEnabled,
@@ -186,7 +194,8 @@ fun EditReusableGoalBody(
         Text(stringResource(R.string.updated_goal))
         GoalTemplateCard(
             goal = goalUiState.goalDetails.toGoal(
-                categoryId = goalUiState.selectedCategoryId
+                categoryId = goalUiState.selectedCategoryId,
+                priority = goalUiState.priority
             ),
             categories = goalUiState.goalCategories,
             addCategoryColors = goalUiState.useCategoryColorsEnabled,
@@ -209,6 +218,11 @@ fun EditReusableGoalBody(
             selectedCategory = selectedCategory,
             onCategorySelected = onCategorySelected,
             onCreateCategory = onCreateCategory
+        )
+
+        PriorityDropdown(
+            selectedPriority = goalUiState.priority,
+            onPrioritySelected = onPrioritySelected
         )
 
         EditRecurrenceRuleBody(
@@ -394,8 +408,8 @@ fun EditReusableGoalBodyPreview(){
                 goalCategories = testGoalCategoriesSizeThreeWithColor,
                 selectedCategoryId = 0,
                 originalCategoryId = 1,
-                useCategoryColorsEnabled = true
-
+                useCategoryColorsEnabled = true,
+                priority = GoalPriority.HIGH
             ),
             onGoalValueChange = {},
             onSaveAndUpdateScheduledGoalsClicked = {},
@@ -414,8 +428,8 @@ fun EditReusableGoalBodyPreview(){
             onCategorySelected = {},
             onCategoryInputChanged = {},
             onDismissCategoryDialog = {},
-            categoryEditorUiState = CategoryEditorUiState()
-
+            categoryEditorUiState = CategoryEditorUiState(),
+            onPrioritySelected = {}
         )
     }
 }

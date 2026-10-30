@@ -5,6 +5,7 @@ import androidx.room.ForeignKey
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.timelyproductivity.app.data.goal.category.GoalCategory
+import com.timelyproductivity.app.data.goal.priority.GoalPriority
 
 /**
  * Data Class used to store information about a Goal
@@ -33,5 +34,6 @@ data class Goal(
     val minutes: Int,
     val goalTitle: String,
 
-    val categoryId: Int? = null
+    val categoryId: Int? = null,
+    val priority: GoalPriority? = null
 )

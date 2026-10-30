@@ -3,6 +3,7 @@ package com.timelyproductivity.app.ui.analytics
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.timelyproductivity.app.data.analytics.AnalyticsRepository
+import com.timelyproductivity.app.data.analytics.CategoryActivity
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -46,7 +47,7 @@ class AnalyticsViewModel(
                 val completedStatsFlow = combine(
                     analyticsRepository.getCompletedGoalsCount(startDate, today),
                     analyticsRepository.getTotalCompletedMillis(startDate, today),
-                    analyticsRepository.getTotalScheduledMillisForCompleteGoals(startDate, today)
+                    analyticsRepository.getTotalScheduledMillisForCompleteGoals(startDate, today),
                 ){completedGoalCount, totalCompletedMillis, totalScheduledMillis ->
                     CompletedStats(
                         completedGoalCount = completedGoalCount,
@@ -61,11 +62,14 @@ class AnalyticsViewModel(
                         endDate = today
                     )
 
+                val categoryStatsFlow = analyticsRepository.getCategoryStats(startDate, today)
+
                 //The queries will take today only as the end date because of possible incompleted future goals
                 combine(
                     completedStatsFlow,
-                    dailyAnalyticsFlow
-                ){ completedStats, dailyAnalytics ->
+                    dailyAnalyticsFlow,
+                    categoryStatsFlow
+                ){ completedStats, dailyAnalytics, categoryStatsFlow ->
 
                     //Calculates average completed millis per task
                     val averageCompletedMillis = if (completedStats.completedGoalCount > 0){
@@ -129,7 +133,8 @@ class AnalyticsViewModel(
                         partialPercentage = partialPercentage,
                         unfinishedPercentage = unfinishedPercentage,
                         gridOffset = gridOffset,
-                        dailyActivity = dailyActivity
+                        dailyActivity = dailyActivity,
+                        categoryStats = categoryStatsFlow
                     )
                 }
             }.stateIn(
@@ -172,7 +177,8 @@ data class AnalyticsUiState(
     val partialPercentage: Float = 0f,
     val unfinishedPercentage: Float = 0f,
     val gridOffset: Int = 0,
-    val dailyActivity: List<DailyActivity> = listOf()
+    val dailyActivity: List<DailyActivity> = listOf(),
+    val categoryStats: List<CategoryActivity> = listOf()
 )
 
 enum class AnalyticsTimePeriod{
