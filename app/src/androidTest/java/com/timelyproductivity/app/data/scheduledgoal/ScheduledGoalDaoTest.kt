@@ -1,6 +1,7 @@
 package com.timelyproductivity.app.data.scheduledgoal
 
 import android.content.Context
+import android.util.Log
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
@@ -23,10 +24,14 @@ class ScheduledGoalDaoTest {
 
     private lateinit var database: GoalsDatabase
     private lateinit var scheduledGoalDao: ScheduledGoalDao
+    private val TAG = "ScheduledGoalDaoTest"
 
     @Before
     fun setup() {
         val context = ApplicationProvider.getApplicationContext<Context>()
+
+        Log.d(TAG, "Test setup started")
+        Log.d(TAG, "Package: ${context.packageName}")
 
         database = Room.inMemoryDatabaseBuilder(
             context,
@@ -35,12 +40,16 @@ class ScheduledGoalDaoTest {
             .allowMainThreadQueries()
             .build()
 
+
+        Log.d(TAG, "Database path: ${database.openHelper.writableDatabase.path}")
         scheduledGoalDao = database.scheduledGoalDao()
     }
 
     @After
     fun tearDown() {
+        Log.d(TAG, "Closing test database")
         database.close()
+        Log.d(TAG, "Test database closed")
     }
 
     @Test
@@ -115,6 +124,16 @@ class ScheduledGoalDaoTest {
 
         val remainingTomorrow =
             scheduledGoalDao.getScheduledGoalsOnce(tomorrowEventId)
+
+        Log.d(TAG, "Remaining today: ${remainingToday.size}")
+        Log.d(TAG, "Remaining tomorrow: ${remainingTomorrow.size}")
+
+        remainingToday.forEach { goal ->
+            Log.d(
+                TAG,
+                "Goal ID: ${goal.scheduledGoalId}, Status: ${goal.status}"
+            )
+        }
 
         // Verify only RUNNING and COMPLETED remain.
         assertEquals(2, remainingToday.size)
