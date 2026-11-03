@@ -1,6 +1,7 @@
 package com.timelyproductivity.app.data.scheduledgoal
 
 import com.timelyproductivity.app.data.calendar.CalendarEventsRepository
+import com.timelyproductivity.app.data.goal.Goal
 import com.timelyproductivity.app.data.goal.GoalDao
 import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
@@ -25,8 +26,8 @@ class OfflineScheduledGoalsRepository(
 
     override suspend fun deleteScheduledGoalsByGoalId(goalId: Int) = scheduledGoalDao.deleteScheduledGoalsByGoalId(goalId)
 
-    override suspend fun deleteFutureIncompleteRecurringGoalsByRecurrenceId(recurrenceRuleId: Int, startDate: LocalDate, completedStatus: GoalStatus)
-        = scheduledGoalDao.deleteFutureIncompleteRecurringGoalsByRecurrenceId(recurrenceRuleId, startDate, completedStatus)
+    override suspend fun deleteFutureIncompleteRecurringGoalsByRecurrenceId(recurrenceRuleId: Int, startDate: LocalDate, completedStatus: GoalStatus, runningStatus: GoalStatus)
+        = scheduledGoalDao.deleteFutureIncompleteRecurringGoalsByRecurrenceId(recurrenceRuleId, startDate, completedStatus, runningStatus)
 
     override suspend fun getScheduledGoalOnce(id: Int): ScheduledGoal = scheduledGoalDao.getScheduledGoalOnce(id)
 

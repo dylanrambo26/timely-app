@@ -15,7 +15,7 @@ interface ScheduledGoalsRepository{
 
     suspend fun deleteScheduledGoalsByGoalId(goalId: Int)
 
-    suspend fun deleteFutureIncompleteRecurringGoalsByRecurrenceId(recurrenceRuleId: Int, startDate: LocalDate, completedStatus: GoalStatus = GoalStatus.COMPLETED)
+    suspend fun deleteFutureIncompleteRecurringGoalsByRecurrenceId(recurrenceRuleId: Int, startDate: LocalDate, completedStatus: GoalStatus = GoalStatus.COMPLETED, runningStatus: GoalStatus = GoalStatus.RUNNING)
 
     suspend fun getScheduledGoalOnce(id: Int): ScheduledGoal
 

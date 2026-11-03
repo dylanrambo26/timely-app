@@ -39,13 +39,14 @@ interface ScheduledGoalDao {
                 ON sg.eventId = ce.eventId
             WHERE sg.recurrenceRuleId = :recurrenceRuleId
                 AND ce.date >= :startDate
-                AND sg.status != :completedStatus
+                AND sg.status NOT IN (:completedStatus, :runningStatus)
         )
     """)
     suspend fun deleteFutureIncompleteRecurringGoalsByRecurrenceId(
         recurrenceRuleId: Int,
         startDate: LocalDate,
-        completedStatus: GoalStatus = GoalStatus.COMPLETED
+        completedStatus: GoalStatus = GoalStatus.COMPLETED,
+        runningStatus: GoalStatus = GoalStatus.RUNNING
     )
 
 
