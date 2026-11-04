@@ -49,7 +49,8 @@ fun GoalTemplateList(
     onEditGoal: ((Goal) -> Unit)? = null,
     onDeleteGoal: ((GoalWithRecurrence) -> Unit)? = null,
     modifier: Modifier = Modifier,
-    selectedGoalId: Int? = null,
+    //selectedGoalId: Int? = null,
+    selectedGoalIds: Set<Int> = emptySet()
 ){
     val listState = rememberLazyListState()
     val previousSize = rememberPreviousLazyColumn(goals.size)
@@ -70,7 +71,7 @@ fun GoalTemplateList(
             goals,
             key = {it.goal.goalID}
         ) { goalWithRecurrence ->
-            val isSelected = goalWithRecurrence.goal.goalID == selectedGoalId
+            val isSelected = goalWithRecurrence.goal.goalID in selectedGoalIds
             GoalTemplateCard(
                 goal = goalWithRecurrence.goal,
                 categories = categories,
@@ -225,7 +226,7 @@ fun GoalTemplateListPreview(){
             onDeleteGoal = {},
             onEditGoal = {},
             addCategoryColors = false,
-            selectedGoalId = 1,
+            selectedGoalIds = setOf(0,1,2),
             categories = testGoalCategoriesSizeThreeWithColor
         )
     }

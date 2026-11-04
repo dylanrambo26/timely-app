@@ -75,6 +75,7 @@ class AppDataContainer(
             database.goalDao(),
             database.recurrenceRuleDao(),
             calendarEventsRepository = calendarEventsRepository,
+            database = database
         )
     }
     override val analyticsRepository: AnalyticsRepository by lazy {

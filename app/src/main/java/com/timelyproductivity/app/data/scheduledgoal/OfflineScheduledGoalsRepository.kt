@@ -1,9 +1,11 @@
 package com.timelyproductivity.app.data.scheduledgoal
 
+import androidx.room.withTransaction
 import com.timelyproductivity.app.data.calendar.CalendarEventsRepository
 import com.timelyproductivity.app.data.goal.Goal
 import com.timelyproductivity.app.data.goal.GoalDao
 import com.timelyproductivity.app.data.goal.GoalStatus
+import com.timelyproductivity.app.data.goal.GoalsDatabase
 import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceException
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
@@ -16,7 +18,8 @@ class OfflineScheduledGoalsRepository(
     private val scheduledGoalDao: ScheduledGoalDao,
     private val goalDao: GoalDao,
     private val recurrenceRuleDao: RecurrenceRuleDao,
-    private val calendarEventsRepository: CalendarEventsRepository
+    private val calendarEventsRepository: CalendarEventsRepository,
+    private val database: GoalsDatabase
 ): ScheduledGoalsRepository {
     override suspend fun insertScheduledGoal(scheduledGoal: ScheduledGoal) = scheduledGoalDao.insert(scheduledGoal)
 
@@ -64,6 +67,47 @@ class OfflineScheduledGoalsRepository(
         )
 
         return true
+    }
+
+    override suspend fun validInsertScheduledGoals(goalIds: Set<Int>, eventId: Int): Boolean {
+        if(goalIds.isEmpty()) return false
+
+        return database.withTransaction {
+            val goals = goalIds.map { goalId ->
+                goalDao.getGoalOnce(goalId)
+            }
+
+            val scheduledGoals = scheduledGoalDao.getScheduledGoalsOnce(eventId)
+
+            val usedMinutes = scheduledGoals.sumOf {
+                it.scheduledHours * 60 + it.scheduledMinutes
+            }
+
+            val newGoalsMinutes = goals.sumOf {
+                it.hours * 60 + it.minutes
+            }
+
+            val remainingMinutes = MINUTES_IN_24_HOUR_DAY - usedMinutes
+
+            if (newGoalsMinutes > remainingMinutes){
+                return@withTransaction false
+            }
+
+            val newScheduledGoals = goals.map { goal ->
+                ScheduledGoal(
+                    goalId = goal.goalID,
+                    eventId = eventId,
+                    scheduledGoalTitle = goal.goalTitle,
+                    scheduledHours = goal.hours,
+                    scheduledMinutes = goal.minutes,
+                    scheduledCategoryId = goal.categoryId,
+                    scheduledPriority = goal.priority
+                )
+            }
+
+            scheduledGoalDao.insertScheduledGoals(newScheduledGoals)
+            true
+        }
     }
 
     //Used to validate new/edited goals against remaining time

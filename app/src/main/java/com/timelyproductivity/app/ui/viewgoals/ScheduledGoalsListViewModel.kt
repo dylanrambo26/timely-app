@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.timelyproductivity.app.data.UserPreferencesRepository
 import com.timelyproductivity.app.data.calendar.CalendarEventsRepository
+import com.timelyproductivity.app.data.goal.Goal
 import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.goal.category.GoalCategoriesRepository
 import com.timelyproductivity.app.data.goal.category.GoalCategory
@@ -22,6 +23,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
@@ -42,10 +44,11 @@ class ScheduledGoalsListViewModel(
         private set
     private val _calendarEventId = MutableStateFlow<Int?>(null)
     private val _date = MutableStateFlow<LocalDate?>(null)
-    private val _showDurationError = MutableStateFlow(false)
-    val showDurationError = _showDurationError.asStateFlow()
 
     private val _filters = MutableStateFlow(GoalFilterState())
+
+    private val _addExistingGoalUiState = MutableStateFlow(AddExistingGoalUiState())
+    val addExistingGoalUiState: StateFlow<AddExistingGoalUiState> = _addExistingGoalUiState.asStateFlow()
 
     init{
         viewModelScope.launch {
@@ -124,16 +127,23 @@ class ScheduledGoalsListViewModel(
         }
     }
 
-    suspend fun addScheduledGoalFromExistingGoal(
-        goalId: Int,
+    suspend fun addScheduledGoalsFromExistingGoals(
+        goalIds: Set<Int>,
         onNavigate: (Int) -> Unit = {}
     ){
-        val success = scheduledGoalsRepository.validInsertScheduledGoal(
-            goalId = goalId,
+        if(goalIds.isEmpty()) return
+
+        val success = scheduledGoalsRepository.validInsertScheduledGoals(
+            goalIds = goalIds,
             eventId = calendarEventId
         )
 
-        _showDurationError.value = !success
+        _addExistingGoalUiState.update { state ->
+            state.copy(
+                showSelectionDurationError = !success,
+                selectedGoalIds = if(success) emptySet() else state.selectedGoalIds
+            )
+        }
 
         if(success){
             onNavigate(calendarEventId)
@@ -213,6 +223,40 @@ class ScheduledGoalsListViewModel(
         }
     }
 
+    fun toggleGoalSelection(
+        goal: Goal,
+        goals: List<Goal>,
+        remainingMinutes: Int
+    ){
+        val state = _addExistingGoalUiState.value
+        val goalId = goal.goalID
+
+        //Deselect goal
+        if (goalId in state.selectedGoalIds){
+            _addExistingGoalUiState.value = state.copy(
+                selectedGoalIds = state.selectedGoalIds - goalId,
+                showSelectionDurationError = false
+            )
+            return
+        }
+
+        val selectedMinutes = goals
+            .filter { it.goalID in state.selectedGoalIds }
+            .sumOf { it.hours * 60 + it.minutes }
+
+        val newTotalMinutes = selectedMinutes + goal.hours * 60 + goal.minutes
+
+        if(newTotalMinutes > remainingMinutes){
+            _addExistingGoalUiState.value = state.copy(
+                showSelectionDurationError = true
+            )
+        } else {
+            _addExistingGoalUiState.value = state.copy(
+                selectedGoalIds = state.selectedGoalIds + goalId,
+                showSelectionDurationError = false
+            )
+        }
+    }
 }
 
 data class ScheduledGoalsListUiState(
@@ -225,4 +269,10 @@ data class ScheduledGoalsListUiState(
     val remainingMinutesInDay: Int = MINUTES_IN_24_HOUR_DAY - totalMinutes,
     val remainingTimeError: Boolean = false,
     val useCategoryColorsEnabled: Boolean = false
+)
+
+
+data class AddExistingGoalUiState(
+    val selectedGoalIds: Set<Int> = emptySet(),
+    val showSelectionDurationError: Boolean = false,
 )

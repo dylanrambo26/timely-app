@@ -17,13 +17,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,6 +30,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.timelyproductivity.app.R
 import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
+import com.timelyproductivity.app.data.goal.Goal
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testGoalsWithCategoriesSizeThree
 import com.timelyproductivity.app.ui.AppViewModelProvider
@@ -43,6 +42,7 @@ import com.timelyproductivity.app.ui.goal.GoalListUiState
 import com.timelyproductivity.app.ui.goal.GoalListViewModel
 import com.timelyproductivity.app.ui.navigation.NavigationDest
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
+import com.timelyproductivity.app.ui.viewgoals.AddExistingGoalUiState
 import com.timelyproductivity.app.ui.viewgoals.ScheduledGoalsListUiState
 import com.timelyproductivity.app.ui.viewgoals.ScheduledGoalsListViewModel
 import kotlinx.coroutines.launch
@@ -62,12 +62,12 @@ fun AddExistingGoalScreen(
     goalListViewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     scheduledGoalsViewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToHome: () -> Unit,
-    navigateToCalendar: () -> Unit, //TODO
-    navigateToAnalytics: () -> Unit, //TODO
+    navigateToCalendar: () -> Unit,
+    navigateToAnalytics: () -> Unit,
 ){
-    val showDurationError by scheduledGoalsViewModel.showDurationError.collectAsState()
     val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
     val filters by goalListViewModel.filters.collectAsState()
+    val addExistingGoalUiState by scheduledGoalsViewModel.addExistingGoalUiState.collectAsState()
     val scheduledGoalsListUiState by scheduledGoalsViewModel.scheduledGoalsListUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
     Scaffold(
@@ -85,15 +85,17 @@ fun AddExistingGoalScreen(
         AddExistingGoalBody(
             goalListUiState = goalListUiState,
             scheduledGoalsListUiState = scheduledGoalsListUiState,
-            showDurationError = showDurationError,
-            onAddGoalPressed = { goalId ->
+            addExistingGoalUiState = addExistingGoalUiState,
+            showDurationError = addExistingGoalUiState.showSelectionDurationError,
+            onAddGoalsPressed = { goalIds ->
                 coroutineScope.launch {
-                    scheduledGoalsViewModel.addScheduledGoalFromExistingGoal(
-                        goalId = goalId,
+                    scheduledGoalsViewModel.addScheduledGoalsFromExistingGoals(
+                        goalIds = goalIds,
                         onNavigate = { navigateToViewGoals(scheduledGoalsViewModel.calendarEventId) }
                     )
                 }
             },
+            onGoalClicked = scheduledGoalsViewModel::toggleGoalSelection,
             onCancelClicked = onCancelButtonClicked,
             modifier = Modifier.padding(innerPadding),
             onCreateGoalPressed = {
@@ -110,8 +112,10 @@ fun AddExistingGoalScreen(
 fun AddExistingGoalBody(
     goalListUiState: GoalListUiState,
     scheduledGoalsListUiState: ScheduledGoalsListUiState,
+    addExistingGoalUiState: AddExistingGoalUiState,
+    onGoalClicked: (Goal, List<Goal>, Int) -> Unit,
     showDurationError: Boolean,
-    onAddGoalPressed: (Int) -> Unit,
+    onAddGoalsPressed: (Set<Int>) -> Unit,
     onCreateGoalPressed: () -> Unit,
     onCancelClicked: () -> Unit,
     modifier: Modifier = Modifier,
@@ -124,8 +128,6 @@ fun AddExistingGoalBody(
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        var selectedGoalId by rememberSaveable { mutableStateOf<Int?>(null) }
-
         if (goalListUiState.goalList.isEmpty()){
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -161,9 +163,13 @@ fun AddExistingGoalBody(
                 categories = goalListUiState.categories,
                 addCategoryColors = goalListUiState.useCategoryColorsEnabled,
                 onGoalClick = { goal ->
-                    selectedGoalId = goal.goalID
+                    onGoalClicked(
+                        goal,
+                        goalListUiState.goalList.map { it.goal },
+                        scheduledGoalsListUiState.remainingMinutesInDay
+                    )
                 },
-                selectedGoalId = selectedGoalId,
+                selectedGoalIds = addExistingGoalUiState.selectedGoalIds,
                 modifier = Modifier
                     .weight(1f)
                     .padding(dimensionResource(R.dimen.padding_medium))
@@ -172,7 +178,9 @@ fun AddExistingGoalBody(
 
         if(showDurationError){
             Text(
-                text = stringResource(R.string.selected_goal_exceeds_remaining_time),
+                text = stringResource(
+                    R.string.selected_goal_exceeds_remaining_time,
+                ),
                 color = MaterialTheme.colorScheme.error,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(8.dp)
@@ -201,11 +209,16 @@ fun AddExistingGoalBody(
                 )
             }
             Button(
-                onClick = { selectedGoalId?.let { onAddGoalPressed(it) } },
+                onClick = { onAddGoalsPressed(addExistingGoalUiState.selectedGoalIds) },
+                enabled = addExistingGoalUiState.selectedGoalIds.isNotEmpty(),
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    stringResource(R.string.add_goal),
+                    text = pluralStringResource(
+                        R.plurals.add_selected_goals,
+                        addExistingGoalUiState.selectedGoalIds.size,
+                        addExistingGoalUiState.selectedGoalIds.size
+                    ),
                     textAlign = TextAlign.Center
                 )
             }
@@ -224,11 +237,15 @@ fun AddExistingGoalBodyPreview(){
                 useCategoryColorsEnabled = true,
             ),
             scheduledGoalsListUiState = ScheduledGoalsListUiState(),
-            onAddGoalPressed = {},
+            addExistingGoalUiState = AddExistingGoalUiState(
+                selectedGoalIds = setOf(testGoalsWithCategoriesSizeThree[0].goal.goalID, testGoalsWithCategoriesSizeThree[1].goal.goalID),
+            ),
+            onGoalClicked = {_,_,_->},
+            onAddGoalsPressed = {},
             onCancelClicked = {},
             modifier = Modifier,
             onCreateGoalPressed = {},
-            showDurationError = true,
+            showDurationError = false,
             onFiltersChanged = {}
         )
     }

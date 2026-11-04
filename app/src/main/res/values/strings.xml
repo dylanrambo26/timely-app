@@ -83,4 +83,9 @@
     <string name="play_sounds_for_task_alerts">Play sounds for task alerts</string>
     <string name="manage_categories">Manage Categories</string>
     <string name="search_for_a_specific_goal">Search for a specific goal</string>
+
+    <plurals name="add_selected_goals">
+        <item quantity="one">Add %d Goal</item>
+        <item quantity="other">Add %d Goals</item>
+    </plurals>
 </resources>
