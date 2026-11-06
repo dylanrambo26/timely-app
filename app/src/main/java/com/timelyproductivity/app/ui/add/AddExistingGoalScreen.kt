@@ -39,6 +39,8 @@ import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testGoalsWithCategoriesSizeThree
 import com.timelyproductivity.app.ui.AppViewModelProvider
 import com.timelyproductivity.app.ui.components.AddGoalButton
+import com.timelyproductivity.app.ui.components.ColorLegendRow
+import com.timelyproductivity.app.ui.components.LegendItem
 import com.timelyproductivity.app.ui.components.filters.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.lists.GoalTemplateList
 import com.timelyproductivity.app.ui.filters.GoalFilterState
@@ -254,10 +256,22 @@ fun SchedulingCapacityIndicator(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = "Remaining: ${remainingMinutes / 60}h ${remainingMinutes % 60}m",
-            style = MaterialTheme.typography.titleSmall
-        )
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Text(
+                text = "Remaining: ${remainingMinutes / 60}h ${remainingMinutes % 60}m",
+                style = MaterialTheme.typography.titleSmall
+            )
+            Text(
+                text = "(Selected: ${validSelectedMinutes / 60}h ${validSelectedMinutes % 60}m)",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
 
         Row(
             modifier = Modifier
@@ -296,10 +310,24 @@ fun SchedulingCapacityIndicator(
             }
         }
 
-        Text(
-            text = "Selected: ${validSelectedMinutes / 60}h ${validSelectedMinutes % 60}m",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+        ColorLegendRow(
+            items = listOf(
+                LegendItem(
+                    label = "Scheduled",
+                    color = MaterialTheme.colorScheme.outline
+                ),
+                LegendItem(
+                    label = "Selected",
+                    color = MaterialTheme.colorScheme.primary
+                ),
+                LegendItem(
+                    label = "Remaining",
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ),
+            colorBoxSize = 10.dp,
+            isCircleShape = true,
+            modifier = Modifier.fillMaxWidth()
         )
     }
 }

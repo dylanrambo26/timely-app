@@ -207,10 +207,12 @@ fun ViewGoalsBody(
                     enabled = canAddGoals,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Icon(Icons.Default.AddCircle, contentDescription = stringResource(R.string.add_goal))
+                    if(canAddGoals){
+                        Icon(Icons.Default.AddCircle, contentDescription = stringResource(R.string.add_goal))
+                    }
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = stringResource(R.string.add_goal),
+                        text = if(canAddGoals) stringResource(R.string.add_goal) else "Day Full",
                         textAlign = TextAlign.Center
                     )
                 }

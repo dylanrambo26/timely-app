@@ -17,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.Dp
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 import com.timelyproductivity.app.ui.theme.completedGoal
 
@@ -44,6 +45,7 @@ fun ColorLegendColumn(
 fun ColorLegendRow(
     items: List<LegendItem>,
     isCircleShape: Boolean = false,
+    colorBoxSize: Dp = 20.dp,
     modifier: Modifier = Modifier
 ){
     Row(
@@ -53,7 +55,8 @@ fun ColorLegendRow(
         items.forEach {item ->
             ColorLegendItem(
                 item = item,
-                isCircleShape = isCircleShape
+                isCircleShape = isCircleShape,
+                colorBoxSize = colorBoxSize
             )
         }
     }
@@ -62,7 +65,8 @@ fun ColorLegendRow(
 @Composable
 fun ColorLegendItem(
     item: LegendItem,
-    isCircleShape: Boolean = false
+    isCircleShape: Boolean = false,
+    colorBoxSize: Dp = 20.dp
 ){
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -70,13 +74,13 @@ fun ColorLegendItem(
     ){
         Box(
             modifier = Modifier
-                .size(20.dp)
+                .size(colorBoxSize)
                 .background(
                     color = item.color,
                     shape = if(isCircleShape) CircleShape else RectangleShape
                 )
                 .border(
-                    width = 3.dp,
+                    width = if (item.borderColor == Color.Transparent) 0.dp else 3.dp,
                     color = item.borderColor
                 )
         )
