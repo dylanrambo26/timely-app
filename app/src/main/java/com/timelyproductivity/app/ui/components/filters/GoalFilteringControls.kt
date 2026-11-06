@@ -31,13 +31,14 @@ fun GoalFilteringControls(
     modifier: Modifier = Modifier,
     showCompletionFilter: Boolean = true,
     showRecurrenceFilter: Boolean = false,
+    defaultIsExpanded: Boolean = true,
 ){
     var showFilterSheet by rememberSaveable {
         mutableStateOf(false)
     }
 
     var filtersExpanded by rememberSaveable {
-        mutableStateOf(true)
+        mutableStateOf(defaultIsExpanded)
     }
 
     Column(

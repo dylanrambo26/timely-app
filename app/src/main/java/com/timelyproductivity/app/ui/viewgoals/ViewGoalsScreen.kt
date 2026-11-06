@@ -200,8 +200,11 @@ fun ViewGoalsBody(
                     )
                 }
 
+                val canAddGoals = scheduledGoalsListUiState.calendarEventId != null && scheduledGoalsListUiState.remainingMinutesInDay > 0
+
                 Button(
                     onClick = onAddGoal,
+                    enabled = canAddGoals,
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Default.AddCircle, contentDescription = stringResource(R.string.add_goal))

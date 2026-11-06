@@ -141,7 +141,8 @@ class ScheduledGoalsListViewModel(
         _addExistingGoalUiState.update { state ->
             state.copy(
                 showSelectionDurationError = !success,
-                selectedGoalIds = if(success) emptySet() else state.selectedGoalIds
+                selectedGoalIds = if(success) emptySet() else state.selectedGoalIds,
+                selectedMinutes = if(success) 0 else state.selectedMinutes
             )
         }
 
@@ -225,36 +226,39 @@ class ScheduledGoalsListViewModel(
 
     fun toggleGoalSelection(
         goal: Goal,
-        goals: List<Goal>,
         remainingMinutes: Int
     ){
         val state = _addExistingGoalUiState.value
         val goalId = goal.goalID
+        val goalMinutes = goal.hours * 60 + goal.minutes
 
         //Deselect goal
         if (goalId in state.selectedGoalIds){
-            _addExistingGoalUiState.value = state.copy(
-                selectedGoalIds = state.selectedGoalIds - goalId,
-                showSelectionDurationError = false
-            )
+            _addExistingGoalUiState.update {
+                it.copy(
+                    selectedGoalIds = it.selectedGoalIds - goalId,
+                    selectedMinutes =
+                        (it.selectedMinutes - goalMinutes).coerceAtLeast(0),
+                    showSelectionDurationError = false
+                )
+            }
             return
         }
 
-        val selectedMinutes = goals
-            .filter { it.goalID in state.selectedGoalIds }
-            .sumOf { it.hours * 60 + it.minutes }
+        val newTotalMinutes = state.selectedMinutes + goal.hours * 60 + goal.minutes
 
-        val newTotalMinutes = selectedMinutes + goal.hours * 60 + goal.minutes
-
-        if(newTotalMinutes > remainingMinutes){
-            _addExistingGoalUiState.value = state.copy(
-                showSelectionDurationError = true
-            )
+        if (newTotalMinutes > remainingMinutes) {
+            _addExistingGoalUiState.update {
+                it.copy(showSelectionDurationError = true)
+            }
         } else {
-            _addExistingGoalUiState.value = state.copy(
-                selectedGoalIds = state.selectedGoalIds + goalId,
-                showSelectionDurationError = false
-            )
+            _addExistingGoalUiState.update {
+                it.copy(
+                    selectedGoalIds = it.selectedGoalIds + goalId,
+                    selectedMinutes = newTotalMinutes,
+                    showSelectionDurationError = false
+                )
+            }
         }
     }
 }
@@ -275,4 +279,5 @@ data class ScheduledGoalsListUiState(
 data class AddExistingGoalUiState(
     val selectedGoalIds: Set<Int> = emptySet(),
     val showSelectionDurationError: Boolean = false,
+    val selectedMinutes: Int = 0,
 )
