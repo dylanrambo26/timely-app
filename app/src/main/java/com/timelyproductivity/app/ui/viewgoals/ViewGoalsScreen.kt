@@ -43,6 +43,7 @@ import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeFour
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.TimelyScaffold
 import com.timelyproductivity.app.ui.components.filters.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.lists.ScheduledGoalList
 import com.timelyproductivity.app.ui.components.sorting.GoalSortOption
@@ -76,22 +77,14 @@ fun ViewGoalsScreen(
     val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
     val filters by scheduledGoalsListViewModel.filters.collectAsState()
     val formattedDate = formatLocalDateToShorthandDate(scheduledGoalsListUiState.date, "Today's")
-    Scaffold(
-        topBar = {
-            TimelySmallTopAppBar(
-                stringResource(
-                    R.string.view_goals_for_date,
-                    formattedDate
-                )
-            )
-        },
-        bottomBar = {
-            TimelyBottomAppBar(
-                onCalendarClick = navigateToCalendar,
-                onHomeClick = navigateToHome,
-                onAnalyticsClick = navigateToAnalytics
-            )
-        }
+    TimelyScaffold(
+        topBarTitle = stringResource(
+            R.string.view_goals_for_date,
+            formattedDate
+        ),
+        onHomeClick = navigateToHome,
+        onAnalyticsClick = navigateToAnalytics,
+        onCalendarClick = navigateToCalendar
     ) { innerPadding ->
         ViewGoalsBody(
             scheduledGoalsListUiState = scheduledGoalsListUiState,
@@ -200,14 +193,19 @@ fun ViewGoalsBody(
                     )
                 }
 
+                val canAddGoals = scheduledGoalsListUiState.calendarEventId != null && scheduledGoalsListUiState.remainingMinutesInDay > 0
+
                 Button(
                     onClick = onAddGoal,
+                    enabled = canAddGoals,
                     modifier = Modifier.weight(1f)
                 ) {
-                    Icon(Icons.Default.AddCircle, contentDescription = stringResource(R.string.add_goal))
-                    Spacer(Modifier.width(8.dp))
+                    if(canAddGoals){
+                        Icon(Icons.Default.AddCircle, contentDescription = stringResource(R.string.add_goal))
+                        Spacer(Modifier.width(8.dp))
+                    }
                     Text(
-                        text = stringResource(R.string.add_goal),
+                        text = if(canAddGoals) stringResource(R.string.add_goal) else "Day Full",
                         textAlign = TextAlign.Center
                     )
                 }

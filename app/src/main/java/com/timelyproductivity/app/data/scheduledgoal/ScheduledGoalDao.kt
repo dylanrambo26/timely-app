@@ -18,6 +18,11 @@ interface ScheduledGoalDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insert(scheduledGoal: ScheduledGoal)
 
+    @Insert(onConflict = OnConflictStrategy.ABORT)
+    suspend fun insertScheduledGoals(
+        scheduledGoals: List<ScheduledGoal>
+    )
+
     @Update
     suspend fun update(scheduledGoal: ScheduledGoal)
 

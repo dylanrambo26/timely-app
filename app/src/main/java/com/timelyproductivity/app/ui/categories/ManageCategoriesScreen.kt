@@ -73,11 +73,7 @@ object ManageCategoriesDestination : NavigationDest {
 
 @Composable
 fun ManageCategoriesScreen(
-    navigateToCalendar: () -> Unit,
-    navigateToAnalytics: () -> Unit,
-    navigateToHome: () -> Unit,
     navigateBack: () -> Unit,
-
     manageCategoriesViewModel: ManageCategoriesViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ){
     val manageCategoriesUiState by manageCategoriesViewModel.manageCategoriesUiState.collectAsState()
@@ -85,9 +81,7 @@ fun ManageCategoriesScreen(
     val categoryPendingDeletion by manageCategoriesViewModel.categoryPendingDeletion.collectAsState()
     TimelyScaffold(
         topBarTitle = stringResource(R.string.manage_categories),
-        onHomeClick = navigateToHome,
-        onCalendarClick = navigateToCalendar,
-        onAnalyticsClick = navigateToAnalytics
+        showBottomBar = false
     ) { innerPadding ->
         ManageCategoriesBody(
             manageCategoriesUiState = manageCategoriesUiState,

@@ -40,6 +40,8 @@ import com.timelyproductivity.app.data.goal.recurrence.GoalWithRecurrence
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testGoalsWithCategoriesSizeThree
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.TimelyScaffold
+import com.timelyproductivity.app.ui.components.buttons.TwoActionButtonRow
 import com.timelyproductivity.app.ui.components.filters.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.lists.GoalTemplateList
 import com.timelyproductivity.app.ui.filters.GoalFilterState
@@ -58,8 +60,6 @@ fun ManageReusableGoalsScreen(
     goalListViewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     manageReusableGoalsViewModel: ManageReusableGoalsViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToHome: () -> Unit,
-    navigateToCalendar: () -> Unit, //TODO
-    navigateToAnalytics: () -> Unit, //TODO
 ){
     val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
     val filters by goalListViewModel.filters.collectAsState()
@@ -67,17 +67,9 @@ fun ManageReusableGoalsScreen(
     var goalPendingDeletion by remember {
         mutableStateOf<GoalWithRecurrence?>(null)
     }
-    Scaffold(
-        topBar = {
-            TimelySmallTopAppBar(stringResource(R.string.manage_reusable_goals))
-        },
-        bottomBar = {
-            TimelyBottomAppBar(
-                onCalendarClick = navigateToCalendar,
-                onHomeClick = navigateToHome,
-                onAnalyticsClick = navigateToAnalytics
-            )
-        }
+    TimelyScaffold(
+        topBarTitle = stringResource(R.string.manage_reusable_goals),
+        showBottomBar = false
     ) { innerPadding ->
         ManageReusableGoalsBody(
             onCreateGoalButtonClicked = onAddGoalButtonClicked,
@@ -89,6 +81,7 @@ fun ManageReusableGoalsScreen(
                     goalListViewModel.deleteGoal(goalWithRecurrence.goal)
                 }
             },
+            navigateToHome = navigateToHome,
             onEditGoal = onEditGoal,
 
             filters = filters,
@@ -123,6 +116,7 @@ fun ManageReusableGoalsBody(
     onCreateGoalButtonClicked: () -> Unit = {},
     goalListUiState: GoalListUiState,
     onDeleteGoal: (GoalWithRecurrence) -> Unit,
+    navigateToHome: () -> Unit,
     onEditGoal: (Goal) -> Unit,
     modifier: Modifier = Modifier,
 
@@ -154,25 +148,14 @@ fun ManageReusableGoalsBody(
                 .weight(1f)
                 .padding(horizontal = 12.dp)
         )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Button(
-                onClick = onCreateGoalButtonClicked
-            ) {
-                Icon(
-                    imageVector = Icons.Default.AddCircle,
-                    contentDescription = null
-                )
-
-                Spacer(Modifier.width(8.dp))
-
-                Text(stringResource(R.string.create_a_goal_from_scratch))
-            }
-        }
+        TwoActionButtonRow(
+            outlinedButtonText = "Back To Home",
+            onOutlinedButtonClicked = navigateToHome,
+            buttonText = "Create a goal",
+            onButtonClicked = onCreateGoalButtonClicked,
+            buttonIcon = Icons.Default.AddCircle,
+            buttonDescription = stringResource(R.string.create_a_goal_from_scratch),
+        )
     }
 }
 
@@ -259,7 +242,8 @@ fun ManageReusableGoalsBodyPreview(){
             ),
             onDeleteGoal = {},
             onEditGoal = {},
-            onFiltersChanged = {}
+            onFiltersChanged = {},
+            navigateToHome = {}
         )
     }
 }

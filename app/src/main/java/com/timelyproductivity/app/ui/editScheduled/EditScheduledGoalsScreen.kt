@@ -34,6 +34,8 @@ import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeFour
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.TimelyScaffold
+import com.timelyproductivity.app.ui.components.buttons.TwoActionButtonRow
 import com.timelyproductivity.app.ui.components.filters.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.lists.ScheduledGoalList
 import com.timelyproductivity.app.ui.components.time.DisplayTime
@@ -54,25 +56,15 @@ object EditScheduledGoalsDestination : NavigationDest{
 @Composable
 fun EditScheduledGoalsScreen(
     onAddGoalButtonClicked: (Int) -> Unit = {},
+    navigateToViewGoals: (Int) -> Unit,
     onEditGoal: (ScheduledGoal) -> Unit,
     viewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    navigateToHome: () -> Unit,
-    navigateToCalendar: () -> Unit, //TODO
-    navigateToAnalytics: () -> Unit, //TODO
 ){
     val scheduledGoalsListUiState by viewModel.scheduledGoalsListUiState.collectAsState()
     val filters by viewModel.filters.collectAsState()
-    Scaffold(
-        topBar = {
-            TimelySmallTopAppBar(stringResource(R.string.edit_todays_goals))
-                 },
-        bottomBar = {
-            TimelyBottomAppBar(
-                onCalendarClick = navigateToCalendar,
-                onHomeClick = navigateToHome,
-                onAnalyticsClick = navigateToAnalytics
-            )
-        }
+    TimelyScaffold(
+        topBarTitle = stringResource(R.string.edit_todays_goals),
+        showBottomBar = false
     ) { innerPadding ->
         EditScheduledGoalsBody(
             scheduledGoalsListUiState = scheduledGoalsListUiState,
@@ -80,6 +72,11 @@ fun EditScheduledGoalsScreen(
             onEditGoal = onEditGoal,
             onAddGoal = {
                 scheduledGoalsListUiState.calendarEventId?.let(onAddGoalButtonClicked)
+            },
+            navigateToViewGoals = {
+                scheduledGoalsListUiState.calendarEventId?.let (
+                    navigateToViewGoals
+                )
             },
             modifier = Modifier.padding(innerPadding),
 
@@ -95,6 +92,7 @@ fun EditScheduledGoalsBody(
     onDeleteGoal: (ScheduledGoal) -> Unit,
     onEditGoal: (ScheduledGoal) -> Unit,
     onAddGoal: () -> Unit,
+    navigateToViewGoals: () -> Unit,
     modifier: Modifier = Modifier,
 
     filters: GoalFilterState = GoalFilterState(),
@@ -135,32 +133,17 @@ fun EditScheduledGoalsBody(
             )
         //TimeRemaining(remaining = goalListUiState.remainingMinutesInDay)
         DisplayTime(duration = scheduledGoalsListUiState.remainingMinutesInDay, title = stringResource(R.string.available_time_in_full_day))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ){
-            IconButton(
-                onClick = onAddGoal,
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-                    .size(100.dp),
-            ) {
-                Icon(
-                    imageVector = Icons.Default.AddCircle,
-                    contentDescription = stringResource(R.string.add_goal),
-                    modifier = Modifier
-                        .size(100.dp)
-                )
-            }
-            Spacer(modifier = Modifier.width(30.dp))
-            Text(
-                text = stringResource(R.string.add_goal),
-                modifier = Modifier
-                    .align(Alignment.CenterVertically)
-            )
-        }
+
+        val canAddGoals = scheduledGoalsListUiState.calendarEventId != null && scheduledGoalsListUiState.remainingMinutesInDay > 0
+        TwoActionButtonRow(
+            onOutlinedButtonClicked = navigateToViewGoals,
+            onButtonClicked = onAddGoal,
+            outlinedButtonText = "View Goals",
+            buttonText = if(canAddGoals) stringResource(R.string.add_goal) else "Day Full",
+            buttonEnabled = canAddGoals,
+            buttonIcon = if(canAddGoals) Icons.Default.AddCircle else null,
+            buttonDescription = stringResource(R.string.add_goal)
+        )
     }
 
 }
@@ -210,6 +193,7 @@ fun EditScheduledGoalsBodyPreview(){
             onEditGoal = {},
             onAddGoal = {},
             onFiltersChanged = {},
+            navigateToViewGoals = {}
         )
     }
 }

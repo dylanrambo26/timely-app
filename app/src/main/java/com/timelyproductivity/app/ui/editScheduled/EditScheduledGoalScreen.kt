@@ -37,9 +37,11 @@ import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.TimelyScaffold
 import com.timelyproductivity.app.ui.categories.CategoryEditorUiState
 import com.timelyproductivity.app.ui.components.ErrorMessageBox
 import com.timelyproductivity.app.ui.components.PriorityDropdown
+import com.timelyproductivity.app.ui.components.buttons.TwoActionButtonRow
 import com.timelyproductivity.app.ui.components.categories.CategoryDropdown
 import com.timelyproductivity.app.ui.components.categories.CategoryEditorDialog
 import com.timelyproductivity.app.ui.components.lists.GoalTemplateCard
@@ -62,20 +64,12 @@ fun EditScheduledGoalScreen(
     modifier: Modifier = Modifier,
     editScheduledGoalViewModel: EditScheduledGoalViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToEditScheduledGoals: (Int) -> Unit,
-    navigateToHome: () -> Unit,
-    navigateToCalendar: () -> Unit, //TODO
-    navigateToAnalytics: () -> Unit, //TODO
 ){
     val coroutineScope = rememberCoroutineScope()
     val categoryEditorUiState by editScheduledGoalViewModel.categoryEditorUiState.collectAsState()
-    Scaffold(
-        topBar = { TimelySmallTopAppBar(stringResource(R.string.edit_one_goal)) },
-        bottomBar = {
-            TimelyBottomAppBar(
-                onCalendarClick = navigateToCalendar,
-                onHomeClick = navigateToHome,
-                onAnalyticsClick = navigateToAnalytics
-            )}
+    TimelyScaffold(
+        topBarTitle = stringResource(R.string.edit_one_goal),
+        showBottomBar = false
     ) { innerPadding ->
         EditScheduledGoalBody(
             goalUiState = editScheduledGoalViewModel.goalUiState,
@@ -197,37 +191,13 @@ fun EditScheduledGoalBody(
             errorMessageValue = goalUiState.errorMessage
         )
 
-        Row(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            //Cancel Edit Button
-            OutlinedButton(
-                onClick = navigateBack,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                Text(
-                    text = stringResource(R.string.cancel_edit_one_goal),
-                    fontSize = 16.sp,
-                    color = Color.Red
-                )
-            }
-
-            //Save Goal Button
-            OutlinedButton(
-                onClick = onSaveGoalClick,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-            ) {
-                Text(
-                    text = stringResource(R.string.save_edit_one_goal),
-                    fontSize = 16.sp,
-                    color = Color.Green
-                )
-            }
-        }
+        TwoActionButtonRow(
+            outlinedButtonText = stringResource(R.string.cancel_edit_one_goal),
+            onOutlinedButtonClicked = navigateBack,
+            buttonText = stringResource(R.string.save_edit_one_goal),
+            onButtonClicked = onSaveGoalClick,
+            buttonEnabled = goalUiState.isEntryValid
+        )
     }
 }
 
@@ -298,7 +268,7 @@ fun EditGoalInputForm(
     )
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, heightDp = 1000)
 @Composable
 fun EditScheduledGoalScreenPreview(){
     TimeManagementAppTheme {

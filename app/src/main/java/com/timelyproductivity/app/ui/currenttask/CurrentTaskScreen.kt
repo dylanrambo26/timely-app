@@ -44,7 +44,9 @@ import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeFour
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.TimelyScaffold
 import com.timelyproductivity.app.ui.components.PermissionsDialog
+import com.timelyproductivity.app.ui.components.buttons.TwoActionButtonRow
 import com.timelyproductivity.app.ui.components.filters.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.lists.ScheduledGoalList
 import com.timelyproductivity.app.ui.components.settings.ReminderEditorDialog
@@ -66,8 +68,6 @@ fun CurrentTaskScreen(
     scheduledGoalsListViewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     currentTaskViewModel: CurrentTaskViewModel = viewModel(factory = AppViewModelProvider.Factory),
     navigateToHome: () -> Unit,
-    navigateToCalendar: () -> Unit,
-    navigateToAnalytics: () -> Unit,
     navigateBack: () -> Unit
 ){
     val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
@@ -98,17 +98,9 @@ fun CurrentTaskScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TimelySmallTopAppBar(stringResource(R.string.change_current_task))
-        },
-        bottomBar = {
-            TimelyBottomAppBar(
-                onCalendarClick = navigateToCalendar,
-                onHomeClick = navigateToHome,
-                onAnalyticsClick = navigateToAnalytics
-            )
-        }
+    TimelyScaffold(
+        topBarTitle = stringResource(R.string.change_current_task),
+        showBottomBar = false
     ) { innerPadding ->
         CurrentTaskBody(
             scheduledGoalsListUiState = scheduledGoalsListUiState,
@@ -271,55 +263,31 @@ fun CurrentTaskBody(
 
             )
 
-        Row(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            //Cancel Button
-            OutlinedButton(
-                onClick = navigateBack,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f)
-            ) {
-                Text(
-                    text = stringResource(R.string.cancel_edit_one_goal),
-                    fontSize = 16.sp,
-                    color = Color.Red
-                )
-            }
+        TwoActionButtonRow(
+            outlinedButtonText = stringResource(R.string.cancel),
+            onOutlinedButtonClicked = navigateBack,
+            buttonText = stringResource(R.string.save_current_task),
+            onButtonClicked = {
+                selectedGoal?.let {goal ->
+                    val needsNotificationPermission =
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                                ContextCompat.checkSelfPermission(
+                                    context,
+                                    Manifest.permission.POST_NOTIFICATIONS
+                                ) != PackageManager.PERMISSION_GRANTED
 
-            //Save Goal Button
-            OutlinedButton(
-                onClick = {
-                    selectedGoal?.let {goal ->
-                        val needsNotificationPermission =
-                            Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
-                                    ContextCompat.checkSelfPermission(
-                                        context,
-                                        Manifest.permission.POST_NOTIFICATIONS
-                                    ) != PackageManager.PERMISSION_GRANTED
-
-                        val requiresExactAlarmPermission = needsExactAlarmPermission()
-                        if(needsNotificationPermission || requiresExactAlarmPermission){
-                            goalWaitingForPermissions = goal
-                            showPermissionsDialog = true
-                        } else {
-                            onSaveCurrentTaskPressed(goal)
-                        }
+                    val requiresExactAlarmPermission = needsExactAlarmPermission()
+                    if(needsNotificationPermission || requiresExactAlarmPermission){
+                        goalWaitingForPermissions = goal
+                        showPermissionsDialog = true
+                    } else {
+                        onSaveCurrentTaskPressed(goal)
                     }
-                },
-                enabled = selectedGoal != null,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .weight(1f),
-            ) {
-                Text(
-                    text = stringResource(R.string.save_current_task),
-                    fontSize = 14.sp,
-                    color = Color.Green
-                )
-            }
-        }
+                }
+            },
+            buttonEnabled = selectedGoal != null,
+            buttonFontSize = 12.sp
+        )
     }
 
 }

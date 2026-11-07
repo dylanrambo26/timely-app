@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.timelyproductivity.app.R
 import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
+import com.timelyproductivity.app.ui.TimelyScaffold
 import com.timelyproductivity.app.ui.navigation.NavigationDest
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
 
@@ -42,17 +43,9 @@ fun AddGoalSelectionScreen(
     navigateToCalendar: () -> Unit, //TODO
     navigateToAnalytics: () -> Unit, //TODO
 ){
-    Scaffold(
-        topBar = {
-            TimelySmallTopAppBar(stringResource(R.string.Add_a_goal))
-        },
-        bottomBar = {
-            TimelyBottomAppBar(
-                onCalendarClick = navigateToCalendar,
-                onHomeClick = navigateToHome,
-                onAnalyticsClick = navigateToAnalytics
-            )
-        }
+    TimelyScaffold(
+        topBarTitle = stringResource(R.string.Add_a_goal),
+        showBottomBar = false
     ) { innerPadding ->
         AddGoalSelectionBody(
             addExistingGoalClicked = addExistingGoalButtonClicked,

@@ -1,41 +1,44 @@
 package com.timelyproductivity.app.ui.add
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.timelyproductivity.app.R
-import com.timelyproductivity.app.TimelyBottomAppBar
-import com.timelyproductivity.app.TimelySmallTopAppBar
+import com.timelyproductivity.app.data.goal.Goal
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testGoalsWithCategoriesSizeThree
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.TimelyScaffold
 import com.timelyproductivity.app.ui.components.AddGoalButton
+import com.timelyproductivity.app.ui.components.ColorLegendRow
+import com.timelyproductivity.app.ui.components.LegendItem
+import com.timelyproductivity.app.ui.components.buttons.TwoActionButtonRow
 import com.timelyproductivity.app.ui.components.filters.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.lists.GoalTemplateList
 import com.timelyproductivity.app.ui.filters.GoalFilterState
@@ -43,8 +46,10 @@ import com.timelyproductivity.app.ui.goal.GoalListUiState
 import com.timelyproductivity.app.ui.goal.GoalListViewModel
 import com.timelyproductivity.app.ui.navigation.NavigationDest
 import com.timelyproductivity.app.ui.theme.TimeManagementAppTheme
+import com.timelyproductivity.app.ui.viewgoals.AddExistingGoalUiState
 import com.timelyproductivity.app.ui.viewgoals.ScheduledGoalsListUiState
 import com.timelyproductivity.app.ui.viewgoals.ScheduledGoalsListViewModel
+import com.timelyproductivity.app.util.MINUTES_IN_24_HOUR_DAY
 import kotlinx.coroutines.launch
 
 object AddExistingGoalDestination : NavigationDest{
@@ -61,39 +66,30 @@ fun AddExistingGoalScreen(
     navigateToViewGoals: (Int) -> Unit,
     goalListViewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory),
     scheduledGoalsViewModel: ScheduledGoalsListViewModel = viewModel(factory = AppViewModelProvider.Factory),
-    navigateToHome: () -> Unit,
-    navigateToCalendar: () -> Unit, //TODO
-    navigateToAnalytics: () -> Unit, //TODO
 ){
-    val showDurationError by scheduledGoalsViewModel.showDurationError.collectAsState()
     val goalListUiState by goalListViewModel.goalListUiState.collectAsState()
     val filters by goalListViewModel.filters.collectAsState()
+    val addExistingGoalUiState by scheduledGoalsViewModel.addExistingGoalUiState.collectAsState()
     val scheduledGoalsListUiState by scheduledGoalsViewModel.scheduledGoalsListUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    Scaffold(
-        topBar = {
-            TimelySmallTopAppBar(stringResource(R.string.add_an_existing_goal))
-        },
-        bottomBar = {
-            TimelyBottomAppBar(
-                onCalendarClick = navigateToCalendar,
-                onHomeClick = navigateToHome,
-                onAnalyticsClick = navigateToAnalytics
-            )
-        }
+    TimelyScaffold(
+        topBarTitle = stringResource(R.string.add_an_existing_goal),
+        showBottomBar = false
     ) { innerPadding ->
         AddExistingGoalBody(
             goalListUiState = goalListUiState,
             scheduledGoalsListUiState = scheduledGoalsListUiState,
-            showDurationError = showDurationError,
-            onAddGoalPressed = { goalId ->
+            addExistingGoalUiState = addExistingGoalUiState,
+            showDurationError = addExistingGoalUiState.showSelectionDurationError,
+            onAddGoalsPressed = { goalIds ->
                 coroutineScope.launch {
-                    scheduledGoalsViewModel.addScheduledGoalFromExistingGoal(
-                        goalId = goalId,
+                    scheduledGoalsViewModel.addScheduledGoalsFromExistingGoals(
+                        goalIds = goalIds,
                         onNavigate = { navigateToViewGoals(scheduledGoalsViewModel.calendarEventId) }
                     )
                 }
             },
+            onGoalClicked = scheduledGoalsViewModel::toggleGoalSelection,
             onCancelClicked = onCancelButtonClicked,
             modifier = Modifier.padding(innerPadding),
             onCreateGoalPressed = {
@@ -110,8 +106,10 @@ fun AddExistingGoalScreen(
 fun AddExistingGoalBody(
     goalListUiState: GoalListUiState,
     scheduledGoalsListUiState: ScheduledGoalsListUiState,
+    addExistingGoalUiState: AddExistingGoalUiState,
+    onGoalClicked: (Goal, Int) -> Unit,
     showDurationError: Boolean,
-    onAddGoalPressed: (Int) -> Unit,
+    onAddGoalsPressed: (Set<Int>) -> Unit,
     onCreateGoalPressed: () -> Unit,
     onCancelClicked: () -> Unit,
     modifier: Modifier = Modifier,
@@ -124,8 +122,6 @@ fun AddExistingGoalBody(
             .fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        var selectedGoalId by rememberSaveable { mutableStateOf<Int?>(null) }
-
         if (goalListUiState.goalList.isEmpty()){
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -153,7 +149,16 @@ fun AddExistingGoalBody(
                 showRecurrenceFilter = true,
                 showCompletionFilter = false,
                 resultCount = goalListUiState.filteredGoalList.size,
-                totalCount = goalListUiState.goalList.size
+                totalCount = goalListUiState.goalList.size,
+                defaultIsExpanded = false
+            )
+
+            SchedulingCapacityIndicator(
+                remainingMinutesInDay = scheduledGoalsListUiState.remainingMinutesInDay,
+                selectedMinutes = addExistingGoalUiState.selectedMinutes,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
             GoalTemplateList(
@@ -161,9 +166,12 @@ fun AddExistingGoalBody(
                 categories = goalListUiState.categories,
                 addCategoryColors = goalListUiState.useCategoryColorsEnabled,
                 onGoalClick = { goal ->
-                    selectedGoalId = goal.goalID
+                    onGoalClicked(
+                        goal,
+                        scheduledGoalsListUiState.remainingMinutesInDay
+                    )
                 },
-                selectedGoalId = selectedGoalId,
+                selectedGoalIds = addExistingGoalUiState.selectedGoalIds,
                 modifier = Modifier
                     .weight(1f)
                     .padding(dimensionResource(R.dimen.padding_medium))
@@ -172,7 +180,9 @@ fun AddExistingGoalBody(
 
         if(showDurationError){
             Text(
-                text = stringResource(R.string.selected_goal_exceeds_remaining_time),
+                text = stringResource(
+                    R.string.selected_goal_exceeds_remaining_time,
+                ),
                 color = MaterialTheme.colorScheme.error,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.padding(8.dp)
@@ -185,33 +195,123 @@ fun AddExistingGoalBody(
             thickness = 1.dp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
         )
+        TwoActionButtonRow(
+            onOutlinedButtonClicked = onCancelClicked,
+            onButtonClicked = {
+                onAddGoalsPressed(addExistingGoalUiState.selectedGoalIds)
+            },
+            outlinedButtonText = stringResource(R.string.cancel),
+            buttonText = pluralStringResource(
+                R.plurals.add_selected_goals,
+                addExistingGoalUiState.selectedGoalIds.size,
+                addExistingGoalUiState.selectedGoalIds.size
+            ),
+            buttonEnabled = addExistingGoalUiState.selectedGoalIds.isNotEmpty()
+        )
+    }
+}
+
+@Composable
+fun SchedulingCapacityIndicator(
+    remainingMinutesInDay: Int,
+    selectedMinutes: Int,
+    modifier: Modifier = Modifier
+) {
+    val totalMinutes = MINUTES_IN_24_HOUR_DAY
+
+    val alreadyScheduledMinutes =
+        (totalMinutes - remainingMinutesInDay)
+            .coerceIn(0, totalMinutes)
+
+    val availableMinutes =
+        (totalMinutes - alreadyScheduledMinutes)
+
+    val validSelectedMinutes =
+        selectedMinutes.coerceIn(0, availableMinutes)
+
+    val remainingMinutes =
+        availableMinutes - validSelectedMinutes
+
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ){
+            Text(
+                text = "Remaining: ${remainingMinutes / 60}h ${remainingMinutes % 60}m",
+                style = MaterialTheme.typography.titleSmall
+            )
+            Text(
+                text = "(Selected: ${validSelectedMinutes / 60}h ${validSelectedMinutes % 60}m)",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
+
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.Center
+                .height(10.dp)
+                .clip(RoundedCornerShape(50))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
         ) {
-            OutlinedButton(
-                onClick = onCancelClicked,
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    stringResource(R.string.Cancel),
-                    textAlign = TextAlign.Center
+            // Time already scheduled
+            if (alreadyScheduledMinutes > 0) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(alreadyScheduledMinutes.toFloat())
+                        .background(MaterialTheme.colorScheme.outline)
                 )
             }
-            Button(
-                onClick = { selectedGoalId?.let { onAddGoalPressed(it) } },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    stringResource(R.string.add_goal),
-                    textAlign = TextAlign.Center
+
+            // Time from newly selected goals
+            if (validSelectedMinutes > 0) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(validSelectedMinutes.toFloat())
+                        .background(MaterialTheme.colorScheme.primary)
+                )
+            }
+
+            // Remaining available time
+            if (remainingMinutes > 0) {
+                Spacer(
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .weight(remainingMinutes.toFloat())
                 )
             }
         }
+
+        ColorLegendRow(
+            items = listOf(
+                LegendItem(
+                    label = "Scheduled",
+                    color = MaterialTheme.colorScheme.outline
+                ),
+                LegendItem(
+                    label = "Selected",
+                    color = MaterialTheme.colorScheme.primary
+                ),
+                LegendItem(
+                    label = "Remaining",
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                )
+            ),
+            colorBoxSize = 10.dp,
+            isCircleShape = true,
+            modifier = Modifier.fillMaxWidth()
+        )
     }
 }
+
 @Preview(showBackground = true)
 @Composable
 fun AddExistingGoalBodyPreview(){
@@ -223,12 +323,19 @@ fun AddExistingGoalBodyPreview(){
                 categories = testGoalCategoriesSizeThreeWithColor,
                 useCategoryColorsEnabled = true,
             ),
-            scheduledGoalsListUiState = ScheduledGoalsListUiState(),
-            onAddGoalPressed = {},
+            scheduledGoalsListUiState = ScheduledGoalsListUiState(
+                totalMinutes = 6 * 60
+            ),
+            addExistingGoalUiState = AddExistingGoalUiState(
+                selectedGoalIds = setOf(testGoalsWithCategoriesSizeThree[0].goal.goalID, testGoalsWithCategoriesSizeThree[1].goal.goalID),
+                selectedMinutes = 3 * 60
+            ),
+            onGoalClicked = {_,_->},
+            onAddGoalsPressed = {},
             onCancelClicked = {},
             modifier = Modifier,
             onCreateGoalPressed = {},
-            showDurationError = true,
+            showDurationError = false,
             onFiltersChanged = {}
         )
     }

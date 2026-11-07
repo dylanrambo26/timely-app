@@ -42,6 +42,7 @@ import com.timelyproductivity.app.data.goal.category.GoalCategory
 import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.TimelyScaffold
 import com.timelyproductivity.app.ui.categories.CategoryEditorUiState
 import com.timelyproductivity.app.ui.components.ErrorMessageBox
 import com.timelyproductivity.app.ui.components.PriorityDropdown
@@ -75,22 +76,13 @@ fun CreateGoalScreen(
     navigateBack: () -> Unit,
     navigateToViewGoals: (Int) -> Unit,
     navigateToManageReusableGoals: () -> Unit,
-    navigateToHome: () -> Unit,
-    navigateToCalendar: () -> Unit, //TODO
-    navigateToAnalytics: () -> Unit, //TODO
 ){
     val coroutineScope = rememberCoroutineScope()
     val selectedDate by createGoalViewModel.date.collectAsState()
     val categoryEditorUiState by createGoalViewModel.categoryEditorUiState.collectAsState()
-    Scaffold(
-        topBar = { TimelySmallTopAppBar(stringResource(R.string.create_a_goal_from_scratch)) },
-        bottomBar = {
-            TimelyBottomAppBar(
-                onCalendarClick = navigateToCalendar,
-                onHomeClick = navigateToHome,
-                onAnalyticsClick = navigateToAnalytics
-            )
-        }
+    TimelyScaffold(
+        topBarTitle = stringResource(R.string.create_a_goal_from_scratch),
+        showBottomBar = false
     ) { innerPadding ->
         CreateGoalBody(
             goalUiState = createGoalViewModel.goalUiState,
