@@ -70,7 +70,6 @@ fun AnalyticsScreen(
         topBarTitle = stringResource(R.string.analytics),
         onHomeClick = navigateToHome,
         onCalendarClick = navigateToCalendar,
-        onAnalyticsClick = {}
     ) { innerPadding->
 
         AnalyticsBody(

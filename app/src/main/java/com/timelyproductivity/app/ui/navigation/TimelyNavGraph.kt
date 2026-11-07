@@ -136,10 +136,21 @@ fun TimelyNavHost(
                     onAddGoalButtonClicked = { eventId ->
                         navController.navigate("${AddGoalSelectionDestination.route}/$eventId")
                     },
-                    onEditGoal = { navController.navigate("${EditScheduledGoalDestination.route}/${it.scheduledGoalId}")},
-                    navigateToHome = {navController.navigate(HomeDestination.route)},
-                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
-                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
+                    onEditGoal = { scheduledGoal ->
+                        navController.navigate("${EditScheduledGoalDestination.route}/${scheduledGoal.scheduledGoalId}")
+                    },
+                    navigateToViewGoals = { eventId ->
+                        eventId?.let {
+                            navController.navigate(
+                                "${ViewGoalsDestination.route}/$it"
+                            ) {
+                                popUpTo("${ViewGoalsDestination.route}/$it") {
+                                    inclusive = false
+                                }
+                                launchSingleTop = true
+                            }
+                        }
+                    },
                     viewModel = viewModel
                 )
             }
@@ -150,12 +161,20 @@ fun TimelyNavHost(
                 })
             ) {
                 EditScheduledGoalScreen(
-                    navigateToEditScheduledGoals = {eventId ->
-                        navController.navigate("${EditScheduledGoalsDestination.route}/$eventId")
-                    },
-                    navigateToHome = {navController.navigate(HomeDestination.route)},
-                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
-                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
+                    navigateToEditScheduledGoals = { eventId ->
+                        val route = "${EditScheduledGoalsDestination.route}/$eventId"
+
+                        val returned = navController.popBackStack(
+                            route = route,
+                            inclusive = false
+                        )
+
+                        if (!returned) {
+                            navController.navigate(route) {
+                                launchSingleTop = true
+                            }
+                        }
+                    }
                 )
             }
 
@@ -177,9 +196,6 @@ fun TimelyNavHost(
                 val createGoalViewModel: CreateGoalViewModel = viewModel(factory = AppViewModelProvider.Factory)
                 val goalListViewModel: GoalListViewModel = viewModel(factory = AppViewModelProvider.Factory)
                 CreateGoalScreen(
-                    navigateToHome = {navController.navigate(HomeDestination.route)},
-                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
-                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                     createGoalViewModel = createGoalViewModel,
                     goalListViewModel = goalListViewModel,
                     navigateToViewGoals = {eventId ->
@@ -209,8 +225,6 @@ fun TimelyNavHost(
                 CurrentTaskScreen(
                     scheduledGoalsListViewModel = scheduledGoalsListViewModel,
                     navigateToHome = {navController.navigate(HomeDestination.route)},
-                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
-                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                     navigateBack = {navController.popBackStack()}
                 )
             }
@@ -304,8 +318,6 @@ fun TimelyNavHost(
                         navController.navigate("${EditReusableGoalDestination.route}/${goal.goalID}")
                     },
                     navigateToHome = {navController.navigate(HomeDestination.route)},
-                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
-                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                     goalListViewModel = viewModel
                 )
             }
@@ -322,9 +334,6 @@ fun TimelyNavHost(
 
                 EditReusableGoalScreen(
                     navigateBack = {navController.popBackStack()},
-                    navigateToHome = { navController.navigate(HomeDestination.route) },
-                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
-                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                     navigateToCreateGoalWithGoalId = {goalId ->
                         navController.navigate(
                             CreateGoalDestination.route + "?${CreateGoalDestination.copyFromGoalIdArg}=$goalId"
@@ -340,9 +349,6 @@ fun TimelyNavHost(
                 val viewModel: ManageCategoriesViewModel = viewModel(factory = AppViewModelProvider.Factory)
 
                 ManageCategoriesScreen(
-                    navigateToHome = { navController.navigate(HomeDestination.route) },
-                    navigateToCalendar = {navController.navigate(CalendarDestination.route)},
-                    navigateToAnalytics = {navController.navigate(AnalyticsDestination.route)},
                     navigateBack = { navController.popBackStack() },
                     manageCategoriesViewModel = viewModel
                 )

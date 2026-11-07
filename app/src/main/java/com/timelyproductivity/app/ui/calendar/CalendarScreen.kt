@@ -43,6 +43,7 @@ import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
 import com.timelyproductivity.app.data.generateTestDatesWithScheduledGoals
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.TimelyScaffold
 import com.timelyproductivity.app.ui.components.ColorLegendColumn
 import com.timelyproductivity.app.ui.components.LegendItem
 import com.timelyproductivity.app.ui.navigation.NavigationDest
@@ -63,23 +64,16 @@ object CalendarDestination : NavigationDest {
 @Composable
 fun CalendarScreen(
     navigateToHome: () -> Unit,
-    navigateToAnalytics: () -> Unit, //TODO
+    navigateToAnalytics: () -> Unit,
     onViewGoalsClicked: (Int?) -> Unit = {},
     calendarViewModel: CalendarViewModel = viewModel(factory = AppViewModelProvider.Factory),
 ){
     val datesWithGoals by calendarViewModel.datesWithGoals.collectAsState()
     val displayedMonth by calendarViewModel.displayedMonth.collectAsState()
-    Scaffold(
-        topBar = {
-            TimelySmallTopAppBar(stringResource(R.string.calendar))
-        },
-        bottomBar = {
-            TimelyBottomAppBar(
-                onCalendarClick = {},
-                onHomeClick = navigateToHome,
-                onAnalyticsClick = navigateToAnalytics
-            )
-        }
+    TimelyScaffold(
+        topBarTitle = stringResource(R.string.calendar),
+        onHomeClick = navigateToHome,
+        onAnalyticsClick = navigateToAnalytics
     ) {
         innerPadding ->
         CalendarBody(

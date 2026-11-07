@@ -67,17 +67,12 @@ fun EditReusableGoalScreen(
 
     navigateToCreateGoalWithGoalId: (Int) -> Unit,
     navigateBack: () -> Unit,
-    navigateToHome: () -> Unit,
-    navigateToCalendar: () -> Unit,
-    navigateToAnalytics: () -> Unit,
 ){
     val coroutineScope = rememberCoroutineScope()
     val categoryEditorUiState by viewModel.categoryEditorUiState.collectAsState()
     TimelyScaffold(
         topBarTitle = stringResource(R.string.edit_one_goal_top_bar_text),
-        onHomeClick = navigateToHome,
-        onCalendarClick = navigateToCalendar,
-        onAnalyticsClick = navigateToAnalytics
+        showBottomBar = false
     ) { innerPadding ->
         EditReusableGoalBody(
             goalUiState = viewModel.goalUiState,

@@ -9,9 +9,10 @@ import com.timelyproductivity.app.TimelySmallTopAppBar
 @Composable
 fun TimelyScaffold(
     topBarTitle: String,
-    onHomeClick: () -> Unit,
-    onCalendarClick: () -> Unit,
-    onAnalyticsClick: () -> Unit,
+    onHomeClick: () -> Unit = {},
+    onCalendarClick: () -> Unit = {},
+    onAnalyticsClick: () -> Unit = {},
+    showBottomBar: Boolean = true,
     content: @Composable (PaddingValues) -> Unit
 ) {
     Scaffold(
@@ -19,11 +20,13 @@ fun TimelyScaffold(
             TimelySmallTopAppBar(topBarTitle)
         },
         bottomBar = {
-            TimelyBottomAppBar(
-                onCalendarClick = onCalendarClick,
-                onHomeClick = onHomeClick,
-                onAnalyticsClick = onAnalyticsClick
-            )
+            if(showBottomBar){
+                TimelyBottomAppBar(
+                    onCalendarClick = onCalendarClick,
+                    onHomeClick = onHomeClick,
+                    onAnalyticsClick = onAnalyticsClick
+                )
+            }
         },
         content = content
     )

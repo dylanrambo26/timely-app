@@ -12,11 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -33,14 +30,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.timelyproductivity.app.R
-import com.timelyproductivity.app.TimelySmallTopAppBar
 import com.timelyproductivity.app.data.goal.Goal
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testGoalsWithCategoriesSizeThree
 import com.timelyproductivity.app.ui.AppViewModelProvider
+import com.timelyproductivity.app.ui.TimelyScaffold
 import com.timelyproductivity.app.ui.components.AddGoalButton
 import com.timelyproductivity.app.ui.components.ColorLegendRow
 import com.timelyproductivity.app.ui.components.LegendItem
+import com.timelyproductivity.app.ui.components.buttons.TwoActionButtonRow
 import com.timelyproductivity.app.ui.components.filters.GoalFilteringControls
 import com.timelyproductivity.app.ui.components.lists.GoalTemplateList
 import com.timelyproductivity.app.ui.filters.GoalFilterState
@@ -74,10 +72,9 @@ fun AddExistingGoalScreen(
     val addExistingGoalUiState by scheduledGoalsViewModel.addExistingGoalUiState.collectAsState()
     val scheduledGoalsListUiState by scheduledGoalsViewModel.scheduledGoalsListUiState.collectAsState()
     val coroutineScope = rememberCoroutineScope()
-    Scaffold(
-        topBar = {
-            TimelySmallTopAppBar(stringResource(R.string.add_an_existing_goal))
-        },
+    TimelyScaffold(
+        topBarTitle = stringResource(R.string.add_an_existing_goal),
+        showBottomBar = false
     ) { innerPadding ->
         AddExistingGoalBody(
             goalListUiState = goalListUiState,
@@ -198,36 +195,19 @@ fun AddExistingGoalBody(
             thickness = 1.dp,
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
         )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            horizontalArrangement = Arrangement.Center
-        ) {
-            OutlinedButton(
-                onClick = onCancelClicked,
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    stringResource(R.string.Cancel),
-                    textAlign = TextAlign.Center
-                )
-            }
-            Button(
-                onClick = { onAddGoalsPressed(addExistingGoalUiState.selectedGoalIds) },
-                enabled = addExistingGoalUiState.selectedGoalIds.isNotEmpty(),
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    text = pluralStringResource(
-                        R.plurals.add_selected_goals,
-                        addExistingGoalUiState.selectedGoalIds.size,
-                        addExistingGoalUiState.selectedGoalIds.size
-                    ),
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
+        TwoActionButtonRow(
+            onOutlinedButtonClicked = onCancelClicked,
+            onButtonClicked = {
+                onAddGoalsPressed(addExistingGoalUiState.selectedGoalIds)
+            },
+            outlinedButtonText = stringResource(R.string.cancel),
+            buttonText = pluralStringResource(
+                R.plurals.add_selected_goals,
+                addExistingGoalUiState.selectedGoalIds.size,
+                addExistingGoalUiState.selectedGoalIds.size
+            ),
+            buttonEnabled = addExistingGoalUiState.selectedGoalIds.isNotEmpty()
+        )
     }
 }
 
