@@ -230,4 +230,16 @@ interface ScheduledGoalDao {
         GROUP BY scheduledCategoryId
     """)
     fun getScheduledGoalCountsByCategory(): Flow<List<CategoryGoalCount>>
+
+    @Query("""
+        UPDATE scheduled_goals
+        SET completedMillis = :completedMillis,
+            status = :status
+        WHERE scheduledGoalId = :scheduledGoalId
+    """)
+    suspend fun updateManualTimeLog(
+        scheduledGoalId: Int,
+        completedMillis: Long,
+        status: GoalStatus
+    ): Int
 }

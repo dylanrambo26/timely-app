@@ -3,6 +3,7 @@ package com.timelyproductivity.app.ui.viewgoals
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.timelyproductivity.app.R
 import com.timelyproductivity.app.data.UserPreferencesRepository
 import com.timelyproductivity.app.data.calendar.CalendarEventsRepository
 import com.timelyproductivity.app.data.goal.Goal
@@ -14,7 +15,9 @@ import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoalsRepository
 import com.timelyproductivity.app.ui.filters.GoalFilterState
 import com.timelyproductivity.app.ui.filters.applyFilters
 import com.timelyproductivity.app.ui.sorting.applySorting
+import com.timelyproductivity.app.util.MILLIS_IN_MINUTE
 import com.timelyproductivity.app.util.MINUTES_IN_24_HOUR_DAY
+import com.timelyproductivity.app.util.validateManualLogInput
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -26,6 +29,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import kotlin.coroutines.cancellation.CancellationException
 
 class ScheduledGoalsListViewModel(
     savedStateHandle: SavedStateHandle,
@@ -49,6 +53,9 @@ class ScheduledGoalsListViewModel(
 
     private val _addExistingGoalUiState = MutableStateFlow(AddExistingGoalUiState())
     val addExistingGoalUiState: StateFlow<AddExistingGoalUiState> = _addExistingGoalUiState.asStateFlow()
+
+    private val _manualTimeLogUiState = MutableStateFlow(ManualTimeLogUiState())
+    val manualTimeLogUiState = _manualTimeLogUiState.asStateFlow()
 
     init{
         viewModelScope.launch {
@@ -261,6 +268,108 @@ class ScheduledGoalsListViewModel(
             }
         }
     }
+
+    fun updateManualLogHours(hours: String){
+        _manualTimeLogUiState.update {
+            it.copy(
+                hours = hours,
+                errorMessage = null
+            )
+        }
+    }
+
+    fun updateManualLogMinutes(minutes: String){
+        _manualTimeLogUiState.update {
+            it.copy(
+                minutes = minutes,
+                errorMessage = null
+            )
+        }
+    }
+
+    fun saveManualTimeLog(
+        scheduledGoal: ScheduledGoal,
+        onSuccess: () -> Unit
+    ){
+        val state = _manualTimeLogUiState.value
+
+        val error = validateManualTimeLog(
+            hours = state.hours,
+            minutes = state.minutes,
+            scheduledGoalDuration = scheduledGoal.scheduledHours * 60 + scheduledGoal.scheduledMinutes
+        )
+
+        if(error != null){
+            _manualTimeLogUiState.update {
+                it.copy(errorMessage = error)
+            }
+            return
+        }
+
+        val hours = state.hours.toLong()
+        val minutes = state.minutes.toLong()
+
+        val logDurationMillis = (hours * 60 + minutes) * MILLIS_IN_MINUTE
+
+        viewModelScope.launch {
+            _manualTimeLogUiState.update {
+                it.copy(
+                    isSaving = true,
+                    errorMessage = null
+                )
+            }
+
+            try {
+                val success = scheduledGoalsRepository.updateManualTimeLog(
+                    scheduledGoalId = scheduledGoal.scheduledGoalId,
+                    completedMillis = logDurationMillis
+                )
+
+                if(success){
+                    onSuccess()
+                } else {
+                    _manualTimeLogUiState.update {
+                        it.copy(
+                            errorMessage = R.string.manual_log_save_failed
+                        )
+                    }
+                }
+            } catch (e: Exception) {
+                if (e is CancellationException) throw e
+
+                _manualTimeLogUiState.update {
+                    it.copy(
+                        errorMessage = R.string.manual_log_save_failed
+                    )
+                }
+            } finally {
+                _manualTimeLogUiState.update {
+                    it.copy(isSaving = false)
+                }
+            }
+        }
+    }
+
+    private fun validateManualTimeLog(
+        hours: String,
+        minutes: String,
+        scheduledGoalDuration: Int,
+    ): Int? {
+        return validateManualLogInput(
+            hours = hours,
+            minutes = minutes,
+            scheduledGoalDuration = scheduledGoalDuration
+        )
+    }
+
+    fun initializeManualTimeLog(scheduledGoal: ScheduledGoal){
+        val totalMinutes = scheduledGoal.completedMillis / MILLIS_IN_MINUTE
+
+        _manualTimeLogUiState.value = ManualTimeLogUiState(
+            hours = (totalMinutes / 60).toString(),
+            minutes = (totalMinutes % 60).toString()
+        )
+    }
 }
 
 data class ScheduledGoalsListUiState(
@@ -280,4 +389,11 @@ data class AddExistingGoalUiState(
     val selectedGoalIds: Set<Int> = emptySet(),
     val showSelectionDurationError: Boolean = false,
     val selectedMinutes: Int = 0,
+)
+
+data class ManualTimeLogUiState(
+    val hours: String = "0",
+    val minutes: String = "0",
+    val errorMessage: Int? = null,
+    val isSaving: Boolean = false,
 )

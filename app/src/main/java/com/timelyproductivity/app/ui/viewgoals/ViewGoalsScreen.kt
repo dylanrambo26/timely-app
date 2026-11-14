@@ -20,12 +20,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -37,7 +37,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.timelyproductivity.app.R
-import com.timelyproductivity.app.TimelyBottomAppBar
 import com.timelyproductivity.app.TimelySmallTopAppBar
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
@@ -75,8 +74,18 @@ fun ViewGoalsScreen(
     navigateToAnalytics: () -> Unit, //TODO
 ){
     val scheduledGoalsListUiState by scheduledGoalsListViewModel.scheduledGoalsListUiState.collectAsState()
+    val manualTimeLogUiState by scheduledGoalsListViewModel.manualTimeLogUiState.collectAsState()
     val filters by scheduledGoalsListViewModel.filters.collectAsState()
     val formattedDate = formatLocalDateToShorthandDate(scheduledGoalsListUiState.date, "Today's")
+
+    var selectedGoalId by rememberSaveable {
+        mutableStateOf<Int?>(null)
+    }
+
+    var goalForManualLog by remember {
+        mutableStateOf<ScheduledGoal?>(null)
+    }
+
     TimelyScaffold(
         topBarTitle = stringResource(
             R.string.view_goals_for_date,
@@ -86,6 +95,26 @@ fun ViewGoalsScreen(
         onAnalyticsClick = navigateToAnalytics,
         onCalendarClick = navigateToCalendar
     ) { innerPadding ->
+        goalForManualLog?.let { scheduledGoal ->
+            ManualTimeLogDialog(
+                scheduledGoal = scheduledGoal,
+                uiState = manualTimeLogUiState,
+                onHoursChanged = scheduledGoalsListViewModel::updateManualLogHours,
+                onMinutesChanged = scheduledGoalsListViewModel::updateManualLogMinutes,
+                onDismiss = {
+                    goalForManualLog = null
+                },
+                onSave = {
+                    scheduledGoalsListViewModel.saveManualTimeLog(
+                        scheduledGoal = scheduledGoal,
+                        onSuccess = {
+                            goalForManualLog = null
+                        }
+                    )
+                }
+            )
+        }
+
         ViewGoalsBody(
             scheduledGoalsListUiState = scheduledGoalsListUiState,
             isPastDate = { scheduledGoalsListViewModel.isPastDate() },
@@ -110,7 +139,21 @@ fun ViewGoalsScreen(
             onMarkAsComplete = scheduledGoalsListViewModel::setComplete,
 
             filters = filters,
-            onFiltersChanged = scheduledGoalsListViewModel::updateFilters
+            onFiltersChanged = scheduledGoalsListViewModel::updateFilters,
+
+            onGoalClick = { scheduledGoal ->
+                selectedGoalId = if(selectedGoalId == scheduledGoal.scheduledGoalId){
+                    null
+                } else {
+                    scheduledGoal.scheduledGoalId
+                }
+            },
+            selectedGoalId = selectedGoalId,
+
+            onAddManualLog = {scheduledGoal ->
+                scheduledGoalsListViewModel.initializeManualTimeLog(scheduledGoal)
+                goalForManualLog = scheduledGoal
+            },
         )
     }
 }
@@ -128,6 +171,10 @@ fun ViewGoalsBody(
 
     filters: GoalFilterState = GoalFilterState(),
     onFiltersChanged: (GoalFilterState) -> Unit,
+
+    selectedGoalId: Int?,
+    onGoalClick: (ScheduledGoal) -> Unit,
+    onAddManualLog: (ScheduledGoal) -> Unit,
 
     modifier: Modifier = Modifier,
 ){
@@ -164,6 +211,10 @@ fun ViewGoalsBody(
             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
         )
         ScheduledGoalList(
+            selectedGoalId = selectedGoalId,
+            onGoalClick = onGoalClick,
+            showManualLogOptions = true,
+            onAddManualLog = onAddManualLog,
             goals = scheduledGoalsListUiState.filteredScheduledGoals,
             categories = scheduledGoalsListUiState.categories,
             addCompletionColor = true,
@@ -311,7 +362,7 @@ fun ViewGoalsBodyPreview(){
     TimeManagementAppTheme {
         val selectedDate = LocalDate.now()
         val goalFilterState = GoalFilterState(
-            categoryIds = setOf(testGoalCategoriesSizeThreeWithColor[1].categoryId),
+            categoryIds = setOf(),
             priorities = setOf(),
             completionFilter = CompletionFilter.ALL,
             sortOption = GoalSortOption.PRIORITY,
@@ -335,6 +386,9 @@ fun ViewGoalsBodyPreview(){
             onMarkAsComplete = {_,_ ->},
             modifier = Modifier,
             onFiltersChanged = {},
+            selectedGoalId = 0,
+            onGoalClick = {},
+            onAddManualLog = {},
             filters = goalFilterState
         )
     }

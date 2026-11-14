@@ -83,6 +83,8 @@
     <string name="play_sounds_for_task_alerts">Play sounds for task alerts</string>
     <string name="manage_categories">Manage Categories</string>
     <string name="search_for_a_specific_goal">Search for a specific goal</string>
+    <string name="log_duration_must_be_less_than_scheduled_duration">Log duration must be less than scheduled duration.</string>
+    <string name="manual_log_save_failed">Manual log save failed.</string>
 
     <plurals name="add_selected_goals">
         <item quantity="one">Add %d Goal</item>

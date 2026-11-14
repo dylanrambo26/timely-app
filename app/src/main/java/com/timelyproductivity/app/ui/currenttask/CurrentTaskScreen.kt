@@ -6,15 +6,11 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -25,7 +21,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
@@ -38,8 +33,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.timelyproductivity.app.R
-import com.timelyproductivity.app.TimelyBottomAppBar
-import com.timelyproductivity.app.TimelySmallTopAppBar
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.data.testGoalCategoriesSizeThreeWithColor
 import com.timelyproductivity.app.data.testScheduledGoalsWithCategoriesSizeFour
@@ -298,8 +291,9 @@ fun CurrentTaskBodyPreview(){
         CurrentTaskBody(
             scheduledGoalsListUiState = ScheduledGoalsListUiState(
                 scheduledGoalsList = testScheduledGoalsWithCategoriesSizeFour,
+                filteredScheduledGoals = testScheduledGoalsWithCategoriesSizeFour,
                 categories = testGoalCategoriesSizeThreeWithColor,
-                useCategoryColorsEnabled = true
+                useCategoryColorsEnabled = true,
             ),
             onSaveCurrentTaskPressed = {},
             modifier = Modifier
@@ -308,7 +302,11 @@ fun CurrentTaskBodyPreview(){
             needsExactAlarmPermission = {false},
             navigateBack = {},
             onGoalSelected = {},
-            currentTaskUiState = CurrentTaskUiState(),
+            currentTaskUiState = CurrentTaskUiState(
+                selectedGoal = testScheduledGoalsWithCategoriesSizeFour[0],
+                countdownReminders = setOf(1,5,10),
+                countdownRemindersEnabled = true
+            ),
             onCustomizeReminders = {},
             onDeleteReminder = {},
             onAddReminder = {},

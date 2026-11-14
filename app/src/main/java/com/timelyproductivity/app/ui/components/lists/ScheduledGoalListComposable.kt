@@ -6,8 +6,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -15,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.EditCalendar
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -49,6 +52,7 @@ import com.timelyproductivity.app.ui.theme.checkbox
 import com.timelyproductivity.app.ui.theme.completedGoal
 import com.timelyproductivity.app.ui.theme.toColor
 import com.timelyproductivity.app.util.MAX_NUMBER_OF_COUNTDOWN_REMINDERS
+import com.timelyproductivity.app.util.MILLIS_IN_MINUTE
 import com.timelyproductivity.app.util.enumNameToFirstLetterCapitalized
 
 @Composable
@@ -73,6 +77,9 @@ fun ScheduledGoalList(
     onDeleteReminder: ((Int) -> Unit)? = null,
     onEditReminder: ((Int) -> Unit)? = null,
     isCustomizingReminders: Boolean = false,
+
+    showManualLogOptions: Boolean = false,
+    onAddManualLog: ((ScheduledGoal) -> Unit)? = null
 
     ) {
     val listState = rememberLazyListState()
@@ -125,6 +132,9 @@ fun ScheduledGoalList(
                     onDeleteReminder = onDeleteReminder,
                     onEditReminder = onEditReminder,
                     isCustomizingReminders = isCustomizingReminders,
+
+                    showManualLogOptions = showManualLogOptions,
+                    onAddManualLog = onAddManualLog
                 )
             }
         }
@@ -153,7 +163,10 @@ fun GoalCard(
     isCustomizingReminders: Boolean = false,
 
     onCustomizeReminders: (() -> Unit)? = null,
-    onFinishCustomizeReminders: (() -> Unit)? = null
+    onFinishCustomizeReminders: (() -> Unit)? = null,
+
+    showManualLogOptions: Boolean = false,
+    onAddManualLog: ((ScheduledGoal) -> Unit)? = null
 ){
     val goalStatus = scheduledGoal.status
     val scheduledDurationMillis = (scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60000L
@@ -188,17 +201,21 @@ fun GoalCard(
                 shape = RoundedCornerShape(12.dp)
             ),
         shape = RoundedCornerShape(12.dp),
-        color = if(isSelected && addCategoryColors){
-            cardCategoryColor
-        } else if(isSelected){
-            MaterialTheme.colorScheme.primaryContainer
-        }
-        else if(addCompletionColor && goalStatus == GoalStatus.COMPLETED){
-            MaterialTheme.colorScheme.completedGoal
-        } else if (addCategoryColors) {
-            cardCategoryColor
-        } else {
-            MaterialTheme.colorScheme.secondaryContainer
+        color = when {
+            addCompletionColor && goalStatus == GoalStatus.COMPLETED ->
+                MaterialTheme.colorScheme.completedGoal
+
+            isSelected && addCategoryColors ->
+                cardCategoryColor
+
+            isSelected ->
+                MaterialTheme.colorScheme.primaryContainer
+
+            addCategoryColors ->
+                cardCategoryColor
+
+            else ->
+                MaterialTheme.colorScheme.secondaryContainer
         }
     ) {
         Column(
@@ -335,6 +352,38 @@ fun GoalCard(
                     }
                 }
             }
+            AnimatedVisibility(
+                visible = isSelected && showManualLogOptions
+            ) {
+                Column {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(top = 8.dp)
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        TextButton(
+                            onClick = {
+                                onAddManualLog?.invoke(scheduledGoal)
+                            },
+                            enabled = onAddManualLog != null
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.EditCalendar,
+                                contentDescription = "Add manual log"
+                            )
+
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Text("Add Manual Log")
+                        }
+                    }
+                }
+            }
+
         }
     }
 }
@@ -343,14 +392,25 @@ fun GoalCard(
 fun GoalStatusText(
     scheduledGoal: ScheduledGoal
 ){
+    val completedMinutes = scheduledGoal.completedMillis / MILLIS_IN_MINUTE
+
+    val completedHours = completedMinutes / 60
+    val completedRemainingMinutes = completedMinutes % 60
+
+    val scheduledDurationMinutes =
+        scheduledGoal.scheduledHours * 60L +
+                scheduledGoal.scheduledMinutes
+
+    val remainingMinutes =
+        (scheduledDurationMinutes - completedMinutes).coerceAtLeast(0L)
+
+    val hoursRemaining = remainingMinutes / 60
+    val minutesRemaining = remainingMinutes % 60
+
     when (scheduledGoal.status){
         GoalStatus.COMPLETED -> {
-            val totalMinutes = scheduledGoal.completedMillis / 60_000L
-            val completedHours = totalMinutes / 60
-            val completedMinutes = totalMinutes % 60
-
             Text(
-                text = "Completed: ${completedHours}h ${completedMinutes}m",
+                text = "Completed: ${completedHours}h ${completedRemainingMinutes}m",
                 style = MaterialTheme.typography.bodySmall
             )
         }
@@ -365,7 +425,7 @@ fun GoalStatusText(
 
         GoalStatus.PAUSED ->{
             Text(
-                text = "PAUSED",
+                text = "PAUSED: ${hoursRemaining}h ${minutesRemaining}m remaining",
                 style = MaterialTheme.typography.labelSmall,
                 fontStyle = FontStyle.Italic
             )
@@ -409,9 +469,9 @@ fun ScheduledGoalListPreview(){
         ScheduledGoalList(
             goals = currentTaskGoals,
             categories = testGoalCategoriesSizeThreeWithColor,
-            addCompletionColor = false,
+            addCompletionColor = true,
             addCategoryColors = true,
-            addCheckboxes = true,
+            addCheckboxes = false,
             selectedGoalId = 0,
             onCompleteChange = {_,_->},
         )

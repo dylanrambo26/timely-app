@@ -6,7 +6,7 @@ import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
-interface ScheduledGoalsRepository{
+interface ScheduledGoalsRepository {
     suspend fun insertScheduledGoal(scheduledGoal: ScheduledGoal)
 
     suspend fun updateScheduledGoal(scheduledGoal: ScheduledGoal)
@@ -15,7 +15,12 @@ interface ScheduledGoalsRepository{
 
     suspend fun deleteScheduledGoalsByGoalId(goalId: Int)
 
-    suspend fun deleteFutureIncompleteRecurringGoalsByRecurrenceId(recurrenceRuleId: Int, startDate: LocalDate, completedStatus: GoalStatus = GoalStatus.COMPLETED, runningStatus: GoalStatus = GoalStatus.RUNNING)
+    suspend fun deleteFutureIncompleteRecurringGoalsByRecurrenceId(
+        recurrenceRuleId: Int,
+        startDate: LocalDate,
+        completedStatus: GoalStatus = GoalStatus.COMPLETED,
+        runningStatus: GoalStatus = GoalStatus.RUNNING
+    )
 
     suspend fun getScheduledGoalOnce(id: Int): ScheduledGoal
 
@@ -27,11 +32,22 @@ interface ScheduledGoalsRepository{
 
     suspend fun validInsertScheduledGoal(goalId: Int, eventId: Int): Boolean
 
-    suspend fun validInsertScheduledGoals( goalIds: Set<Int>, eventId: Int): Boolean
+    suspend fun validInsertScheduledGoals(goalIds: Set<Int>, eventId: Int): Boolean
 
-    suspend fun isValidDurationForDate(goalTotalMinutes: Int, eventId: Int, excludedScheduledGoalId: Int?): Boolean
+    suspend fun isValidDurationForDate(
+        goalTotalMinutes: Int,
+        eventId: Int,
+        excludedScheduledGoalId: Int?
+    ): Boolean
 
-    suspend fun updateFutureScheduledGoalsFromEditedTemplate(goalId: Int, title: String, hours: Int, minutes: Int, startDate: LocalDate, categoryId: Int?)
+    suspend fun updateFutureScheduledGoalsFromEditedTemplate(
+        goalId: Int,
+        title: String,
+        hours: Int,
+        minutes: Int,
+        startDate: LocalDate,
+        categoryId: Int?
+    )
 
     fun getDatesWithScheduledGoals(startDate: LocalDate, endDate: LocalDate): Flow<List<LocalDate>>
 
@@ -42,4 +58,9 @@ interface ScheduledGoalsRepository{
     suspend fun insertRecurrenceException(recurrenceRuleId: Int, date: LocalDate)
 
     fun getScheduledGoalCountsByCategory(): Flow<List<CategoryGoalCount>>
+
+    suspend fun updateManualTimeLog(
+        scheduledGoalId: Int,
+        completedMillis: Long
+    ): Boolean
 }

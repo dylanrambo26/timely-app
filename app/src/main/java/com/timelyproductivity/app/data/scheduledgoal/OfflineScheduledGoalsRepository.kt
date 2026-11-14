@@ -2,7 +2,6 @@ package com.timelyproductivity.app.data.scheduledgoal
 
 import androidx.room.withTransaction
 import com.timelyproductivity.app.data.calendar.CalendarEventsRepository
-import com.timelyproductivity.app.data.goal.Goal
 import com.timelyproductivity.app.data.goal.GoalDao
 import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.goal.GoalsDatabase
@@ -39,6 +38,48 @@ class OfflineScheduledGoalsRepository(
     override fun getScheduledGoal(id: Int): Flow<ScheduledGoal> = scheduledGoalDao.getScheduledGoal(id)
 
     override suspend fun getScheduledGoalsOnce(eventId: Int): List<ScheduledGoal> = scheduledGoalDao.getScheduledGoalsOnce(eventId)
+
+    override suspend fun updateManualTimeLog(
+        scheduledGoalId: Int,
+        completedMillis: Long
+    ): Boolean {
+        return database.withTransaction {
+            val scheduledGoal = scheduledGoalDao.getScheduledGoalOnce(scheduledGoalId)
+
+            if (scheduledGoal.status == GoalStatus.RUNNING) {
+                return@withTransaction false
+            }
+
+            val scheduledDurationMillis =
+                (scheduledGoal.scheduledHours * 60L +
+                        scheduledGoal.scheduledMinutes) * 60_000L
+
+            if (completedMillis !in 0..scheduledDurationMillis
+            ) {
+                return@withTransaction false
+            }
+
+            val newStatus = when {
+                scheduledGoal.status == GoalStatus.COMPLETED ->
+                    GoalStatus.COMPLETED
+
+                completedMillis == 0L ->
+                    GoalStatus.NOT_STARTED
+
+                completedMillis == scheduledDurationMillis ->
+                    GoalStatus.COMPLETED
+
+                else ->
+                    GoalStatus.PAUSED
+            }
+
+            scheduledGoalDao.updateManualTimeLog(
+                scheduledGoalId = scheduledGoalId,
+                completedMillis = completedMillis,
+                status = newStatus
+            ) == 1
+        }
+    }
 
     //Used to validate existing goals against remaining time
     override suspend fun validInsertScheduledGoal(goalId: Int, eventId: Int): Boolean {
