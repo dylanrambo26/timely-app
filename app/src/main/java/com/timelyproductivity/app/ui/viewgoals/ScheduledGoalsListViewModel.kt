@@ -370,6 +370,15 @@ class ScheduledGoalsListViewModel(
             minutes = (totalMinutes % 60).toString()
         )
     }
+
+    fun resetGoalProgress(scheduledGoal: ScheduledGoal){
+        viewModelScope.launch {
+            scheduledGoalsRepository.updateManualTimeLog(
+                scheduledGoalId = scheduledGoal.scheduledGoalId,
+                completedMillis = 0L
+            )
+        }
+    }
 }
 
 data class ScheduledGoalsListUiState(

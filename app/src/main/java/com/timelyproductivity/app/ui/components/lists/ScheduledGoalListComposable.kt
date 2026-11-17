@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.EditCalendar
+import androidx.compose.material.icons.filled.RestartAlt
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
@@ -79,8 +80,8 @@ fun ScheduledGoalList(
     isCustomizingReminders: Boolean = false,
 
     showManualLogOptions: Boolean = false,
-    onAddManualLog: ((ScheduledGoal) -> Unit)? = null
-
+    onAddManualLog: ((ScheduledGoal) -> Unit)? = null,
+    onResetProgress: ((ScheduledGoal) -> Unit)? = null,
     ) {
     val listState = rememberLazyListState()
     val previousSize = rememberPreviousLazyColumn(goals.size)
@@ -134,7 +135,9 @@ fun ScheduledGoalList(
                     isCustomizingReminders = isCustomizingReminders,
 
                     showManualLogOptions = showManualLogOptions,
-                    onAddManualLog = onAddManualLog
+                    onAddManualLog = onAddManualLog,
+                    manualLogEnabled = scheduledGoal.status != GoalStatus.RUNNING,
+                    onResetProgress = onResetProgress
                 )
             }
         }
@@ -166,7 +169,9 @@ fun GoalCard(
     onFinishCustomizeReminders: (() -> Unit)? = null,
 
     showManualLogOptions: Boolean = false,
-    onAddManualLog: ((ScheduledGoal) -> Unit)? = null
+    onAddManualLog: ((ScheduledGoal) -> Unit)? = null,
+    manualLogEnabled: Boolean = false,
+    onResetProgress: ((ScheduledGoal) -> Unit)? = null
 ){
     val goalStatus = scheduledGoal.status
     val scheduledDurationMillis = (scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60000L
@@ -369,16 +374,36 @@ fun GoalCard(
                             onClick = {
                                 onAddManualLog?.invoke(scheduledGoal)
                             },
-                            enabled = onAddManualLog != null
+                            enabled = onAddManualLog != null && manualLogEnabled
                         ) {
+                            val manualLogString = if(manualLogEnabled) "Add manual log" else "Manual log disabled while running"
+
                             Icon(
                                 imageVector = Icons.Default.EditCalendar,
-                                contentDescription = "Add manual log"
+                                contentDescription = manualLogString
                             )
 
                             Spacer(modifier = Modifier.width(8.dp))
 
-                            Text("Add Manual Log")
+                            Text(manualLogString)
+                        }
+
+                        if(manualLogEnabled){
+                            TextButton(
+                                onClick = {
+                                    onResetProgress?.invoke(scheduledGoal)
+                                },
+                                enabled = onResetProgress != null && scheduledGoal.completedMillis > 0L
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.RestartAlt,
+                                    contentDescription = "Reset"
+                                )
+
+                                Spacer(modifier = Modifier.width(8.dp))
+
+                                Text("Reset")
+                            }
                         }
                     }
                 }

@@ -154,6 +154,10 @@ fun ViewGoalsScreen(
                 scheduledGoalsListViewModel.initializeManualTimeLog(scheduledGoal)
                 goalForManualLog = scheduledGoal
             },
+
+            onResetProgress = {scheduledGoal ->
+                scheduledGoalsListViewModel.resetGoalProgress(scheduledGoal)
+            }
         )
     }
 }
@@ -175,6 +179,7 @@ fun ViewGoalsBody(
     selectedGoalId: Int?,
     onGoalClick: (ScheduledGoal) -> Unit,
     onAddManualLog: (ScheduledGoal) -> Unit,
+    onResetProgress: (ScheduledGoal) -> Unit,
 
     modifier: Modifier = Modifier,
 ){
@@ -215,6 +220,7 @@ fun ViewGoalsBody(
             onGoalClick = onGoalClick,
             showManualLogOptions = true,
             onAddManualLog = onAddManualLog,
+            onResetProgress = onResetProgress,
             goals = scheduledGoalsListUiState.filteredScheduledGoals,
             categories = scheduledGoalsListUiState.categories,
             addCompletionColor = true,
@@ -389,7 +395,8 @@ fun ViewGoalsBodyPreview(){
             selectedGoalId = 0,
             onGoalClick = {},
             onAddManualLog = {},
-            filters = goalFilterState
+            filters = goalFilterState,
+            onResetProgress = {}
         )
     }
 }
