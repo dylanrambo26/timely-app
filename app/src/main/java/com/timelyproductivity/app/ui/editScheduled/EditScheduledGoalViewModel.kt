@@ -87,6 +87,8 @@ class EditScheduledGoalViewModel(
                         goalDetails = details,
                         selectedCategoryId = scheduledGoal.scheduledCategoryId,
                         originalCategoryId = scheduledGoal.scheduledCategoryId,
+                        priority = scheduledGoal.scheduledPriority,
+                        originalPriority = scheduledGoal.scheduledPriority,
                         isEntryValid = details.validate() == null,
                         isDurationEditable = !isCurrentOrPaused
                     )
@@ -150,6 +152,7 @@ class EditScheduledGoalViewModel(
                 scheduledHours = updatedHours,
                 scheduledMinutes = updatedMinutes,
                 scheduledCategoryId = goalUiState.selectedCategoryId,
+                scheduledPriority = goalUiState.priority,
                 isCustomized = true
             )
         )
