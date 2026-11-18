@@ -6,6 +6,7 @@ import com.timelyproductivity.app.data.goal.GoalDao
 import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.goal.GoalsDatabase
 import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
+import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceException
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRuleDao
@@ -176,9 +177,10 @@ class OfflineScheduledGoalsRepository(
         hours: Int,
         minutes: Int,
         startDate: LocalDate,
-        categoryId: Int?
+        categoryId: Int?,
+        priority: GoalPriority?
     ) {
-        scheduledGoalDao.updateFutureScheduledGoalsFromEditedTemplate(goalId, title, hours, minutes, startDate, categoryId)
+        scheduledGoalDao.updateFutureScheduledGoalsFromEditedTemplate(goalId, title, hours, minutes, startDate, categoryId, priority)
     }
 
     override fun getDatesWithScheduledGoals(startDate: LocalDate, endDate: LocalDate): Flow<List<LocalDate>> = scheduledGoalDao.getDatesWithScheduledGoals(startDate, endDate)

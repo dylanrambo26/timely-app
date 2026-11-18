@@ -2,6 +2,7 @@ package com.timelyproductivity.app.data.scheduledgoal
 
 import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
+import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import com.timelyproductivity.app.data.goal.recurrence.RecurrenceRule
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
@@ -46,7 +47,8 @@ interface ScheduledGoalsRepository {
         hours: Int,
         minutes: Int,
         startDate: LocalDate,
-        categoryId: Int?
+        categoryId: Int?,
+        priority: GoalPriority?
     )
 
     fun getDatesWithScheduledGoals(startDate: LocalDate, endDate: LocalDate): Flow<List<LocalDate>>

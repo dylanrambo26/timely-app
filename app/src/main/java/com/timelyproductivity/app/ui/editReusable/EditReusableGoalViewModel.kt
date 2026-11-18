@@ -105,6 +105,8 @@ class EditReusableGoalViewModel(
                 hasRecurrenceEndDate = recurrenceRule?.endDate != null,
                 selectedCategoryId = goal.categoryId,
                 originalCategoryId = goal.categoryId,
+                originalPriority = goal.priority,
+                priority = goal.priority
             )
         }
     }
@@ -156,7 +158,8 @@ class EditReusableGoalViewModel(
         }
 
         val goal = goalUiState.goalDetails.toGoal(
-            categoryId = goalUiState.selectedCategoryId
+            categoryId = goalUiState.selectedCategoryId,
+            priority = goalUiState.priority
         )
         goalsRepository.updateGoal(goal)
 
@@ -168,7 +171,8 @@ class EditReusableGoalViewModel(
                 hours = goal.hours,
                 minutes = goal.minutes,
                 startDate = LocalDate.now(),
-                categoryId = goal.categoryId
+                categoryId = goal.categoryId,
+                priority = goal.priority
             )
         }
 

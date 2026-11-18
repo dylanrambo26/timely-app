@@ -9,6 +9,7 @@ import androidx.room.Transaction
 import androidx.room.Update
 import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.goal.category.CategoryGoalCount
+import com.timelyproductivity.app.data.goal.priority.GoalPriority
 import kotlinx.coroutines.flow.Flow
 import java.time.LocalDate
 
@@ -164,6 +165,25 @@ interface ScheduledGoalDao {
         startDate: LocalDate
     )
 
+    @Query(
+        """
+            UPDATE scheduled_goals
+            SET scheduledPriority = :priority
+            WHERE goalId = :goalId
+                AND isCustomized = 0
+                AND eventId IN (
+                    SELECT eventId
+                    FROM calendar_events
+                    WHERE date >= :startDate
+                )
+        """
+    )
+    suspend fun updateFutureScheduledPriorities(
+        goalId: Int,
+        priority: GoalPriority?,
+        startDate: LocalDate
+    )
+
     //Only update the durations and titles of scheduled goals that are not the current task, if it is a current task only update title
     @Transaction
     suspend fun updateFutureScheduledGoalsFromEditedTemplate(
@@ -172,7 +192,8 @@ interface ScheduledGoalDao {
         hours: Int,
         minutes: Int,
         startDate: LocalDate,
-        categoryId: Int?
+        categoryId: Int?,
+        priority: GoalPriority?
     ){
         updateFutureScheduledGoalTitles(
             goalId = goalId,
@@ -192,6 +213,12 @@ interface ScheduledGoalDao {
         updateFutureScheduledGoalCategories(
             goalId = goalId,
             categoryId = categoryId,
+            startDate = startDate
+        )
+
+        updateFutureScheduledPriorities(
+            goalId = goalId,
+            priority = priority,
             startDate = startDate
         )
     }
