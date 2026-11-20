@@ -13,7 +13,6 @@ import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
 import com.timelyproductivity.app.ui.analytics.AnalyticsTimePeriod
 import com.timelyproductivity.app.ui.analytics.AnalyticsUiState
 import com.timelyproductivity.app.ui.analytics.DailyActivity
-import com.timelyproductivity.app.util.MILLIS_IN_MINUTE
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters

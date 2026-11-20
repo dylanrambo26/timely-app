@@ -174,7 +174,7 @@ fun GoalCard(
     onResetProgress: ((ScheduledGoal) -> Unit)? = null
 ){
     val goalStatus = scheduledGoal.status
-    val scheduledDurationMillis = (scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * 60000L
+    val scheduledDurationMillis = (scheduledGoal.scheduledHours * 60L + scheduledGoal.scheduledMinutes) * MILLIS_IN_MINUTE
     val completedDuration = scheduledGoal.completedMillis >= scheduledDurationMillis
 
     val category = categories.firstOrNull{
@@ -415,7 +415,8 @@ fun GoalCard(
 
 @Composable
 fun GoalStatusText(
-    scheduledGoal: ScheduledGoal
+    scheduledGoal: ScheduledGoal,
+    showOriginalDuration: Boolean = false,
 ){
     val completedMinutes = scheduledGoal.completedMillis / MILLIS_IN_MINUTE
 
@@ -434,10 +435,17 @@ fun GoalStatusText(
 
     when (scheduledGoal.status){
         GoalStatus.COMPLETED -> {
-            Text(
-                text = "Completed: ${completedHours}h ${completedRemainingMinutes}m",
-                style = MaterialTheme.typography.bodySmall
-            )
+            if(!showOriginalDuration){
+                Text(
+                    text = "Completed: ${completedHours}h ${completedRemainingMinutes}m",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            } else {
+                Text(
+                    text = "${completedHours}h ${completedRemainingMinutes}m / ${scheduledGoal.scheduledHours}h ${scheduledGoal.scheduledMinutes}m ",
+                    style = MaterialTheme.typography.bodySmall
+                )
+            }
         }
 
         GoalStatus.NOT_STARTED ->{

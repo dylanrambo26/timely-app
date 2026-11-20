@@ -8,7 +8,9 @@ import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
 import com.timelyproductivity.app.R
 import com.timelyproductivity.app.data.goal.GoalStatus
 import com.timelyproductivity.app.data.scheduledgoal.ScheduledGoal
@@ -16,7 +18,7 @@ import com.timelyproductivity.app.util.calculateRemainingTime
 import kotlinx.coroutines.delay
 
 @Composable
-fun RemainingTaskTime(scheduledGoal: ScheduledGoal){
+fun RemainingTaskTime(scheduledGoal: ScheduledGoal, paddingValue: Dp = dimensionResource(R.dimen.padding_medium)){
     var remainingMinutes by remember {
         mutableIntStateOf(0)
     }
@@ -57,6 +59,7 @@ fun RemainingTaskTime(scheduledGoal: ScheduledGoal){
         duration = remainingMinutes,
         isDone = isDone,
         title = stringResource(R.string.current_task_time_remaining),
-        isComplete = isGoalComplete
+        isComplete = isGoalComplete,
+        paddingValue = paddingValue
     )
 }

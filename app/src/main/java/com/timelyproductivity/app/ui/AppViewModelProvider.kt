@@ -82,6 +82,8 @@ object AppViewModelProvider{
         initializer {
             HomeViewModel(
                 timelyApplication().container.calendarEventsRepository,
+                timelyApplication().container.userPreferencesRepository,
+                timelyApplication().container.goalCategoriesRepository
             )
         }
 

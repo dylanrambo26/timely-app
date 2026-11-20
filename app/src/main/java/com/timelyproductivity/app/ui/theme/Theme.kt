@@ -23,25 +23,58 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
+    primary = Color(0xFFB4C5FF),
+    onPrimary = Color(0xFF172E60),
+
+    primaryContainer = Color(0xFF28509C),
+    onPrimaryContainer = Color(0xFFDCE4FF),
+
+    secondary = Color(0xFFBEC7DC),
+    onSecondary = Color(0xFF283143),
+
+    secondaryContainer = Color(0xFF404A60),
+    onSecondaryContainer = Color(0xFFD9E2FF),
+
+    tertiary = Color(0xFFD6BDE5),
+
+    background = Color(0xFF111115),
+    onBackground = Color(0xFFE3E2E9),
+
+    surface = Color(0xFF1C1D22),
+    onSurface = Color(0xFFE3E2E9),
+
+    surfaceVariant = Color(0xFF44464F),
+    onSurfaceVariant = Color(0xFFC4C6D0),
+
+    outline = Color(0xFF8E909A)
 )
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
+    primary = Color(0xFF28509C),
+    onPrimary = Color(0xFFFFFFFF),
 
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    primaryContainer = Color(0xFFD9E3FF),
+    onPrimaryContainer = Color(0xFF102C63),
+
+    secondary = Color(0xFF526181),
+    onSecondary = Color(0xFFFFFFFF),
+
+    secondaryContainer = Color(0xFFDCE3F5),
+    onSecondaryContainer = Color(0xFF35435F),
+
+    tertiary = Color(0xFF705581),
+    onTertiary = Color(0xFFFFFFFF),
+
+    background = Color(0xFFFAFAFF),
+    onBackground = Color(0xFF191B22),
+
+    surface = Color(0xFFFFFFFF),
+    onSurface = Color(0xFF191B22),
+
+    surfaceVariant = Color(0xFFE1E4EF),
+    onSurfaceVariant = Color(0xFF444750),
+
+    outline = Color(0xFF747783)
 )
 
 @Composable
@@ -71,7 +104,9 @@ fun TimeManagementAppTheme(
 @Preview(showBackground = true)
 @Composable
 fun ColorPreview(){
-    TimeManagementAppTheme {
+    TimeManagementAppTheme(
+        darkTheme = false
+    ) {
         Column{
             ColorItem("Primary", MaterialTheme.colorScheme.primary)
             ColorItem("Secondary", MaterialTheme.colorScheme.secondary)
